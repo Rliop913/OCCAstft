@@ -1,0 +1,222 @@
+#ifndef OPENCL_VERSION
+#include <math.h>
+#include <stdio.h>
+#endif
+
+typedef struct complex_t{
+    float real;
+    float imag;
+}complex;
+
+typedef struct pairs_t{
+    unsigned int first;
+    unsigned int second;
+}pairs;
+
+
+inline 
+float 
+window_func(const int index, const int window_size)
+{
+    float first = cos(M_PI * 2.0 * (float)index / (float)window_size);
+    float second = cos(M_PI * 4.0 * (float)index / (float)window_size);
+    return (0.42 - 0.5 * first + 0.08 * second);
+}
+
+inline int 
+reverseBits(int num, int radix_2_data) {
+    int reversed = 0;
+    for (int i = 0; i < radix_2_data; ++i) {
+        reversed = (reversed << 1) | (num & 1);
+        num >>= 1;
+    }
+    return reversed;
+}
+
+
+pairs 
+indexer(const unsigned int ID,const int powed_stage)
+{
+    pairs temp;
+    temp.first = ID + (ID & (~(powed_stage - 1)));
+    temp.second = temp.first + powed_stage;
+    return temp;
+}
+
+complex 
+twiddle(int high, int low)
+{
+    complex temp;
+    float angle = 2.0 * ((float)high / (float)low);
+    temp.real = cos(angle * M_PI);
+    temp.imag = -1.0 * sin(angle * M_PI);
+    return temp;
+}
+
+inline 
+complex  
+cmult(const complex a, const complex b){
+    complex result;
+    result.real = a.real * b.real - a.imag * b.imag;
+    result.imag = a.real * b.imag + a.imag * b.real;
+
+    return result;
+}
+
+inline
+complex
+cadd(complex a, const complex b){
+    a.real += b.real;
+    a.imag += b.imag;
+    return a;
+}
+
+inline
+complex
+csub(complex a, const complex b){
+    a.real -= b.real;
+    a.imag -= b.imag;
+    return a;
+}
+
+
+
+
+inline 
+float 
+cmod(complex a){
+    return (sqrt(a.real*a.real + a.imag*a.imag));
+}
+
+
+float sums = 0;
+int stage = 0;
+
+
+@kernel void removeDC(  float* in,
+                        unsigned int fullSize)
+{
+    for(unsigned int o_itr = 0; o_itr < fullSize; o_itr += 256; @outer)
+    {
+        for(int i_itr = 0; i_itr < 256; ++i_itr; @inner)
+        {
+            unsigned int IDX = o_itr + i_itr;
+            if (IDX < fullSize){
+                @atomic sums += in[IDX];
+            }
+        }
+    }
+
+    for(unsigned int o_itr = 0; o_itr < fullSize; o_itr += 256; @outer)
+    {
+        for(int i_itr = 0; i_itr < 256; ++i_itr;@inner)
+        {
+            unsigned int IDX = o_itr + i_itr;
+            if (IDX < fullSize){
+                in[IDX] -= (sums / (float)fullSize);
+            }
+        }
+    }
+
+}
+
+@kernel void overlap_N_window(  float* in,
+                                complex* buffer,
+                                unsigned int fullSize,
+                                const unsigned int OFullSize,
+                                const int windowSize,
+                                unsigned int OMove)
+{
+    for(unsigned int w_num=0; w_num < OFullSize; w_num += 256; @outer)
+    {
+        for(int w_itr=0; w_itr < 256; ++w_itr; @inner)
+        {
+            unsigned int FID = w_num + w_itr;
+            unsigned int read_point = 
+                (int)((FID) / windowSize) * OMove + ((FID) % windowSize);
+            buffer[FID].imag = 
+            read_point >= fullSize ? 0.0
+            :
+            in[read_point] * window_func((FID) % windowSize, windowSize);
+        }
+    }
+}
+
+@kernel void bitReverse(complex* buffer,
+                        const unsigned int OFullSize,
+                        int windowSize,
+                        int radixData)
+{
+    for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 256; @outer)
+    {
+        for(int w_itr=0; w_itr < 256; ++w_itr; @inner)
+        {
+            
+            unsigned int dst_idx = reverseBits((o_itr + w_itr % windowSize), radixData);
+            unsigned int BID = o_itr + w_itr - ((o_itr + w_itr) % windowSize) + dst_idx;
+            buffer[BID].real = buffer[o_itr + w_itr].imag;
+        }
+    }
+}
+
+@kernel void endPreProcess( complex* buffer,
+                            const unsigned int OFullSize)
+{
+    for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 256; @outer)
+    {
+        for(int i_itr=0; i_itr < 256; ++i_itr; @inner)
+        {
+            buffer[o_itr + i_itr].imag = 0.0;
+            
+        }
+    }
+}
+
+
+// quot = (fullSize / overlap_ratio) / overlap_ratio / window_size
+
+@kernel void Butterfly( complex* buffer,
+                        int windowSize,
+                        const int powed_stage,
+                        const unsigned int OHalfSize,
+                        unsigned int OWSize,
+                        int radixData)
+{
+    for(unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 256; @outer)
+    {
+        for(int i_itr = 0; i_itr < 256; ++i_itr; @inner)
+        {
+            unsigned int GID = o_itr + i_itr;
+            pairs butterfly_target = indexer(GID, powed_stage);
+            //printf("%d -- %d\n", butterfly_target.first, butterfly_target.second);
+            complex this_twiddle = twiddle(GID % powed_stage, powed_stage * 2);
+            this_twiddle = cmult(buffer[butterfly_target.second],this_twiddle);
+            complex tempx = cadd(buffer[butterfly_target.first], this_twiddle);
+            complex tempy = csub(buffer[butterfly_target.second], this_twiddle);
+            buffer[butterfly_target.first] = tempx;
+            buffer[butterfly_target.second] = tempy;                
+        }
+    }
+}
+@kernel void toPower(   complex* buffer,
+                        float* out,
+                        const unsigned int OHalfSize,
+                        int windowRadix)
+{
+    //toPower
+    for(unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 256; @outer)
+    {
+        for(int i_itr = 0; i_itr < 256; ++i_itr; @inner)
+        {
+            const unsigned int GID = o_itr + i_itr;
+            unsigned int BID = 
+                (GID >> (windowRadix - 1)) * (1 << windowRadix)
+                +
+                (GID & ((1 << (windowRadix - 1)) - 1));
+            float powered = cmod(buffer[BID]);
+
+            out[GID] = powered;
+        }
+    }
+    return;
+}

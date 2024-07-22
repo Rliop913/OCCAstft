@@ -43,13 +43,20 @@ indexer(const unsigned int ID,const int powed_stage)
     return temp;
 }
 
+int calculateK(int windowIDX, int powed_stage, int windowSize) {
+    
+    int position = windowIDX  ;    // 그룹 내에서의 위치
+    int k = (position * windowSize) / powed_stage;
+    return k;
+}
+
 complex 
-twiddle(int high, int low)
+twiddle(int k, int windowSize)
 {
     complex temp;
-    float angle = 2.0 * ((float)high / (float)low);
-    temp.real = cos(angle * M_PI);
-    temp.imag = -1.0 * sin(angle * M_PI);
+    float angle = -2.0 * M_PI * ((float)k / (float)windowSize);
+    temp.real = cos(angle);
+    temp.imag = sin(angle);
     return temp;
 }
 
@@ -174,12 +181,12 @@ int stage = 0;
 
 
 // quot = (fullSize / overlap_ratio) / overlap_ratio / window_size
-
+//calculateK(int low_in_window, int powed_stage, int windowSize)
 @kernel void Butterfly( complex* buffer,
                         int windowSize,
                         const int powed_stage,
                         const unsigned int OHalfSize,
-                        unsigned int OWSize,
+                        //unsigned int OWSize,
                         int radixData)
 {
     for(unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 256; @outer)
@@ -188,11 +195,18 @@ int stage = 0;
         {
             unsigned int GID = o_itr + i_itr;
             pairs butterfly_target = indexer(GID, powed_stage);
-            //printf("%d -- %d\n", butterfly_target.first, butterfly_target.second);
-            complex this_twiddle = twiddle(GID % powed_stage, powed_stage * 2);
-            this_twiddle = cmult(buffer[butterfly_target.second],this_twiddle);
-            complex tempx = cadd(buffer[butterfly_target.first], this_twiddle);
-            complex tempy = csub(buffer[butterfly_target.second], this_twiddle);
+            // 12 34 56 78 
+            //(windowSize/powed_stage)
+            int k = (GID % powed_stage) * (windowSize / (2 * powed_stage));//(GID%powed_stage) * (windowSize / powed_stage);
+            
+            complex this_twiddle = twiddle(k, windowSize);
+            //printf("%f -- %f <gpu>> %d\n", this_twiddle.real, this_twiddle.imag, k);
+            //printf("%f -- %f\n", buffer[butterfly_target.first].real, buffer[butterfly_target.second].real);
+            
+            complex tempcplx = cmult(buffer[butterfly_target.second], this_twiddle);
+            //printf("%f -- %f\n", tempcplx.real, tempcplx.imag);
+            complex tempx = cadd(buffer[butterfly_target.first], tempcplx);
+            complex tempy = csub(buffer[butterfly_target.first], tempcplx);
             buffer[butterfly_target.first] = tempx;
             buffer[butterfly_target.second] = tempy;                
         }

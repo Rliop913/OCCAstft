@@ -1,0 +1,6 @@
+*.wav
+*.cl
+*.txt
+/.venv
+/.vscode
+/out

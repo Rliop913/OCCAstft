@@ -1,4 +1,4 @@
-#ifndef OPENCL_VERSION
+#ifdef SERIAL_MODE
 #include <math.h>
 #include <stdio.h>
 #endif
@@ -13,15 +13,15 @@ typedef struct pairs_t{
     unsigned int second;
 }pairs;
 
-
 inline 
 float 
-window_func(const int index, const int window_size)
-{
-    float first = cos(M_PI * 2.0 * (float)index / (float)window_size);
-    float second = cos(M_PI * 4.0 * (float)index / (float)window_size);
-    return (0.42 - 0.5 * first + 0.08 * second);
+window_func(const int index, const int window_size) {
+    float normalized_index = (float)index;
+    normalized_index /= ((float)(window_size - 1));
+    float angle = 2.0f * M_PI * normalized_index;
+    return 0.5f * (1.0f - cos(angle));
 }
+
 
 inline int 
 reverseBits(int num, int radix_2_data) {
@@ -86,42 +86,33 @@ csub(complex a, const complex b){
     return a;
 }
 
-
-
-
 inline 
 float 
 cmod(complex a){
     return (sqrt(a.real*a.real + a.imag*a.imag));
 }
 
-
-float sums = 0;
-int stage = 0;
-
-
-@kernel void removeDC(  float* in,
-                        unsigned int fullSize)
+@kernel void removeDC(  complex* buffer,
+                        unsigned int OFullSize,
+                        float* qt_buffer,
+                        int windowSize)
 {
-    for(unsigned int o_itr = 0; o_itr < fullSize; o_itr += 256; @outer)
+    for(unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256; @outer)
     {
         for(int i_itr = 0; i_itr < 256; ++i_itr; @inner)
         {
             unsigned int IDX = o_itr + i_itr;
-            if (IDX < fullSize){
-                @atomic sums += in[IDX];
-            }
+            @atomic qt_buffer[IDX / windowSize] += buffer[IDX].imag;
         }
     }
 
-    for(unsigned int o_itr = 0; o_itr < fullSize; o_itr += 256; @outer)
+    for(unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256; @outer)
     {
         for(int i_itr = 0; i_itr < 256; ++i_itr;@inner)
         {
             unsigned int IDX = o_itr + i_itr;
-            if (IDX < fullSize){
-                in[IDX] -= (sums / (float)fullSize);
-            }
+            
+            buffer[IDX].imag -= (qt_buffer[IDX / windowSize] / (float)windowSize);
         }
     }
 
@@ -228,7 +219,7 @@ int stage = 0;
                 +
                 (GID & ((1 << (windowRadix - 1)) - 1));
             float powered = cmod(buffer[BID]);
-
+            //powered = log10(powered);
             out[GID] = powered;
         }
     }

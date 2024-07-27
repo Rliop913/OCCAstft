@@ -2,7 +2,7 @@ import os
 
 
 def exc_path():
-    return os.path.dirname(os.path.abspath("__file__"))
+    return os.path.dirname(os.path.abspath("__file__"))+"/cross_gpgpu/OpenCL/kernel/"
 
 
 def embed_head(entry_name:str)->str:
@@ -34,7 +34,7 @@ def embed_tail(entry_name:str)->str:
 def get_all_kernels(embed_:str)->str:
         
     for i in os.listdir(exc_path()):
-        if i.endswith(".okl"):
+        if i.endswith(".cl"):
             title:str = ""
             clfile=open(exc_path()+"/"+i, "r",encoding="utf-8")
             #read_and_embed(clfile, embed_)
@@ -64,7 +64,7 @@ def add_title(title:str, main_text:str)->str:
 
 
 def read_and_set_path(file_path, got_str:str, title)->str:
-    line="\t\"okl_kernel_files/"+file_path+"\\n\""+"\n"
+    line="\t\"/"+file_path+"\\n\""+"\n"
     return got_str + add_title(title, line)
 
 
@@ -79,7 +79,7 @@ def read_and_embed(file, got_str:str):
         
             pass
         else:
-            if line.find("@kernel")!=-1:
+            if line.find("__kernel")!=-1:
                 title = get_title(line)
             line="\t\""+line+"\\n\""+"\n"
             main_text+=line

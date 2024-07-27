@@ -57,7 +57,7 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
 
 int main(int, char**){
     occa::device dev;
-    occa::json prop = {{"mode", "rocm"}, {"platform_id", 0}, {"device_id", 0}};
+    occa::json prop = {{"mode", "serial"}, {"platform_id", 0}, {"device_id", 0}};
     prop["verbose"] = true;
     prop["kernel/verbose"] = true;
     prop["kernel/compiler_flags"] = "-g";
@@ -65,10 +65,10 @@ int main(int, char**){
     
     ma_decoder_config decconf = ma_decoder_config_init(ma_format_f32, 1, 48000);
     ma_decoder dec;
-    int res = ma_decoder_init_file("../../../candy.wav", &decconf, &dec);
+    int res = ma_decoder_init_file("../candy.wav", &decconf, &dec);
     constexpr int readFrame = 1024*1000;
     constexpr float overlap = 0.2f;
-    constexpr int windowRadix = 12;
+    constexpr int windowRadix = 10;
     constexpr int windowSize = 1 << windowRadix;
     float *hostBuffer = new float[readFrame];
     ma_decoder_seek_to_pcm_frame(&dec, 48000*20);
@@ -85,20 +85,27 @@ int main(int, char**){
     occa::memory dev_in = dev.malloc<float>(readFrame);
     occa::memory dev_buffer = dev.malloc(OFullSize, complex);
     occa::memory dev_out = dev.malloc<float>(OHalfSize);
+    occa::memory qt_buffer = dev.malloc<float>(qt);
+
+
+    std::vector<float> qtbuf(qt);
+    qtbuf.clear();
+    qt_buffer.copyFrom(qtbuf.data());
+
     dev_in.copyFrom(hostBuffer);
     //occa::stream strm = dev.createStream();
     //okl_embed ken_code;
     //occa::kernel ken = dev.buildKernelFromString(ken_code.STFT, "STFT", prop);
-    occa::kernel removeDC = dev.buildKernel("../../../include/kernel.okl", "removeDC", prop);
-    occa::kernel overlap_N_window = dev.buildKernel("../../../include/kernel.okl", "overlap_N_window", prop);
-    occa::kernel bitReverse = dev.buildKernel("../../../include/kernel.okl", "bitReverse", prop);
-    occa::kernel endPreProcess = dev.buildKernel("../../../include/kernel.okl", "endPreProcess", prop);
-    occa::kernel Butterfly = dev.buildKernel("../../../include/kernel.okl", "Butterfly", prop);
-    occa::kernel toPower = dev.buildKernel("../../../include/kernel.okl", "toPower", prop);
+    occa::kernel removeDC = dev.buildKernel("../include/kernel.okl", "removeDC", prop);
+    occa::kernel overlap_N_window = dev.buildKernel("../include/kernel.okl", "overlap_N_window", prop);
+    occa::kernel bitReverse = dev.buildKernel("../include/kernel.okl", "bitReverse", prop);
+    occa::kernel endPreProcess = dev.buildKernel("../include/kernel.okl", "endPreProcess", prop);
+    occa::kernel Butterfly = dev.buildKernel("../include/kernel.okl", "Butterfly", prop);
+    occa::kernel toPower = dev.buildKernel("../include/kernel.okl", "toPower", prop);
     
     
-    removeDC(dev_in, readFrame);
     overlap_N_window(dev_in, dev_buffer, readFrame, OFullSize, windowSize, windowSize / 2);
+    removeDC(dev_buffer, OFullSize, qt_buffer, windowSize);
     bitReverse(dev_buffer, OFullSize, windowSize, windowRadix);
     endPreProcess(dev_buffer, OFullSize);
     
@@ -162,9 +169,9 @@ int main(int, char**){
     
     for(int i=0;i<10;++i)//csv out
     {
-        for(int j=0;j<windowSize;++j)
+        for(int j=0;j<windowSize/2;++j)
         {
-            std::cout<<output[i*windowSize+j]<<",";
+            std::cout<<output[i*windowSize/2+j]<<",";
         }
         std::cout<<"0"<<std::endl;
     }

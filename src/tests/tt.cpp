@@ -2,7 +2,9 @@
 #include <occa.hpp>
 #include "STFT.h"
 #define KERNEL_PATH "../../../include/kernel.okl"
-
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 TEST(testTemplate, tag1){
     EXPECT_EQ(1 + 32, 33);
 }
@@ -11,29 +13,52 @@ TEST(TestKernel, DCRemover){
     Stft ft = Stft("serial");
     ft.addNewKernel(KERNEL_PATH, "removeDC");
 
+    constexpr unsigned int readFrame = 500;
+    constexpr float overlap = 0.5f;
+    constexpr int radix = 6; // 32
+    constexpr int windowSize = 1 << radix;
+    constexpr int qt = toQuot(readFrame, overlap, windowSize);
+    constexpr unsigned int OFullSize = qt * windowSize;
+    constexpr unsigned int OMove = windowSize * (1.0f - overlap);
 
-    unsigned int data_length = 100;
-    std::vector<float> hostmem(data_length);
-    for(int i = 0; i < data_length; ++i)
+    occa::dtype_t cplx_t;
+    cplx_t.registerType();
+    cplx_t.addField("real", occa::dtype::float_);
+    cplx_t.addField("imag", occa::dtype::float_);
+
+    occa::memory dev_buffer = ft.makeMem(OFullSize, cplx_t);
+    occa::memory qt_buffer = ft.makeMem<float>(qt);
+    std::vector<occacplx> dev_buf(OFullSize);
+    std::vector<occacplx> Master(OFullSize);
+    for(unsigned int i = 0; i < OFullSize; ++i)
     {
-        hostmem[i] = (float)i;
+        dev_buf[i].imag = (float)i;
+        Master[i].imag = (float)i;
     }
     //memory ready
+    std::vector<float> qtbuf(qt);
+    qt_buffer.copyFrom(qtbuf.data());
 
-    occa::memory dev_in = ft.makeMem<float>(data_length);
-    dev_in.copyFrom(hostmem.data());
-    ft.kern["removeDC"](dev_in, data_length);
-    dev_in.copyTo(hostmem.data());
+    dev_buffer.copyFrom(dev_buf.data());
+    ft.kern["removeDC"](dev_buffer, OFullSize, qt_buffer, windowSize);
+    dev_buffer.copyTo(dev_buf.data());
     //test
-    float avg = 0;
-    for(int i = 0; i < data_length; ++i)
+    for(int i =0; i < qt; ++i)
     {
-        avg += i;
+        float sums=0.0f;
+        for(int j=0;j<windowSize;++j)
+        {
+            sums += Master[i * windowSize + j].imag;
+        }
+        sums /= windowSize;
+        for(int j=0;j<windowSize;++j)
+        {
+            Master[i * windowSize + j].imag-=sums;
+        }
     }
-    avg /= (float)data_length;
-    for(int i = 0; i < data_length; ++i)
+    for(unsigned int i=0;i<OFullSize;++i)
     {
-        EXPECT_EQ(hostmem[i], (float)i - avg);
+        EXPECT_EQ(dev_buf[i].imag, Master[i].imag);
     }
 }
 
@@ -260,7 +285,7 @@ TEST(TestKernel, Butterfly)
     ft.addNewKernel(KERNEL_PATH, "Butterfly");
 
     constexpr unsigned int readFrame = 500;
-    constexpr float overlap = 0.7;
+    constexpr float overlap = 0.5;
     constexpr int radix = 6; // 32
     constexpr int windowSize = 1 << radix;
     constexpr int qt = toQuot(readFrame, overlap, windowSize);

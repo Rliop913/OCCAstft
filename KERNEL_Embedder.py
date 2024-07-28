@@ -38,13 +38,13 @@ def get_all_kernels(embed_:str)->str:
             title:str = ""
             clfile=open(exc_path()+"/"+i, "r",encoding="utf-8")
             #read_and_embed(clfile, embed_)
-            embed_=embed_ifndef_open(embed_)
-            embed_, title = read_and_embed(clfile, embed_)
-            embed_=embed_def_close(embed_)
+            # embed_=embed_ifndef_open(embed_)
+            embed_, title = read_and_embed(clfile, embed_, i)
+            # embed_=embed_def_close(embed_)
 
-            embed_=embed_ifdef_open(embed_)
-            embed_ = read_and_set_path(i,embed_,title)
-            embed_ = embed_def_close(embed_)
+            # embed_=embed_ifdef_open(embed_)
+            # embed_ = read_and_set_path(i,embed_,title)
+            # embed_ = embed_def_close(embed_)
 
             clfile.close()
     
@@ -68,7 +68,7 @@ def read_and_set_path(file_path, got_str:str, title)->str:
     return got_str + add_title(title, line)
 
 
-def read_and_embed(file, got_str:str):
+def read_and_embed(file, got_str:str, path):
     main_text:str=""
     title:str = ""
     for i in file.readlines():
@@ -79,8 +79,9 @@ def read_and_embed(file, got_str:str):
         
             pass
         else:
-            if line.find("__kernel")!=-1:
-                title = get_title(line)
+            # if line.find("__kernel")!=-1:
+            #     title = get_title(line)
+            title = path[:-3]
             line="\t\""+line+"\\n\""+"\n"
             main_text+=line
 

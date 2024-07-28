@@ -4,8 +4,7 @@
 #include <string>
 class okl_embed {
     public:
-    #ifndef NO_EMBEDDED_okl
-std::string rnel __attribute__ = 
+    std::string compiled_code = 
 	"#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n"
 	"\n"
 	"typedef struct complex_t {\n"
@@ -288,11 +287,5 @@ std::string rnel __attribute__ =
 	"}\n"
 	"\n"
 	;
-#endif
-#ifdef NO_EMBEDDED_okl
-std::string rnel __attribute__ = 
-	"/compiled_code.cl\n"
-	;
-#endif
 
 };

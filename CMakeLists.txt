@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 project(occaSTFT VERSION 0.1.0 LANGUAGES C CXX)
 # add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
-set(CMAKE_BUILD_TYPE Release)
+# set(CMAKE_BUILD_TYPE Debug)
 find_package(CUDA QUIET)
 find_package(OpenCL)
 find_package(OpenMP)
@@ -43,7 +43,7 @@ set(srcs
 )
 
 set(test_dummy
-    ${CMAKE_SOURCE_DIR}/src/main.cpp    
+    ${CMAKE_SOURCE_DIR}/src/template.cpp    
     ${CMAKE_SOURCE_DIR}/miniaudio.c
 
 )
@@ -51,16 +51,16 @@ set(test_dummy
 set(testSrcs
     ${CMAKE_SOURCE_DIR}/src/tests/tt.cpp)
 
-add_executable(occaSTFT ${srcs} ${test_dummy})
-add_executable(testerOcca ${testSrcs} ${srcs})
-add_test(NAME OccaTest COMMAND testerOcca)
+#add_executable(occaSTFT ${srcs} ${test_dummy})
+#add_executable(testerOcca ${testSrcs} ${srcs})
+#add_test(NAME OccaTest COMMAND testerOcca)
 if(WIN32)
 #find_library(OccaLib occa.lib HINTS ${CMAKE_SOURCE_DIR}/OCCA/lib)
 # target_link_libraries(occaSTFT PUBLIC ${CMAKE_SOURCE_DIR}/OCCA/lib/occa.lib)
 # target_link_libraries(testerOcca PRIVATE gtest_main gtest ${OccaLib})
 else()
-target_link_libraries(occaSTFT PUBLIC OCCA::libocca)
-target_link_libraries(testerOcca PRIVATE gtest_main gtest OCCA::libocca)
+# target_link_libraries(occaSTFT PUBLIC OCCA::libocca)
+# target_link_libraries(testerOcca PRIVATE gtest_main gtest OCCA::libocca)
 endif()
 
 
@@ -68,34 +68,21 @@ endif()
 
 
 if(CUDA_FOUND)
-project(cudaRun VERSION 0.1.0 LANGUAGES C CXX CUDA)
-set(cudasrc
-    ${CMAKE_SOURCE_DIR}/cross_gpgpu/CUDA/src/STFT.cpp
-)
-add_executable(cudaRun ${cudasrc})
-target_include_directories(cudaRun
-    ${CMAKE_SOURCE_DIR}/cross_gpgpu/CUDA/include
-)
-target_link_libraries(cudaRun PRIVATE CUDA::CUDA)
+#add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/CUDA)
 endif()
 
 if(OpenCL_FOUND)
-
-# project(openclRun VERSION 0.1.0 LANGUAGES C CXX)
-set(openclsrc
-    ${CMAKE_SOURCE_DIR}/cross_gpgpu/OpenCL/src/STFT.cpp
-    ${CMAKE_SOURCE_DIR}/cross_gpgpu/OpenCL/CL_Wrapper/src/cl_FACADE.cpp
-    ${CMAKE_SOURCE_DIR}/cross_gpgpu/OpenCL/CL_Wrapper/src/cl_global_custom.cpp
-)
-add_executable(openclRun ${openclsrc})
-target_include_directories(openclRun PRIVATE
-    ${CMAKE_SOURCE_DIR}/cross_gpgpu/OpenCL/CL_Wrapper/include    
-    ${CMAKE_SOURCE_DIR}/cross_gpgpu/OpenCL/include/
-)
-target_link_libraries(openclRun PRIVATE OpenCL::OpenCL)
-
+add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/OpenCL)
 endif()
 
 if(OpenMP_FOUND)
-
+#add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/OpenMP)
 endif()
+
+#add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/Serial)
+
+set(mainsrc 
+    ${CMAKE_SOURCE_DIR}/src/STFTinterface.cpp)
+
+add_executable(STFTMain ${mainsrc})
+

@@ -7,6 +7,18 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 project(occaSTFT VERSION 0.1.0 LANGUAGES C CXX)
 # add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
 # set(CMAKE_BUILD_TYPE Debug)
+
+include(FetchContent)
+
+FetchContent_Declare(
+  ixws
+  GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
+  GIT_TAG v11.4.5
+)
+
+FetchContent_MakeAvailable(ixws)
+# find_package(ixwebsocket REQUIRED)
+find_package(ZLIB REQUIRED)
 find_package(CUDA QUIET)
 find_package(OpenCL)
 find_package(OpenMP)
@@ -24,7 +36,6 @@ find_package(OCCA REQUIRED)
 
 endif()# linux
 
-include(FetchContent)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -36,6 +47,7 @@ include_directories(
     #${CMAKE_SOURCE_DIR}/OCCA/include
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}
+    #${ixws_SOURCE_DIR}
 )
 
 set(srcs
@@ -82,7 +94,12 @@ endif()
 #add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/Serial)
 
 set(mainsrc 
-    ${CMAKE_SOURCE_DIR}/src/STFTinterface.cpp)
-
+    ${CMAKE_SOURCE_DIR}/src/runtimeChecker.cpp
+    ${CMAKE_SOURCE_DIR}/src/webSTFTclient.cpp
+    )
+message(${ixws_BINARY_DIR})
 add_executable(STFTMain ${mainsrc})
-
+target_link_libraries(STFTMain PRIVATE ${ixws_BINARY_DIR}/ixwebsocket.lib)
+target_include_directories(STFTMain PRIVATE ${ixws_SOURCE_DIR}/ixwebsocket)
+target_link_libraries(STFTMain PRIVATE ZLIB::ZLIB)
+target_link_libraries(STFTMain PRIVATE ws2_32)

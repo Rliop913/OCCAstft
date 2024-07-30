@@ -1,32 +1,35 @@
 #include "webSTFTclient.hpp"
 #include <iostream>
 
+ClientSTFT::ClientSTFT(ERR_FUNC errorCallback, const FallbackList& fbList)
+{
+    errorHandler = errorCallback;
+    fallback = fbList;
+    runtimeFallback();
+}
+
+
 
 void
 ClientSTFT::CallbackSet()
 {
-    
-    client.setOnMessageCallback([&](const ix::WebSocketMessagePtr& msg){
+    client.setOnMessageCallback([&](const ix::WebSocketMessagePtr& msg) {
         if(msg->type == ix::WebSocketMessageType::Message)
         {
             if(msg->binary)
             {
-                std::string bin = msg->str;
-                FFTRequest datas(bin);
-            }
-            if(msg->str == "OK")
-            {
-                calculateSuccess.set_value(true);
-            }
-            else
-            {
-                calculateSuccess.set_value(false);
+                FFTRequest datas;
+                datas.Deserialize(msg->str);
+                workingPromises[datas.GetMappedID()].set_value(datas);
             }
         }
         if(msg->type == ix::WebSocketMessageType::Close)
         {
             if(msg->closeInfo.code == 0){
-                safeDestruct.set_value(true);
+                if(serverkilled != nullptr)
+                {
+                    serverkilled->set_value(true);
+                }
             }
             else{
                 runtimeFallback();
@@ -38,47 +41,103 @@ ClientSTFT::CallbackSet()
             runtimeFallback();
         }
     });
-    
 }
 
 
 ClientSTFT::~ClientSTFT()
 {
-    if(client.getReadyState() == ix::ReadyState::Open)
-    {
-        auto okToDestructed = safeDestruct.get_future();
-        client.sendText("EOT_SAFE");
-        auto exit_status = okToDestructed.wait_for(std::chrono::seconds(5));
-        if(exit_status == std::future_status::timeout)
-        {
-            client.close(1);//err closed
-        }
-        else
-        {
-            client.close(0);//safe closed
-        }
-    }
+    client.close(0);
 }
 
 void
 ClientSTFT::runtimeFallback()
 {
-
+    client.close(0);
+    auto next = fallback.getNext();
+    while(true)
+    {
+        if(!next.has_value())
+        {
+            STATUS = "Run Out Fallback";
+            break;
+        }
+        else
+        {
+            if (RuntimeCheck::isAvailable(next.value()))
+            {
+                if(tryConnect(next.value()))
+                {
+                    supportingType = next.value().first;
+                    break; 
+                }
+            }
+            else
+            {
+                next = fallback.getNext();
+            }
+        }
+    }
 }
 
-DATAF
-ClientSTFT::RequestSTFT(DATAF& origin, const int& windowRadix, const float& overlapSize)
+bool
+ClientSTFT::tryConnect(const PATH& path)
 {
+    return true;
+}
+
+FFTRequest
+ClientSTFT::LoadToRequest(const FFTRequest& request)
+{
+    FFTRequest temp;
+    return temp;
+}
+
+MAYBE_FUTURE_DATA
+ClientSTFT::RequestSTFT(FFTRequest& request)
+{
+    if(STATUS != "OK")
+    {
+        return std::nullopt;
+    }
     
+    auto loaded = LoadToRequest(request);
+    PROMISE_DATA pData;
+    workingPromises[loaded.GetMappedID()] = std::move(pData);
+    client.sendBinary(loaded.Serialize());
+    return workingPromises[loaded.GetMappedID()].get_future();
 }
 
 
 
 int main()
 {
-    
-    std::string bina = "321WR0.366445OL0MD0EDMMEM";
-    std::cout<<bina.[bina.find("WR")] << "adsfs" <<std::endl;
+    FFTRequest tempRequest;
+    tempRequest.windowRadix = 120;
+    tempRequest.overlapSize =-0.4324;
+    tempRequest.sharedMemoryInfo = "fdasadsfasdffdsf";
+    std::vector<float> vfloat(100);
+    for(int i=0; i<100;i++){
+        vfloat[i] = i;
+    }
+    tempRequest.data = vfloat;
+    auto result = tempRequest.Serialize();
+    std::cout<<result <<std::endl;
+
+    FFTRequest copiedTemp;
+    copiedTemp.Deserialize(result);
+
+    std::cout <<
+    copiedTemp.windowRadix << "," <<
+    copiedTemp.overlapSize << "," <<
+    copiedTemp.sharedMemoryInfo.value() << "," <<
+    copiedTemp.GetMappedID() <<
+    std::endl;
+    for(auto i : copiedTemp.data.value()){
+        std::cout << i <<std::endl;
+    }
+    // FallbackList flist;
+    // auto test = flist.itr[0];
+
     return 0;
 }
 //     ix::WebSocket webs;

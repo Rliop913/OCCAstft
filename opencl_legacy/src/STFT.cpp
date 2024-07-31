@@ -79,8 +79,8 @@ OPENCL_ACC::cl_STFT(short* full_frame, const ma_uint64& origin_len, const int& w
     cl_uint overlaped_full_frame = fft_quotient * window_len;
     cl_float2* temp_buffer = nullptr;
 
-	Buffer in = clboost::make_r_buf<short>(CT, origin_len, full_frame);
-    Buffer innerTemp = clboost::make_temp_buf<cl_float2>(CT, overlaped_full_frame);
+	Buffer in = clboost::HTDCopy<short>(CT, origin_len, full_frame);
+    Buffer innerTemp = clboost::DMEM<cl_float2>(CT, overlaped_full_frame);
 	Buffer out = clboost::make_w_buf<float>(CT, overlaped_full_frame / 2);
 	
     error_arr era(9);

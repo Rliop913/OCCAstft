@@ -13,13 +13,13 @@ namespace clboost {
 	Program make_prog(const std::string& path,const Context& ct,const Device& dev);
 
 	template <typename T>
-	Buffer make_r_buf(const Context& ct, const int& size, std::vector<T>& vec);
+	Buffer HTDCopy(const Context& ct, const int& size, std::vector<T>& vec);
 	template <typename T>
-	Buffer make_r_buf(const Context& ct, const int& size, T* data);
+	Buffer HTDCopy(const Context& ct, const int& size, T* data);
 	template <typename W>
 	Buffer make_w_buf(const Context& ct, const int& size);
 	template <typename TEMP>
-	Buffer make_temp_buf(const Context& ct, const int& size);
+	Buffer DMEM(const Context& ct, const int& size);
 	Kernel make_kernel(const Program& prog,const std::string& class_name);
 
 	template <typename... Args>
@@ -41,14 +41,14 @@ namespace clboost {
 
 template <typename T>
 Buffer
-clboost::make_r_buf(const Context& ct, const int& size, std::vector<T>& vec)
+clboost::HTDCopy(const Context& ct, const int& size, std::vector<T>& vec)
 {
 	return Buffer(ct, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(T) * size, vec.data());
 }
 
 template <typename T>
 Buffer
-clboost::make_r_buf(const Context& ct, const int& size, T* data)
+clboost::HTDCopy(const Context& ct, const int& size, T* data)
 {
 	return Buffer(ct, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(T) * size, data);
 }
@@ -62,7 +62,7 @@ clboost::make_w_buf(const Context& ct, const int& size)
 
 template<typename TEMP>
 Buffer
-clboost::make_temp_buf(const Context& ct, const int& size)
+clboost::DMEM(const Context& ct, const int& size)
 {
 	return Buffer(ct, CL_MEM_READ_WRITE, sizeof(TEMP)* size);
 }

@@ -2,11 +2,11 @@
 #include <string>
 #include <optional>
 #include <filesystem>
-
+#include <vector>
 #ifdef OS_WINDOWS
 #include <windows.h>
 #else
-
+#include <dlfcn.h>
 
 #endif
 
@@ -28,6 +28,8 @@ using MAYBE_PATH= std::optional<PATH>;
 namespace RuntimeCheck{
     bool isAvailable(const PATH& path);
     
+
+
 };
 
 //Calculation fallback lists.
@@ -101,6 +103,7 @@ FallbackList::VectorITR<SupportedRuntimes::SERVER>(STRVEC& vec, PATH& result)
         }
     }
 }
+
 
 
 // struct ExePath{

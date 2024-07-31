@@ -97,10 +97,17 @@ endif()
 set(mainsrc 
     ${CMAKE_SOURCE_DIR}/src/runtimeChecker.cpp
     ${CMAKE_SOURCE_DIR}/src/webSTFTclient.cpp
+    ${CMAKE_SOURCE_DIR}/src/FFTStruct.cpp
+    
     )
 message(${ixws_BINARY_DIR})
 add_executable(STFTMain ${mainsrc})
+if(WIN32)
 target_link_libraries(STFTMain PRIVATE ${ixws_BINARY_DIR}/ixwebsocket.lib)
+target_link_libraries(STFTMain PRIVATE ws2_32)
+else()
+target_link_libraries(STFTMain PRIVATE ${ixws_BINARY_DIR}/libixwebsocket.a)
+endif()
+
 target_include_directories(STFTMain PRIVATE ${ixws_SOURCE_DIR}/ixwebsocket)
 target_link_libraries(STFTMain PRIVATE ZLIB::ZLIB)
-target_link_libraries(STFTMain PRIVATE ws2_32)

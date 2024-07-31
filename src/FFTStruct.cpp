@@ -251,7 +251,7 @@ FFTRequest::Deserialize(const BIN& binData )
         );
     }
 
-    if (dataSize_ForSharemem == "0") 
+    if (sharememString == "") 
     { 
         sharedMemoryInfo = std::nullopt; 
     } 

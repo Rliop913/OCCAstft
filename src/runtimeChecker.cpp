@@ -1,18 +1,114 @@
 #include "runtimeChecker.hpp"
 
+#ifdef OS_WINDOWS
+
+
+MAYBE_RUNNER
+RuntimeCheck::ExcuteRunner(const std::string& executePath)
+{
+    STARTUPINFO si;
+    RUNNER_INFO ri;
+
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&ri, sizeof(ri));
+
+    bool result = CreateProcess
+    (
+        NULL, NULL, NULL, NULL,
+        FALSE,
+        0,
+        NULL, NULL,
+        &si,
+        &ri
+    );
+
+    if(result)
+    {
+        CloseHandle(ri.hProcess);
+        CloseHandle(ri.hThread);
+        return std::nullopt;
+    }
+
+
+    return std::move(ri);
+}
+
 bool
-RuntimeCheck::isAvailable(const PATH& path)
+RuntimeCheck::KillRunner(MAYBE_RUNNER& runner)
+{
+    
+}
+
+
+#else
+
+
+
+
+#endif
+
+
+
+
+
+bool
+RuntimeCheck::isAvailable(PATH& path)
 {
 #ifdef OS_WINDOWS
-    HMODULE runtime = LoadLibrary("nvcuda.dll");
-    if(!runtime)
+    std::string dllName;
+    fs::path executePath(path.second);
+    switch (path.first)
     {
-        //no cuda
+        case SupportedRuntimes::CUDA:
+            dllName = "nvcuda.dll";
+            executePath.append("cudaRun.exe");
+            break;
+
+        case SupportedRuntimes::OPENCL:
+            dllName = "OpenCL.dll";
+            executePath.append("openclRun.exe");
+            break;
+
+        case SupportedRuntimes::OPENMP:
+            dllName = "SKIP";
+            executePath.append("openmpRun.exe");
+            break;
+
+        case SupportedRuntimes::SERVER:
+            dllName = "SKIP";
+            break;
+
+        case SupportedRuntimes::SERIAL:
+            dllName = "SKIP";
+            executePath.append("serialRun.exe");
+            break;
+        default:
+            return false;
     }
-    else
+    if(dllName != "SKIP")
     {
+        HMODULE runtime = LoadLibrary(dllName.c_str());
+        if(!runtime) 
+        {
+            return false;
+        }
         FreeLibrary(runtime);
     }
+
+    if(path.first != SupportedRuntimes::SERVER)
+    {
+        if(!fs::exists(executePath))
+        {
+            return false;
+        }
+        else
+        {
+            executePath =  fs::relative(executePath);
+            path.second = executePath.string(); //change into executable path
+        }
+    }
+    return true;
 #else
     std::string soName;
     fs::path executePath(path.second);
@@ -65,7 +161,7 @@ RuntimeCheck::isAvailable(const PATH& path)
         else
         {
             std::string command = "\"" + executePath.string() + "\" local";
-            int result = system(command.c_str());//excute runner
+            int result = system(command.c_stfdsafasdfr());//excute runner. should fix in linux.
             if(result != 0)
             {
                 return false;

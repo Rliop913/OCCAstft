@@ -38,7 +38,7 @@ using SHARED_MEMORY     = std::string;
 
 struct ClientSTFT{
 private:
-
+    MAYBE_RUNNER running_process = std::nullopt;
     ix::WebSocket client;
     FallbackList fallback;
     ERR_FUNC errorHandler;
@@ -53,7 +53,7 @@ private:
 public:
     std::unordered_map<std::string, PROMISE_DATA> workingPromises;
     std::string STATUS = "OK";
-    bool tryConnect(const PATH& path);
+    bool tryConnect(PATH& path);
 
     MAYBE_FUTURE_DATA
     RequestSTFT(std::vector<float>& data, const int& windowRadix, const float& overlapRate = 0.5);

@@ -80,7 +80,7 @@ ClientSTFT::runtimeFallback()
 }
 
 bool
-ClientSTFT::tryConnect(const PATH& path)
+ClientSTFT::tryConnect(PATH& path)
 {
     if (RuntimeCheck::isAvailable(path))
     {
@@ -97,7 +97,11 @@ ClientSTFT::tryConnect(const PATH& path)
         }
         else
         {
-
+            running_process = RuntimeCheck::ExcuteRunner(path.second);
+            if (!running_process.has_value())
+            {
+                return false;
+            }
             client.setUrl(
                 "ws://127.0.0.1:" +
                 std::to_string(FIXED_PORT)+
@@ -147,65 +151,40 @@ ClientSTFT::RequestSTFT(std::vector<float>& data, const int& windowRadix, const 
 
 int main()
 {
-    // unsigned long long count = 4412;
-    // std::vector<float> tttt(10);
-    // for(auto& i : tttt)
-    // {
-    //     i = 25;
-    // }
-    // int temp =119;
-    // FFTRequest tempRequte(10, 0.7, count);
-    // tempRequte.MakeSharedMemory(CUDA, tttt.size());
-    // tempRequte.SetData(tttt);
-    // tempRequte.__memPtr = &temp;
-    // BIN binDATA = tempRequte.Serialize();
+    ULL counter = 4132;
+    std::vector<float> testData(10);
+    for(auto& i : testData)
+    {
+        i = 3213;
+    }
+    FFTRequest origin(10, 0.5, counter);
+    origin.MakeSharedMemory(CUDA, testData.size());
+    origin.SetData(testData);
 
-
-    // FFTRequest clonedFFT;
-    // clonedFFT.Deserialize(binDATA);
-    // std::cout<< clonedFFT.windowRadix << ", " <<
-    // clonedFFT.overlapRate << ", " <<
-    // clonedFFT.sharedMemoryInfo.value() << ", " <<
-    // clonedFFT.__FD << ", " <<
-    // *((int*)clonedFFT.__memPtr) << ", " <<
-    // clonedFFT.dataLength << ", " <<
-    // clonedFFT.getID() << ", " <<
-    // std::endl;
-    // std::cout<<binDATA<<std::endl;
-    // auto output = clonedFFT.getData();
-    
-    // for(auto i : output.value())
-    // {
-        
-    //     std::cout<< i <<std::endl;
-    // }
-    // FFTRequest tempRequest;
-    // tempRequest.windowRadix = 120;
-    // tempRequest.overlapRate =-0.4324;
-    // tempRequest.sharedMemoryInfo = "fdasadsfasdffdsf";
-    // std::vector<float> vfloat(100);
-    // for(int i=0; i<100;i++){
-    //     vfloat[i] = i;
-    // }
-    // tempRequest.data = vfloat;
-    // auto result = tempRequest.Serialize();
-    // std::cout<<result <<std::endl;
-
-    // FFTRequest copiedTemp;
-    // copiedTemp.Deserialize(result);
-
-    // std::cout <<
-    // copiedTemp.windowRadix << "," <<
-    // copiedTemp.overlapRate << "," <<
-    // copiedTemp.sharedMemoryInfo.value() << "," <<
-    // copiedTemp.__mappedID <<
-    // std::endl;
-    // for(auto i : copiedTemp.data.value()){
-    //     std::cout << i <<std::endl;
-    // }
-    // // FallbackList flist;
-    // // auto test = flist.itr[0];
-
+    auto bintest = origin.Serialize();
+    std::cout << bintest <<std::endl;
+    // return 0;
+    FFTRequest cloned;
+    cloned.Deserialize(bintest);
+    auto cloneID = cloned.getID();
+    auto cloneOut = cloned.getData();
+    if(cloneID != origin.getID())
+    {
+        std::cout << "ID NOT MATCHED" << std::endl;
+    }
+    if(!cloneOut.has_value())
+    {
+        std::cout << "NO VALUE" << std::endl;
+    }
+    for(int i = 0; i < testData.size();++i)
+    {
+        std::cout << cloneOut.value()[i] << std::endl;
+        if(testData[i] != cloneOut.value()[i])
+        {
+            std::cout << "IDX: "<< i << "NOT MATCHED. cD: " 
+            << cloneOut.value()[i] << "originD: " << testData[i] << std::endl;
+        }
+    }
     return 0;
 }
 //     ix::WebSocket webs;

@@ -4,11 +4,18 @@
 #include <filesystem>
 #include <vector>
 #ifdef OS_WINDOWS
-#include <windows.h>
+#include <Windows.h>
+
+using RUNNER_INFO = PROCESS_INFORMATION;
+
+
 #else
 #include <dlfcn.h>
+using RUNNER_INFO = pid_t
 
 #endif
+
+using MAYBE_RUNNER = std::optional<RUNNER_INFO>;
 
 namespace fs = std::filesystem; 
 
@@ -20,16 +27,17 @@ enum SupportedRuntimes {
     SERIAL
 };
 
-using STRVEC        = std::vector<std::string>;
+using STRVEC    = std::vector<std::string>;
 using PATH      = std::pair<SupportedRuntimes, std::string>;
 using MAYBE_PATH= std::optional<PATH>;
 
 
 namespace RuntimeCheck{
-    bool isAvailable(const PATH& path);
-    
-
-
+    bool isAvailable(PATH& path);
+    [[nodiscard]]
+    MAYBE_RUNNER& ExcuteRunner(const std::string& executePath);
+    bool KillRunner(MAYBE_RUNNER& runner);
+    bool GracefullyTerminate(RUNNER_INFO& runner);
 };
 
 //Calculation fallback lists.

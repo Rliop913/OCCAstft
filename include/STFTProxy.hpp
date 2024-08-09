@@ -36,29 +36,38 @@ using SHARED_MEMORY     = std::string;
 
 
 
-struct ClientSTFT{
+struct STFTProxy{
 private:
-    MAYBE_RUNNER running_process = std::nullopt;
-    ix::WebSocket client;
+    //initialized by outside
     FallbackList fallback;
     ERR_FUNC errorHandler;
-    SupportedRuntimes supportingType;
-    unsigned long long mapCounter;
-    void runtimeFallback();
-    void CallbackSet();
+    ix::WebSocket proxyOBJ;
+
+    //states
+    SupportedRuntimes gpuType;
+    ULL promiseCounter;
+
+    MAYBE_RUNNER runnerHandle = std::nullopt;
+    std::promise<bool>* runnerKilled = nullptr;
+
+    
+    void RuntimeFallback();
+    void SetWebSocketCallback();
     FFTRequest LoadToRequest(std::vector<float>& data, const int& windowRadix, const float& overlapRate);
-    std::promise<bool>* serverkilled = nullptr;
-    void killServer();
+    void Disconnect();
     
 public:
+
     std::unordered_map<std::string, PROMISE_DATA> workingPromises;
     std::string STATUS = "OK";
-    bool tryConnect(PATH& path);
 
+    bool TryConnect(PATH& path);
+    bool KillRunner();
     MAYBE_FUTURE_DATA
-    RequestSTFT(std::vector<float>& data, const int& windowRadix, const float& overlapRate = 0.5);
-
-    ClientSTFT(ERR_FUNC errorCallback, const FallbackList& fbList);
-    ~ClientSTFT();
+    RequestSTFT(std::vector<float>& data, 
+                const int& windowRadix, 
+                const float& overlapRate = 0.5);
+    STFTProxy(ERR_FUNC errorCallback, const FallbackList& fbList);
+    ~STFTProxy();
     
 };

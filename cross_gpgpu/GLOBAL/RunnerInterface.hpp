@@ -1,11 +1,17 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include <IXWebSocket.h>
+#include <IXWebSocketServer.h>
+#include "FFTStruct.hpp"
 #include "miniaudio.h"
 
+#define FIXED_PORT 52437
 #define LOCAL_SIZE 256
+
 using VECF = std::vector<float>;
-using MAYBE = std::optional<std::vector<float>>;
+using MAYBE_DATA = std::optional<VECF>;
+using BIN = std::string;
 
 struct Genv;
 struct Gcodes;
@@ -27,21 +33,27 @@ toQuot(float fullSize, float overlapRatio, float windowSize){
 }
 
 
-struct STFT{
+struct Runner{
 private:
+
     void InitEnv();
     void BuildKernel();
+    
+    
+    void ServerInit();//common impl
+    void ServerConnect();//common impl
 
-
-    Genv *env;
-    Gcodes *kens;
-
-public:
-    STFT();
-    ~STFT();
-    MAYBE
+    MAYBE_DATA
     ActivateSTFT(   VECF& inData,
                     const int& windowRadix, 
                     const float& overlapRatio);
+    FFTRequest Activate(const BIN& bindata);
+    Genv *env = nullptr;
+    Gcodes *kens = nullptr;
+
+public:
+    ix::WebSocketServer *server = nullptr;
+    Runner();//common impl
+    ~Runner();//common impl
 
 };

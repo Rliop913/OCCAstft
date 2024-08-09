@@ -2,7 +2,7 @@
 
 
 #include <CL/opencl.hpp>
-#include "STFT.hpp"
+#include "RunnerInterface.hpp"
 #include "CL_Wrapper.h"
 #include "cl_global_custom.h"
 #include "okl_embedded.h"
@@ -24,7 +24,7 @@ struct Gcodes{
 };
 
 void
-STFT::InitEnv()
+Runner::InitEnv()
 {
     env = new Genv;
     env->PF = clboost::get_platform();
@@ -35,7 +35,7 @@ STFT::InitEnv()
 
 
 void
-STFT::BuildKernel()
+Runner::BuildKernel()
 {
     kens = new Gcodes;
     okl_embed clCodes;
@@ -61,8 +61,8 @@ STFT::BuildKernel()
 
 }
 
-MAYBE
-STFT::ActivateSTFT( VECF& inData, 
+MAYBE_DATA
+Runner::ActivateSTFT( VECF& inData, 
                     const int& windowRadix, 
                     const float& overlapRatio)
 {
@@ -139,48 +139,34 @@ STFT::ActivateSTFT( VECF& inData,
 
 
 
-STFT::STFT()
-{
-    InitEnv();
-    BuildKernel();
-}
+// #include <iostream>
+// int
+// main()
+// {
+//     STFT temp = STFT();
+//     ma_decoder_config decconf = ma_decoder_config_init(ma_format_f32, 1, 48000);
+//     ma_decoder dec;
 
-
-STFT::~STFT()
-{
-    delete env;
-    delete kens;
-}
-
-
-#include <iostream>
-int
-main()
-{
-    STFT temp = STFT();
-    ma_decoder_config decconf = ma_decoder_config_init(ma_format_f32, 1, 48000);
-    ma_decoder dec;
-
-    int res = ma_decoder_init_file("../../../candy.wav", &decconf, &dec);
-    constexpr int readFrame = 1024*1000;
-    std::vector<float> hostBuffer(readFrame);
-    ma_decoder_seek_to_pcm_frame(&dec, 48000*20);
-    ma_decoder_read_pcm_frames(&dec, hostBuffer.data(), readFrame, NULL);
-    int windowRadix = 10;
-    float overlapRatio = 0.5f;
-    auto out = temp.ActivateSTFT(hostBuffer, windowRadix, overlapRatio);
-    if(out.has_value()){
-        const int windowSize = 1 << windowRadix;
-        auto tout = out.value();
-        for(int i=0;i<10;++i)//csv out
-        {
-            for(int j=0;j<windowSize/2;++j)
-            {
-                float data=tout.at(i*windowSize/2+j); 
-                std::cout<<data<<",";
-            }
-            std::cout<<std::endl;
-        }
-    }
-    return 0;
-}
+//     int res = ma_decoder_init_file("../../../candy.wav", &decconf, &dec);
+//     constexpr int readFrame = 1024*1000;
+//     std::vector<float> hostBuffer(readFrame);
+//     ma_decoder_seek_to_pcm_frame(&dec, 48000*20);
+//     ma_decoder_read_pcm_frames(&dec, hostBuffer.data(), readFrame, NULL);
+//     int windowRadix = 10;
+//     float overlapRatio = 0.5f;
+//     auto out = temp.ActivateSTFT(hostBuffer, windowRadix, overlapRatio);
+//     if(out.has_value()){
+//         const int windowSize = 1 << windowRadix;
+//         auto tout = out.value();
+//         for(int i=0;i<10;++i)//csv out
+//         {
+//             for(int j=0;j<windowSize/2;++j)
+//             {
+//                 float data=tout.at(i*windowSize/2+j); 
+//                 std::cout<<data<<",";
+//             }
+//             std::cout<<std::endl;
+//         }
+//     }
+//     return 0;
+// }

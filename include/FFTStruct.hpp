@@ -66,7 +66,7 @@ public:
     {
         __mappedID = std::to_string(counter++);
     };
-    BIN Serialize();
+    BIN Serialize();//will add capnproto
     void Deserialize(const BIN& binData);
     void MakeSharedMemory(const SupportedRuntimes& Type, CULL& dataSize);
     void SetData(std::vector<float>& data);

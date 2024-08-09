@@ -3,7 +3,7 @@
 #ifdef OS_WINDOWS
 
 
-MAYBE_RUNNER
+MAYBE_RUNNER&
 RuntimeCheck::ExcuteRunner(const std::string& executePath)
 {
     STARTUPINFO si;
@@ -34,11 +34,6 @@ RuntimeCheck::ExcuteRunner(const std::string& executePath)
     return std::move(ri);
 }
 
-bool
-RuntimeCheck::KillRunner(MAYBE_RUNNER& runner)
-{
-    
-}
 
 
 #else
@@ -160,12 +155,8 @@ RuntimeCheck::isAvailable(PATH& path)
         }
         else
         {
-            std::string command = "\"" + executePath.string() + "\" local";
-            int result = system(command.c_stfdsafasdfr());//excute runner. should fix in linux.
-            if(result != 0)
-            {
-                return false;
-            }
+            executePath =  fs::relative(executePath);
+            path.second = executePath.string(); //change into executable path
         }
     }
     return true;

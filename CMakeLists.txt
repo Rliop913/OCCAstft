@@ -115,7 +115,7 @@ endif()
 
 set(mainsrc 
     ${CMAKE_SOURCE_DIR}/src/runtimeChecker.cpp
-    ${CMAKE_SOURCE_DIR}/src/webSTFTclient.cpp
+    ${CMAKE_SOURCE_DIR}/src/STFTProxy.cpp
     ${CMAKE_SOURCE_DIR}/src/FFTStruct.cpp
     
     )
@@ -129,9 +129,9 @@ add_executable(TEST_STFT ${mainsrc})
 
 
 
+if(WIN32)
 target_link_libraries(STFTMain PRIVATE ws2_32)
 target_link_libraries(TEST_STFT PRIVATE ws2_32)
-if(WIN32)
     if(MSVC)
         target_link_libraries(STFTMain PRIVATE 
             $<$<CONFIG:Release>:${ixws_BINARY_DIR}/Release/ixwebsocket.lib>

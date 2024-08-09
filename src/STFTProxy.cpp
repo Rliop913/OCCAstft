@@ -1,19 +1,19 @@
-#include "webSTFTclient.hpp"
+#include "STFTProxy.hpp"
 #include <iostream>
 
-ClientSTFT::ClientSTFT(ERR_FUNC errorCallback, const FallbackList& fbList)
+STFTProxy::STFTProxy(ERR_FUNC errorCallback, const FallbackList& fbList)
 {
     errorHandler = errorCallback;
     fallback = fbList;
-    runtimeFallback();
+    RuntimeFallback();
 }
 
 
 
 void
-ClientSTFT::CallbackSet()
+STFTProxy::SetWebSocketCallback()
 {
-    client.setOnMessageCallback([&](const ix::WebSocketMessagePtr& msg) {
+    proxyOBJ.setOnMessageCallback([&](const ix::WebSocketMessagePtr& msg) {
         if(msg->type == ix::WebSocketMessageType::Message)
         {
             if(msg->binary)
@@ -26,33 +26,33 @@ ClientSTFT::CallbackSet()
         if(msg->type == ix::WebSocketMessageType::Close)
         {
             if(msg->closeInfo.code == 0){
-                if(serverkilled != nullptr)
+                if(runnerKilled != nullptr)
                 {
-                    serverkilled->set_value(true);
+                    runnerKilled->set_value(true);
                 }
             }
             else{
-                runtimeFallback();
+                RuntimeFallback();
             }
         }
         if(msg->type == ix::WebSocketMessageType::Error)
         {
             errorHandler(msg->errorInfo);
-            runtimeFallback();
+            RuntimeFallback();
         }
     });
 }
 
 
-ClientSTFT::~ClientSTFT()
+STFTProxy::~STFTProxy()
 {
-    client.close(0);
+    proxyOBJ.close(0);
 }
 
 void
-ClientSTFT::runtimeFallback()
+STFTProxy::RuntimeFallback()
 {
-    client.close(0);
+    proxyOBJ.close(0);
     auto next = fallback.getNext();
     while(true)
     {
@@ -65,9 +65,9 @@ ClientSTFT::runtimeFallback()
         {
             if (RuntimeCheck::isAvailable(next.value()))
             {
-                if(tryConnect(next.value()))
+                if(TryConnect(next.value()))
                 {
-                    supportingType = next.value().first;
+                    gpuType = next.value().first;
                     break; 
                 }
             }
@@ -80,14 +80,14 @@ ClientSTFT::runtimeFallback()
 }
 
 bool
-ClientSTFT::tryConnect(PATH& path)
+STFTProxy::TryConnect(PATH& path)
 {
     if (RuntimeCheck::isAvailable(path))
     {
         if(path.first == SupportedRuntimes::SERVER)
         {
             
-            client.setUrl(
+            proxyOBJ.setUrl(
                 "ws://" +
                 path.second +
                 ":" + 
@@ -97,18 +97,18 @@ ClientSTFT::tryConnect(PATH& path)
         }
         else
         {
-            running_process = RuntimeCheck::ExcuteRunner(path.second);
-            if (!running_process.has_value())
+            runnerHandle = RuntimeCheck::ExcuteRunner(path.second);
+            if (!runnerHandle.has_value())
             {
                 return false;
             }
-            client.setUrl(
+            proxyOBJ.setUrl(
                 "ws://127.0.0.1:" +
                 std::to_string(FIXED_PORT)+
                 "/localSTFT"
             );
         }
-        auto res = client.connect(5);
+        auto res = proxyOBJ.connect(5);
         if(!res.success)
         {
             return false;
@@ -122,16 +122,16 @@ ClientSTFT::tryConnect(PATH& path)
 }
 
 FFTRequest
-ClientSTFT::LoadToRequest(std::vector<float>& data, const int& windowRadix, const float& overlapRate)
+STFTProxy::LoadToRequest(std::vector<float>& data, const int& windowRadix, const float& overlapRate)
 {
-    FFTRequest request(windowRadix, overlapRate, mapCounter);
-    request.MakeSharedMemory(supportingType, data.size());
+    FFTRequest request(windowRadix, overlapRate, promiseCounter);
+    request.MakeSharedMemory(gpuType, data.size());
     request.SetData(data);
     return request;
 }
 
 MAYBE_FUTURE_DATA
-ClientSTFT::RequestSTFT(std::vector<float>& data, const int& windowRadix, const float& overlapRate)
+STFTProxy::RequestSTFT(std::vector<float>& data, const int& windowRadix, const float& overlapRate)
 {
     if(STATUS != "OK")
     {
@@ -143,7 +143,7 @@ ClientSTFT::RequestSTFT(std::vector<float>& data, const int& windowRadix, const 
 
     PROMISE_DATA pData;
     workingPromises[loaded.getID()] = std::move(pData);
-    client.sendBinary(loaded.Serialize());
+    proxyOBJ.sendBinary(loaded.Serialize());
     return workingPromises[loaded.getID()].get_future();
 }
 

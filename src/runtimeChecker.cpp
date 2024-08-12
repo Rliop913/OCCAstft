@@ -37,8 +37,19 @@ RuntimeCheck::ExcuteRunner(const std::string& executePath)
 
 
 #else
-
-
+extern char **environ;
+bool
+RuntimeCheck::ExcuteRunner(const std::string& executePath, const int& portNum)
+{
+    pid_t pid;
+    std::string ptnum = std::to_string(portNum);
+    char *argv[] = {(char*)executePath.c_str(), (char*)ptnum.c_str(), NULL};
+    if (posix_spawn(&pid, executePath.c_str(), NULL, NULL, argv, environ) != 0)
+    {
+        return false;
+    }
+    return true;
+}
 
 
 #endif

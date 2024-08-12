@@ -10,6 +10,7 @@
     using RUNNER_INFO = PROCESS_INFORMATION;
 #else
     #include <dlfcn.h>
+    #include <spawn.h>
     using RUNNER_INFO = pid_t;
 #endif
 
@@ -40,8 +41,7 @@ using MAYBE_PATH= std::optional<PATH>;
 
 namespace RuntimeCheck{
     bool isAvailable(PATH& path);
-    [[nodiscard]]
-    MAYBE_RUNNER& ExcuteRunner(const std::string& executePath);
+    bool ExcuteRunner(const std::string& executePath, const int& portNum);
 };
 
 //Calculation fallback lists.

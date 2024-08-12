@@ -7,11 +7,11 @@
 #include <vector>
 #include <unordered_map>
 #include <filesystem>
-
+#include <random>
 #include "runtimeChecker.hpp"
 #include "FFTStruct.hpp"
 #include <IXWebSocket.h>
-
+#include <IXWebSocketServer.h>
 #ifdef OS_WINDOWS
 #include <windows.h>
 #else
@@ -21,7 +21,6 @@
 
 
 
-#define FIXED_PORT 52437
 
 // using COSTR             = const std::string;
 // using DATAF             = std::vector<float>;
@@ -42,15 +41,14 @@ private:
     FallbackList fallback;
     ERR_FUNC errorHandler;
     ix::WebSocket proxyOBJ;
-
+    int portNumber = -1;
     //states
     SupportedRuntimes gpuType;
     ULL promiseCounter;
 
-    MAYBE_RUNNER runnerHandle = std::nullopt;
     std::promise<bool>* runnerKilled = nullptr;
 
-    
+    int GeneratePortNumber();
     void RuntimeFallback();
     void SetWebSocketCallback();
     FFTRequest LoadToRequest(std::vector<float>& data, const int& windowRadix, const float& overlapRate);

@@ -1,12 +1,13 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include <iostream>
+
 #include <IXWebSocket.h>
 #include <IXWebSocketServer.h>
 #include "FFTStruct.hpp"
 #include "miniaudio.h"
 
-#define FIXED_PORT 52437
 #define LOCAL_SIZE 256
 
 using VECF = std::vector<float>;
@@ -40,20 +41,19 @@ private:
     void BuildKernel();
     
     
-    void ServerInit();//common impl
+    bool ServerInit(const int& pNum);//common impl
     void ServerConnect();//common impl
-
+    MAYBE_DATA AccessData(FFTRequest& req);
+    Genv *env = nullptr;
+    Gcodes *kens = nullptr;
+    MAYBE_SHOBJ dataInfo = std::nullopt;
+public:
     MAYBE_DATA
     ActivateSTFT(   VECF& inData,
                     const int& windowRadix, 
                     const float& overlapRatio);
-    FFTRequest Activate(const BIN& bindata);
-    Genv *env = nullptr;
-    Gcodes *kens = nullptr;
-
-public:
     ix::WebSocketServer *server = nullptr;
-    Runner();//common impl
+    Runner(const int& portNumber);//common impl
     ~Runner();//common impl
 
 };

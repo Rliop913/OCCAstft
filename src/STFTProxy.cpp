@@ -5,9 +5,27 @@ STFTProxy::STFTProxy(ERR_FUNC errorCallback, const FallbackList& fbList)
 {
     errorHandler = errorCallback;
     fallback = fbList;
+    portNumber = GeneratePortNumber();
     RuntimeFallback();
 }
 
+int
+STFTProxy::GeneratePortNumber()
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(49152, 65535);
+    int port;
+    std::pair<bool, std::string> result;
+    while(!result.first)
+    {
+        port = dis(gen);
+        ix::WebSocketServer tempServer(port);
+        result = tempServer.listen();
+        tempServer.stop();
+    }
+    return port;
+}
 
 
 void
@@ -90,22 +108,19 @@ STFTProxy::TryConnect(PATH& path)
             proxyOBJ.setUrl(
                 "ws://" +
                 path.second +
-                ":" + 
-                std::to_string(FIXED_PORT) +
-                "/webSTFT"
+                "/STFTRunner"
             );
         }
         else
         {
-            runnerHandle = RuntimeCheck::ExcuteRunner(path.second);
-            if (!runnerHandle.has_value())
+            if (RuntimeCheck::ExcuteRunner(path.second, portNumber))
             {
                 return false;
             }
             proxyOBJ.setUrl(
                 "ws://127.0.0.1:" +
-                std::to_string(FIXED_PORT)+
-                "/localSTFT"
+                std::to_string(portNumber)+
+                "/STFTRunner"
             );
         }
         auto res = proxyOBJ.connect(5);
@@ -167,7 +182,7 @@ int main()
     FFTRequest cloned;
     cloned.Deserialize(bintest);
     auto cloneID = cloned.getID();
-    auto cloneOut = cloned.getData();
+    auto cloneOut = cloned.FreeAndGetData();
     if(cloneID != origin.getID())
     {
         std::cout << "ID NOT MATCHED" << std::endl;

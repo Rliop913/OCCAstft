@@ -52,15 +52,20 @@ FFTRequest::MakeSharedMemory(const SupportedRuntimes& Type, const unsigned long 
 }
 
 
+ULL
+FFTRequest::adjustToPage()
+{
+    return sysconf(dataLength * sizeof(float));
+}
 
 MAYBE_DATA
-FFTRequest::getData()
+FFTRequest::FreeAndGetData()
 {
     if(sharedMemoryInfo.has_value())
     {
         std::vector<float> result(dataLength);
         memcpy(result.data(), __memPtr, dataLength * sizeof(float));
-        unsigned long long pageSize = sysconf(dataLength * sizeof(float));
+        ULL pageSize = adjustToPage();
         int freemap = munmap(__memPtr, pageSize);
         int freefd  = close(__POSIX_FileDes);
         int freelink= shm_unlink(sharedMemoryInfo.value().c_str());
@@ -75,6 +80,74 @@ FFTRequest::getData()
         return std::nullopt;
     }
 }
+
+MAYBE_SHOBJ
+FFTRequest::GetSHMPtr()
+{
+    SHMOBJ sharedObj;
+    if(!sharedMemoryInfo.has_value())
+    {
+        return std::nullopt;
+    }
+    sharedObj.second = shm_open(sharedMemoryInfo.value().c_str(), O_RDWR, 0666);
+    if(sharedObj.second == -1)
+    {
+        return std::nullopt;
+    }
+    auto pagedSize = adjustToPage();
+    sharedObj.first = mmap( 0, 
+                            pagedSize, 
+                            PROT_READ | PROT_WRITE, 
+                            MAP_SHARED, 
+                            sharedObj.second, 
+                            0);
+    if(sharedObj.first == MAP_FAILED)
+    {
+        close(sharedObj.second);
+        return std::nullopt;
+    }
+    return sharedObj;
+}
+
+void
+FFTRequest::FreeSHMPtr(SHMOBJ& shobj)
+{
+    munmap(shobj.first, adjustToPage());
+    close(shobj.second);
+}
+
+
+MAYBE_DATA
+FFTRequest::GetData()
+{
+    if(sharedMemoryInfo.has_value())
+    {
+        std::vector<float> result(dataLength);
+        memcpy(result.data(), __memPtr, dataLength * sizeof(float));
+        return std::move(result);
+    }
+    else if(data.has_value())
+    {
+        return std::move(data);
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+void
+FFTRequest::FreeData()
+{
+    if(sharedMemoryInfo.has_value())
+    {
+        ULL pageSize = adjustToPage();
+        int freemap = munmap(__memPtr, pageSize);
+        int freefd  = close(__POSIX_FileDes);
+        int freelink= shm_unlink(sharedMemoryInfo.value().c_str());
+    }
+}
+
 
 #endif
 #ifdef OS_WINDOWS
@@ -187,8 +260,22 @@ FFTRequest::SetData(std::vector<float>& requestedData)
 }
 
 
+void
+FFTRequest::BreakIntegrity()
+{
+    sharedMemoryInfo = std::nullopt;
+    data = std::nullopt;
+}
 
-
+bool
+FFTRequest::CheckIntegrity()
+{
+    if(!sharedMemoryInfo.has_value() && !data.has_value())
+    {
+        return false;
+    }
+    return true;
+}
 
 
 BIN

@@ -17,8 +17,10 @@
 #include "runtimeChecker.hpp"
 
 using BIN           = std::string;
+using SHMOBJ        = std::pair<void*, int>;
 using MAYBE_DATA    = std::optional<std::vector<float>>;
 using MAYBE_MEMORY  = std::optional<std::string>;
+using MAYBE_SHOBJ   = std::optional<SHMOBJ>;
 using CULL          = const unsigned long long;
 using ULL           = unsigned long long;
 static const 
@@ -45,13 +47,8 @@ std::string backTags[6] =
 
 struct FFTRequest{
 private:
-    int windowRadix                 = 10;
-    float overlapRate               = 0.0f;
-    ULL dataLength   = -1;
-
-    MAYBE_DATA data                 = std::nullopt;
     MAYBE_MEMORY sharedMemoryInfo   = std::nullopt;
-
+    MAYBE_DATA data                 = std::nullopt;
     std::string __mappedID;
     void* __memPtr = nullptr;
     
@@ -60,6 +57,10 @@ private:
 
     ULL adjustToPage();
 public:
+    int windowRadix                 = 10;
+    float overlapRate               = 0.0f;
+    ULL dataLength   = -1;
+    
     FFTRequest(){}
     FFTRequest(const int& WR, const float& OLR, ULL& counter)
     : windowRadix(WR), overlapRate(OLR)
@@ -69,7 +70,20 @@ public:
     BIN Serialize();//will add capnproto
     void Deserialize(const BIN& binData);
     void MakeSharedMemory(const SupportedRuntimes& Type, CULL& dataSize);
+    MAYBE_MEMORY GetSharedMemPath(){return sharedMemoryInfo;}
+
+    //Integrity check from received object
+    void BreakIntegrity();
+    bool CheckIntegrity();
     void SetData(std::vector<float>& data);
-    MAYBE_DATA getData();
+    [[nodiscard]]
+    MAYBE_DATA FreeAndGetData();
+    [[nodiscard]]
+    MAYBE_DATA GetData();
+
+    MAYBE_SHOBJ GetSHMPtr();
+    void FreeSHMPtr(SHMOBJ& shobj);
+    //completely unlink
+    void FreeData();
     std::string getID(){return __mappedID;}
 };

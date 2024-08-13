@@ -3,9 +3,13 @@
 
 STFTProxy::STFTProxy(ERR_FUNC errorCallback, const FallbackList& fbList)
 {
+    ix::initNetSystem();
     errorHandler = errorCallback;
     fallback = fbList;
     portNumber = GeneratePortNumber();
+    proxyOBJ.setPingInterval(45);
+    proxyOBJ.enableAutomaticReconnection();
+    SetWebSocketCallback();
     RuntimeFallback();
 }
 
@@ -40,14 +44,21 @@ STFTProxy::SetWebSocketCallback()
                 datas.Deserialize(msg->str);
                 workingPromises[datas.getID()].set_value(datas);
             }
+            else
+            {
+                if(msg->str == "CLOSE_COMPLETE")
+                {
+                    if(runnerkilled.has_value())
+                    {
+                        runnerkilled.value().set_value(true);
+                    }
+                }
+            }
         }
         if(msg->type == ix::WebSocketMessageType::Close)
         {
-            if(msg->closeInfo.code == 0){
-                if(runnerKilled != nullptr)
-                {
-                    runnerKilled->set_value(true);
-                }
+            if(msg->closeInfo.code == 1000){//safe closed
+                proxyOBJ.close(0);
             }
             else{
                 RuntimeFallback();
@@ -64,7 +75,7 @@ STFTProxy::SetWebSocketCallback()
 
 STFTProxy::~STFTProxy()
 {
-    proxyOBJ.close(0);
+    ix::uninitNetSystem();
 }
 
 void
@@ -81,13 +92,11 @@ STFTProxy::RuntimeFallback()
         }
         else
         {
-            if (RuntimeCheck::isAvailable(next.value()))
+
+            if(TryConnect(next.value()))
             {
-                if(TryConnect(next.value()))
-                {
-                    gpuType = next.value().first;
-                    break; 
-                }
+                gpuType = next.value().first;
+                break; 
             }
             else
             {
@@ -107,32 +116,62 @@ STFTProxy::TryConnect(PATH& path)
             
             proxyOBJ.setUrl(
                 "ws://" +
-                path.second +
-                "/STFTRunner"
+                path.second 
             );
         }
         else
         {
-            if (RuntimeCheck::ExcuteRunner(path.second, portNumber))
+            if (!RuntimeCheck::ExcuteRunner(path.second, portNumber))
             {
                 return false;
             }
             proxyOBJ.setUrl(
-                "ws://127.0.0.1:" +
-                std::to_string(portNumber)+
-                "/STFTRunner"
+                "ws://localhost:" +
+                std::to_string(portNumber)
             );
+            runnerkilled = std::promise<bool>();
         }
-        auto res = proxyOBJ.connect(5);
+        ix::WebSocketInitResult res;
+        for(int i=0; i<5; ++i)
+        {
+            res = proxyOBJ.connect(1);
+            if(res.success)
+            {
+                break;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
         if(!res.success)
         {
             return false;
         }
+        proxyOBJ.start();
         return true;
     }
     else
     {
         return false;
+    }
+}
+
+bool 
+STFTProxy::KillRunner()
+{
+    if(runnerkilled.has_value())
+    {
+        proxyOBJ.sendText("CLOSE_REQUEST");
+        auto waitkill = runnerkilled.value().get_future();
+        auto retStatus = waitkill.wait_for(std::chrono::seconds(5));
+        if(retStatus == std::future_status::timeout)
+        {
+            runnerkilled = std::nullopt;
+            return false;
+        }
+        else
+        {
+            runnerkilled = std::nullopt;
+            return true;
+        }
     }
 }
 
@@ -166,40 +205,60 @@ STFTProxy::RequestSTFT(std::vector<float>& data, const int& windowRadix, const f
 
 int main()
 {
-    ULL counter = 4132;
-    std::vector<float> testData(10);
-    for(auto& i : testData)
+    FallbackList list;
+    list.SerialFallback.push_back("./cross_gpgpu/Serial");
+    auto temp = STFTProxy([](const ix::WebSocketErrorInfo& err)
     {
-        i = 3213;
-    }
-    FFTRequest origin(10, 0.5, counter);
-    origin.MakeSharedMemory(CUDA, testData.size());
-    origin.SetData(testData);
+        std::cout<<err.reason<<std::endl;
+        return;
+    },list);
+    std::cout<<temp.STATUS<<std::endl;
+    //temp.proxyOBJ.send("CLOSE_REQUEST");
+    
 
-    auto bintest = origin.Serialize();
-    std::cout << bintest <<std::endl;
-    // return 0;
-    FFTRequest cloned;
-    cloned.Deserialize(bintest);
-    auto cloneID = cloned.getID();
-    auto cloneOut = cloned.FreeAndGetData();
-    if(cloneID != origin.getID())
+    getchar();
+    if(temp.KillRunner())
     {
-        std::cout << "ID NOT MATCHED" << std::endl;
+        std::cout <<"safe closed" << std::endl;
     }
-    if(!cloneOut.has_value())
+    else
     {
-        std::cout << "NO VALUE" << std::endl;
+        std::cerr<<"not closed" <<std::endl;
     }
-    for(int i = 0; i < testData.size();++i)
-    {
-        std::cout << cloneOut.value()[i] << std::endl;
-        if(testData[i] != cloneOut.value()[i])
-        {
-            std::cout << "IDX: "<< i << "NOT MATCHED. cD: " 
-            << cloneOut.value()[i] << "originD: " << testData[i] << std::endl;
-        }
-    }
+    // ULL counter = 4132;
+    // std::vector<float> testData(10);
+    // for(auto& i : testData)
+    // {
+    //     i = 3213;
+    // }
+    // FFTRequest origin(10, 0.5, counter);
+    // origin.MakeSharedMemory(CUDA, testData.size());
+    // origin.SetData(testData);
+
+    // auto bintest = origin.Serialize();
+    // std::cout << bintest <<std::endl;
+    // // return 0;
+    // FFTRequest cloned;
+    // cloned.Deserialize(bintest);
+    // auto cloneID = cloned.getID();
+    // auto cloneOut = cloned.FreeAndGetData();
+    // if(cloneID != origin.getID())
+    // {
+    //     std::cout << "ID NOT MATCHED" << std::endl;
+    // }
+    // if(!cloneOut.has_value())
+    // {
+    //     std::cout << "NO VALUE" << std::endl;
+    // }
+    // for(int i = 0; i < testData.size();++i)
+    // {
+    //     std::cout << cloneOut.value()[i] << std::endl;
+    //     if(testData[i] != cloneOut.value()[i])
+    //     {
+    //         std::cout << "IDX: "<< i << "NOT MATCHED. cD: " 
+    //         << cloneOut.value()[i] << "originD: " << testData[i] << std::endl;
+    //     }
+    // }
     return 0;
 }
 //     ix::WebSocket webs;

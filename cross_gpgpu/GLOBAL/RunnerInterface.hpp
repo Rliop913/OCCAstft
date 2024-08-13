@@ -2,6 +2,7 @@
 #include <string>
 #include <optional>
 #include <iostream>
+#include <thread>
 
 #include <IXWebSocket.h>
 #include <IXWebSocketServer.h>
@@ -43,11 +44,12 @@ private:
     
     bool ServerInit(const int& pNum);//common impl
     void ServerConnect();//common impl
-    MAYBE_DATA AccessData(FFTRequest& req);
+    MAYBE_DATA AccessData(FFTRequest& req);//common impl
     Genv *env = nullptr;
     Gcodes *kens = nullptr;
     MAYBE_SHOBJ dataInfo = std::nullopt;
 public:
+    [[nodiscard]]
     MAYBE_DATA
     ActivateSTFT(   VECF& inData,
                     const int& windowRadix, 

@@ -7,7 +7,10 @@ Runner::Runner(const int& portNumber)
 {
     InitEnv();
     BuildKernel();
-    ServerInit(portNumber);
+    if(!ServerInit(portNumber))
+    {
+        std::cerr<<"ERR on server init"<<std::endl;
+    }
 }
 
 
@@ -23,6 +26,7 @@ Runner::~Runner()
     }
     if(server != nullptr)
     {
+        server->stop();
         delete server;
     }
 }
@@ -61,13 +65,17 @@ Runner::ServerInit(const int& pNum)
     {
         delete server;
     }
-    server = new ix::WebSocketServer(pNum);//need to add random
+    server = new ix::WebSocketServer(pNum, "0.0.0.0");//need to add random
 
     server->setOnClientMessageCallback([&](
             std::shared_ptr<ix::ConnectionState> connectionState,
             ix::WebSocket &webSocket,
             const ix::WebSocketMessagePtr& msg)
             {
+                if(msg->type == ix::WebSocketMessageType::Open)
+                {
+                    std::cout<<"Open Transmission"<<std::endl;
+                }
                 if(msg->type == ix::WebSocketMessageType::Message)
                 {
                     if(msg->binary)
@@ -107,6 +115,17 @@ Runner::ServerInit(const int& pNum)
                         
                         webSocket.sendBinary(received.Serialize());
                     }
+                    else
+                    {
+                        if(msg->str == "CLOSE_REQUEST")
+                        {
+                            webSocket.sendText("CLOSE_COMPLETE");
+                            std::thread([&]() {
+                            server->stop();
+                            }).detach();
+                            
+                        }
+                    }
                 }
             }
         );
@@ -115,6 +134,7 @@ Runner::ServerInit(const int& pNum)
     {
         return false;
     }
+    server->start();
     return true;
 }
 
@@ -133,8 +153,11 @@ int main(int argc, char *argv[])
             return 1;
         }
     }
+    std::cout<<"runner started" << portNumber <<std::endl;
+    ix::initNetSystem();
     Runner mainOBJ = Runner(portNumber);
-    mainOBJ.server->start();
     mainOBJ.server->wait();
+    std::cout<<"end Runner"<<std::endl;
+    ix::uninitNetSystem();
     return 0;
 }

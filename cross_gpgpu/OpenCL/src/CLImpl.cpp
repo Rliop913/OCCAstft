@@ -62,9 +62,9 @@ Runner::BuildKernel()
 }
 
 MAYBE_DATA
-Runner::ActivateSTFT( VECF& inData, 
-                    const int& windowRadix, 
-                    const float& overlapRatio)
+Runner::ActivateSTFT(   VECF& inData, 
+                        const int& windowRadix, 
+                        const float& overlapRatio)
 {
     const unsigned int FullSize = inData.size();
     const int windowSize = 1 << windowRadix;
@@ -131,7 +131,7 @@ Runner::ActivateSTFT( VECF& inData,
         }
     }
 
-    return outData;
+    return std::move(outData);
 }
 
 

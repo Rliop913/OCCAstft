@@ -46,8 +46,6 @@ private:
     SupportedRuntimes gpuType;
     ULL promiseCounter;
 
-    std::promise<bool>* runnerKilled = nullptr;
-
     int GeneratePortNumber();
     void RuntimeFallback();
     void SetWebSocketCallback();
@@ -55,6 +53,7 @@ private:
     void Disconnect();
     
 public:
+    std::optional<std::promise<bool>> runnerkilled = std::nullopt;
 
     std::unordered_map<std::string, PROMISE_DATA> workingPromises;
     std::string STATUS = "OK";

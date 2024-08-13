@@ -1,6 +1,5 @@
-#ifdef SERIAL_MODE
-#include <math.h>
-#include <stdio.h>
+#ifdef __SERIAL
+#include <cmath>
 #endif
 
 typedef struct complex_t{
@@ -93,9 +92,9 @@ cmod(complex a){
 }
 
 @kernel void removeDC(  complex* buffer,
-                        unsigned int OFullSize,
+                        const unsigned int OFullSize,
                         float* qt_buffer,
-                        int windowSize)
+                        const int windowSize)
 {
     for(unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256; @outer)
     {
@@ -120,10 +119,10 @@ cmod(complex a){
 
 @kernel void overlap_N_window(  float* in,
                                 complex* buffer,
-                                unsigned int fullSize,
+                                const unsigned int fullSize,
                                 const unsigned int OFullSize,
                                 const int windowSize,
-                                unsigned int OMove)
+                                const unsigned int OMove)
 {
     for(unsigned int w_num=0; w_num < OFullSize; w_num += 256; @outer)
     {
@@ -142,8 +141,8 @@ cmod(complex a){
 
 @kernel void bitReverse(complex* buffer,
                         const unsigned int OFullSize,
-                        int windowSize,
-                        int radixData)
+                        const int windowSize,
+                        const int radixData)
 {
     for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 256; @outer)
     {
@@ -174,11 +173,10 @@ cmod(complex a){
 // quot = (fullSize / overlap_ratio) / overlap_ratio / window_size
 //calculateK(int low_in_window, int powed_stage, int windowSize)
 @kernel void Butterfly( complex* buffer,
-                        int windowSize,
+                        const int windowSize,
                         const int powed_stage,
                         const unsigned int OHalfSize,
-                        //unsigned int OWSize,
-                        int radixData)
+                        const int radixData)
 {
     for(unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 256; @outer)
     {
@@ -206,7 +204,7 @@ cmod(complex a){
 @kernel void toPower(   complex* buffer,
                         float* out,
                         const unsigned int OHalfSize,
-                        int windowRadix)
+                        const int windowRadix)
 {
     //toPower
     for(unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 256; @outer)

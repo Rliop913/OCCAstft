@@ -111,7 +111,7 @@ if(OpenMP_FOUND)
 #add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/OpenMP)
 endif()
 
-#add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/Serial)
+add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/Serial)
 
 set(mainsrc 
     ${CMAKE_SOURCE_DIR}/src/runtimeChecker.cpp

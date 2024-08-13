@@ -1,4 +1,4 @@
-
+#include <cmath>
 
 typedef struct complex_t {
   float real, imag;
@@ -81,18 +81,15 @@ inline float cmod(complex a) {
 }
 
 extern "C" void removeDC(complex * buffer,
-                         unsigned int & OFullSize,
+                         const unsigned int & OFullSize,
                          float * qt_buffer,
-                         int & windowSize) {
-#pragma omp parallel for
+                         const int & windowSize) {
   for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256) {
     for (int i_itr = 0; i_itr < 256; ++i_itr) {
       unsigned int IDX = o_itr + i_itr;
-#pragma omp atomic
       qt_buffer[IDX / windowSize] += buffer[IDX].imag;
     }
   }
-#pragma omp parallel for
   for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256) {
     for (int i_itr = 0; i_itr < 256; ++i_itr) {
       unsigned int IDX = o_itr + i_itr;
@@ -103,11 +100,10 @@ extern "C" void removeDC(complex * buffer,
 
 extern "C" void overlap_N_window(float * in,
                                  complex * buffer,
-                                 unsigned int & fullSize,
+                                 const unsigned int & fullSize,
                                  const unsigned int & OFullSize,
                                  const int & windowSize,
-                                 unsigned int & OMove) {
-#pragma omp parallel for
+                                 const unsigned int & OMove) {
   for (unsigned int w_num = 0; w_num < OFullSize; w_num += 256) {
     for (int w_itr = 0; w_itr < 256; ++w_itr) {
       unsigned int FID = w_num + w_itr;
@@ -122,9 +118,8 @@ extern "C" void overlap_N_window(float * in,
 
 extern "C" void bitReverse(complex * buffer,
                            const unsigned int & OFullSize,
-                           int & windowSize,
-                           int & radixData) {
-#pragma omp parallel for
+                           const int & windowSize,
+                           const int & radixData) {
   for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256) {
     for (int w_itr = 0; w_itr < 256; ++w_itr) {
       unsigned int dst_idx = reverseBits((o_itr + w_itr % windowSize), radixData);
@@ -136,7 +131,6 @@ extern "C" void bitReverse(complex * buffer,
 
 extern "C" void endPreProcess(complex * buffer,
                               const unsigned int & OFullSize) {
-#pragma omp parallel for
   for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256) {
     for (int i_itr = 0; i_itr < 256; ++i_itr) {
       buffer[o_itr + i_itr].imag = 0.0;
@@ -149,11 +143,10 @@ extern "C" void endPreProcess(complex * buffer,
 //calculateK(int low_in_window, int powed_stage, int windowSize)
 
 extern "C" void Butterfly(complex * buffer,
-                          int & windowSize,
+                          const int & windowSize,
                           const int & powed_stage,
                           const unsigned int & OHalfSize,
-                          int & radixData) {
-#pragma omp parallel for
+                          const int & radixData) {
   for (unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 256) {
     for (int i_itr = 0; i_itr < 256; ++i_itr) {
       unsigned int GID = o_itr + i_itr;
@@ -181,9 +174,8 @@ extern "C" void Butterfly(complex * buffer,
 extern "C" void toPower(complex * buffer,
                         float * out,
                         const unsigned int & OHalfSize,
-                        int & windowRadix) {
+                        const int & windowRadix) {
   //toPower
-#pragma omp parallel for
   for (unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 256) {
     for (int i_itr = 0; i_itr < 256; ++i_itr) {
       const unsigned int GID = o_itr + i_itr;

@@ -54,8 +54,8 @@ private:
     
     int __POSIX_FileDes = -1;
     void* __WINDOWS_HANDLEPtr = nullptr;
-
-    ULL adjustToPage();
+    template<typename T>
+    ULL adjustToPage(const ULL& length);
 public:
     int windowRadix                 = 10;
     float overlapRate               = 0.0f;
@@ -87,3 +87,13 @@ public:
     void FreeData();
     std::string getID(){return __mappedID;}
 };
+
+
+template<typename T>
+ULL
+FFTRequest::adjustToPage(const ULL& length)
+{   
+    ULL dataSize = length * sizeof(T);
+    unsigned long long PageSize = sysconf(_SC_PAGESIZE);
+    return ((dataSize + PageSize - 1) / PageSize) * PageSize;
+}

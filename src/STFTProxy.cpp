@@ -173,6 +173,7 @@ STFTProxy::KillRunner()
             return true;
         }
     }
+    return false;
 }
 
 FFTRequest
@@ -214,9 +215,30 @@ int main()
     },list);
     std::cout<<temp.STATUS<<std::endl;
     //temp.proxyOBJ.send("CLOSE_REQUEST");
-    
+    std::vector<float> testZeroData(10000);
 
+
+
+
+    for(int i=0; i<testZeroData.size(); ++i)
+    {
+        testZeroData[i] = float(i)/testZeroData.size()+1.0f;
+    }
+    auto promisedData = temp.RequestSTFT(testZeroData, 10, 0.5);
+
+    if(promisedData.has_value())
+    {
+        std::cout<<"got future"<<std::endl;
+        auto result = promisedData.value().get();
+        auto resOut = result.FreeAndGetData();
+        if(resOut.has_value())
+        {
+            std::cout<<"got Data!!!"<<std::endl;
+            std::cout<<resOut.value()[100]<<std::endl;
+        }
+    }
     getchar();
+    
     if(temp.KillRunner())
     {
         std::cout <<"safe closed" << std::endl;

@@ -17,12 +17,11 @@ FFTRequest::MakeSharedMemory(const SupportedRuntimes& Type, const unsigned long 
             sharedMemoryInfo = std::nullopt;
             return;
         }
-
-        unsigned long long PageSize = sysconf(dataSize * sizeof(float));
-
+        // unsigned long long PageSize = sysconf(dataSize * sizeof(float));
+        ULL PageSize = adjustToPage<float>(dataSize);
         if (ftruncate(__POSIX_FileDes, PageSize) == -1)
         {
-            std::cerr << "FD open err" << std::endl;
+            std::cerr << "FD open err: " << errno << " pageSize:"<<dataSize << std::endl;
             shm_unlink(sharedMemoryInfo.value().c_str());
             sharedMemoryInfo = std::nullopt;
             return;
@@ -52,12 +51,6 @@ FFTRequest::MakeSharedMemory(const SupportedRuntimes& Type, const unsigned long 
 }
 
 
-ULL
-FFTRequest::adjustToPage()
-{
-    return sysconf(dataLength * sizeof(float));
-}
-
 MAYBE_DATA
 FFTRequest::FreeAndGetData()
 {
@@ -65,7 +58,7 @@ FFTRequest::FreeAndGetData()
     {
         std::vector<float> result(dataLength);
         memcpy(result.data(), __memPtr, dataLength * sizeof(float));
-        ULL pageSize = adjustToPage();
+        ULL pageSize = adjustToPage<float>(dataLength);
         int freemap = munmap(__memPtr, pageSize);
         int freefd  = close(__POSIX_FileDes);
         int freelink= shm_unlink(sharedMemoryInfo.value().c_str());
@@ -94,7 +87,7 @@ FFTRequest::GetSHMPtr()
     {
         return std::nullopt;
     }
-    auto pagedSize = adjustToPage();
+    auto pagedSize = adjustToPage<float>(dataLength);
     sharedObj.first = mmap( 0, 
                             pagedSize, 
                             PROT_READ | PROT_WRITE, 
@@ -112,7 +105,7 @@ FFTRequest::GetSHMPtr()
 void
 FFTRequest::FreeSHMPtr(SHMOBJ& shobj)
 {
-    munmap(shobj.first, adjustToPage());
+    munmap(shobj.first, adjustToPage<float>(dataLength));
     close(shobj.second);
 }
 
@@ -141,7 +134,7 @@ FFTRequest::FreeData()
 {
     if(sharedMemoryInfo.has_value())
     {
-        ULL pageSize = adjustToPage();
+        ULL pageSize = adjustToPage<float>(dataLength);
         int freemap = munmap(__memPtr, pageSize);
         int freefd  = close(__POSIX_FileDes);
         int freelink= shm_unlink(sharedMemoryInfo.value().c_str());

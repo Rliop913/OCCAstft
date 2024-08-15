@@ -32,16 +32,19 @@ FetchContent_MakeAvailable(opencl_hpp)
 
 find_package(OpenCL REQUIRED)
 find_package(ZLIB REQUIRED)
+find_package(CapnProto REQUIRED)
 set(openclsrc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CLImpl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CL_Wrapper/src/cl_FACADE.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CL_Wrapper/src/cl_global_custom.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL/RunnerCommon.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTcapnp.capnp.c++
     ${CMAKE_CURRENT_SOURCE_DIR}/../../miniaudio.c)
 
 
 add_executable(openclRun ${openclsrc})
+target_link_libraries(openclRun PRIVATE CapnProto::capnp CapnProto::kj)
 message(${opencl_headers_SOURCE_DIR})
 
 target_include_directories(openclRun PRIVATE

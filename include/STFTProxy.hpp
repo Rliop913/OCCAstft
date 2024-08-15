@@ -26,9 +26,9 @@
 // using DATAF             = std::vector<float>;
 using STRVEC            = std::vector<std::string>;
 using ERR_FUNC          = std::function<void(const ix::WebSocketErrorInfo& )>;
-using FUTURE_DATA       = std::future<FFTRequest>;
+using FUTURE_DATA       = std::future<MAYBE_DATA>;
 using MAYBE_FUTURE_DATA = std::optional<FUTURE_DATA>;
-using PROMISE_DATA      = std::promise<FFTRequest>;
+using PROMISE_DATA      = std::promise<MAYBE_DATA>;
 using SHARED_MEMORY     = std::string;
 
 
@@ -49,7 +49,6 @@ private:
     int GeneratePortNumber();
     void RuntimeFallback();
     void SetWebSocketCallback();
-    FFTRequest LoadToRequest(std::vector<float>& data, const int& windowRadix, const float& overlapRate);
     void Disconnect();
     
 public:

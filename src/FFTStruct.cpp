@@ -4,30 +4,38 @@
 void
 FFTRequest::MakeSharedMemory(const SupportedRuntimes& Type, const unsigned long long& dataSize)
 {
-    dataLength = (unsigned long long)dataSize;
+    if(!mw.has_value())
+    {
+        return;
+    }
+    auto wp = &mw.value();
+    wp->setDataLength(dataSize);
+    std::string mappedID = wp->getMappedID().cStr();
+    std::string fullpath = "/STFT" + mappedID + "SHAREDMEM";
+
     if(Type != SERVER)
     {
-        sharedMemoryInfo = "/STFT" + __mappedID + "SHAREDMEM";
+        wp->setSharedMemory(fullpath);
 
-        __POSIX_FileDes = shm_open(sharedMemoryInfo.value().c_str(), O_CREAT | O_RDWR, 0666);
+        auto __POSIX_FileDes = shm_open(fullpath.c_str(), O_CREAT | O_RDWR, 0666);
         
         if (__POSIX_FileDes == -1)
         {
             std::cerr << "shm open err" << std::endl;
-            sharedMemoryInfo = std::nullopt;
+            wp->setSharedMemory("");
             return;
         }
-        // unsigned long long PageSize = sysconf(dataSize * sizeof(float));
+
         ULL PageSize = adjustToPage<float>(dataSize);
         if (ftruncate(__POSIX_FileDes, PageSize) == -1)
         {
             std::cerr << "FD open err: " << errno << " pageSize:"<<dataSize << std::endl;
-            shm_unlink(sharedMemoryInfo.value().c_str());
-            sharedMemoryInfo = std::nullopt;
+            shm_unlink(fullpath.c_str());
+            wp->setSharedMemory("");
             return;
         }
         
-        __memPtr = mmap
+        auto __memPtr = mmap
             (
                 0, 
                 PageSize, 
@@ -42,10 +50,12 @@ FFTRequest::MakeSharedMemory(const SupportedRuntimes& Type, const unsigned long 
             
             std::cerr << "mmap err" << __memPtr << std::endl;
             close(__POSIX_FileDes);
-            shm_unlink(sharedMemoryInfo.value().c_str());
-            sharedMemoryInfo = std::nullopt;
+            shm_unlink(fullpath.c_str());
+            wp->setSharedMemory("");
             return;
         }
+        wp->setPosixFileDes(__POSIX_FileDes);
+        wp->setMemPTR(reinterpret_cast<ULL>(__memPtr));
     }
     return;
 }
@@ -54,19 +64,38 @@ FFTRequest::MakeSharedMemory(const SupportedRuntimes& Type, const unsigned long 
 MAYBE_DATA
 FFTRequest::FreeAndGetData()
 {
-    if(sharedMemoryInfo.has_value())
+    if(!mr.has_value())
+    {
+        return std::nullopt;
+    }
+    auto mp = &mr.value();
+    std::string sharemem = "";
+    if(mp->hasSharedMemory())
+    {
+        
+        sharemem =mp->getSharedMemory().cStr();
+
+    }
+    auto dataLength = mp->getDataLength();
+    auto __memPtr   = reinterpret_cast<void*>(mp->getMemPTR());
+    auto __POSIX_FileDes = mp->getPosixFileDes();
+    auto sourceSize = mp->getData().size();
+    
+    if(sharemem != "")
     {
         std::vector<float> result(dataLength);
         memcpy(result.data(), __memPtr, dataLength * sizeof(float));
         ULL pageSize = adjustToPage<float>(dataLength);
         int freemap = munmap(__memPtr, pageSize);
         int freefd  = close(__POSIX_FileDes);
-        int freelink= shm_unlink(sharedMemoryInfo.value().c_str());
+        int freelink= shm_unlink(sharemem.c_str());
         return std::move(result);
     }
-    else if(data.has_value())
+    else if(sourceSize != 0)
     {
-        return std::move(data);
+        std::vector<float> result(sourceSize);
+        copyToVecParallel(result.data(), mp, sourceSize);
+        return std::move(result);
     }
     else
     {
@@ -77,12 +106,19 @@ FFTRequest::FreeAndGetData()
 MAYBE_SHOBJ
 FFTRequest::GetSHMPtr()
 {
-    SHMOBJ sharedObj;
-    if(!sharedMemoryInfo.has_value())
+    if(!mr.has_value())
     {
         return std::nullopt;
     }
-    sharedObj.second = shm_open(sharedMemoryInfo.value().c_str(), O_RDWR, 0666);
+    auto mp = &mr.value();
+    SHMOBJ sharedObj;
+    std::string sharemem = mp->getSharedMemory().cStr();
+    auto dataLength = mp->getDataLength();
+    if(sharemem == "")
+    {
+        return std::nullopt;
+    }
+    sharedObj.second = shm_open(sharemem.c_str(), O_RDWR, 0666);
     if(sharedObj.second == -1)
     {
         return std::nullopt;
@@ -105,23 +141,45 @@ FFTRequest::GetSHMPtr()
 void
 FFTRequest::FreeSHMPtr(SHMOBJ& shobj)
 {
-    munmap(shobj.first, adjustToPage<float>(dataLength));
-    close(shobj.second);
+    if(mw.has_value())
+    {
+        auto dataLength = mw.value().getDataLength();
+        munmap(shobj.first, adjustToPage<float>(dataLength));
+        close(shobj.second);
+    }
+    else if(mr.has_value())
+    {
+        auto dataLength = mr.value().getDataLength();
+        munmap(shobj.first, adjustToPage<float>(dataLength));
+        close(shobj.second);
+    }
 }
 
 
 MAYBE_DATA
 FFTRequest::GetData()
 {
-    if(sharedMemoryInfo.has_value())
+    if(!mr.has_value())
+    {
+        return std::nullopt;
+    }
+    auto mp = &mr.value();
+    std::string sharemem = mp->getSharedMemory().cStr();
+    auto dataLength = mp->getDataLength();
+    auto __memPtr = reinterpret_cast<void*>(mp->getMemPTR());
+    auto sourceSize = mp->getData().size();
+    if(sharemem != "")
     {
         std::vector<float> result(dataLength);
         memcpy(result.data(), __memPtr, dataLength * sizeof(float));
         return std::move(result);
     }
-    else if(data.has_value())
+    else if(sourceSize != 0)
     {
-        return std::move(data);
+        std::vector<float> result(sourceSize);
+        copyToVecParallel(result.data(), mp, sourceSize);
+        std::cout << "got data FS:179 "<< result[150] <<std::endl;
+        return std::move(result);
     }
     else
     {
@@ -132,12 +190,33 @@ FFTRequest::GetData()
 void
 FFTRequest::FreeData()
 {
-    if(sharedMemoryInfo.has_value())
+    ULL dataLength;
+    void* __memPtr;
+    int __POSIX_FileDes;
+    std::string sharemem;
+    if(mw.has_value())
+    {
+        auto pw = &mw.value();
+        dataLength = pw->getDataLength();
+        __memPtr = reinterpret_cast<void*>(pw->getMemPTR());
+        __POSIX_FileDes = pw->getPosixFileDes();
+        sharemem = pw->getSharedMemory().cStr();
+    }
+    else if(mr.has_value())
+    {
+        auto pw = &mr.value();
+        dataLength = pw->getDataLength();
+        __memPtr = reinterpret_cast<void*>(pw->getMemPTR());
+        __POSIX_FileDes = pw->getPosixFileDes();
+        sharemem = pw->getSharedMemory().cStr();
+
+    }
+    if(sharemem != "")
     {
         ULL pageSize = adjustToPage<float>(dataLength);
         int freemap = munmap(__memPtr, pageSize);
         int freefd  = close(__POSIX_FileDes);
-        int freelink= shm_unlink(sharedMemoryInfo.value().c_str());
+        int freelink= shm_unlink(sharemem.c_str());
     }
 }
 
@@ -242,160 +321,240 @@ FFTRequest::getData()
 void
 FFTRequest::SetData(std::vector<float>& requestedData)
 {
-    if(sharedMemoryInfo.has_value())
+    if(!mw.has_value())
+    {
+        return;
+    }
+    auto mp = &mw.value();
+    std::string sharemem = mp->getSharedMemory().cStr();
+    void* __memPtr = reinterpret_cast<void*>( mp->getMemPTR());
+    ULL dataLength = requestedData.size();
+    mp->setDataLength(dataLength);
+    if(sharemem != "")
     {
         memcpy(__memPtr, requestedData.data(), dataLength * sizeof(float));
     }
     else
     {
-        data = std::move(requestedData);
+        auto dataP = mp->initData(dataLength);
+        copyToCapnpParallel(requestedData.data(), &dataP, dataLength);
     }
 }
 
 
 void
-FFTRequest::BreakIntegrity()
+FFTRequest::StoreErrorMessage()
 {
-    sharedMemoryInfo = std::nullopt;
-    data = std::nullopt;
+    if(mw.has_value())
+    {
+        mw.value().setSharedMemory("ERR");
+    }
 }
 
 bool
-FFTRequest::CheckIntegrity()
+FFTRequest::CheckHasErrorMessage()
 {
-    if(!sharedMemoryInfo.has_value() && !data.has_value())
+    if(mr.has_value())
     {
-        return false;
+        std::string sharemem = mr.value().getSharedMemory().cStr();
+        if(sharemem == "ERR")
+        {
+            return false;
+        }
     }
     return true;
 }
 
 
-BIN
+MAYBE_BIN
 FFTRequest::Serialize()
 {
-    std::vector<BIN> DBin(9);
-    DBin[0]     = std::to_string(windowRadix);
-    DBin[1]     = std::to_string(overlapRate);
-    DBin[2]     = std::to_string(dataLength);
-    DBin[3]     = "";//data
-    DBin[4]     = "";//memory
-    DBin[5]     = __mappedID;
-    DBin[6]     = std::to_string(reinterpret_cast<uintptr_t>(__memPtr));
-    DBin[7]     = std::to_string(__POSIX_FileDes);
-    DBin[8]    = std::to_string(reinterpret_cast<uintptr_t>(__WINDOWS_HANDLEPtr));
-    
-    if (data.has_value()) 
+    if(mw.has_value())
     {
-        DBin[3] = BIN
-        (  
-            reinterpret_cast<char*>(data.value().data()),
-            dataLength * sizeof(float)
-        );
-    } 
-    if(sharedMemoryInfo.has_value()) 
-    {
-        DBin[4] = sharedMemoryInfo.value();
-    } 
+        auto serialized = capnp::messageToFlatArray(wField);
+        BIN binOut;
+        binOut.resize(serialized.size() * sizeof(capnp::word));
+        memcpy(binOut.data(), serialized.begin(), serialized.size() * sizeof(capnp::word));
+        std::cout<<"Size: "<< sizeof(capnp::word)<<std::endl;
+        
+        return std::move(binOut);
+    }
+    return std::nullopt;
+
+    // std::vector<BIN> DBin(9);
+    // DBin[0]     = std::to_string(windowRadix);
+    // DBin[1]     = std::to_string(overlapRate);
+    // DBin[2]     = std::to_string(dataLength);
+    // DBin[3]     = "";//data
+    // DBin[4]     = "";//memory
+    // DBin[5]     = __mappedID;
+    // DBin[6]     = std::to_string(reinterpret_cast<uintptr_t>(__memPtr));
+    // DBin[7]     = std::to_string(__POSIX_FileDes);
+    // DBin[8]    = std::to_string(reinterpret_cast<uintptr_t>(__WINDOWS_HANDLEPtr));
     
-    BIN Serial = 
-    DBin[0]     + frontTags[0]  +
-    DBin[1]     + frontTags[1]  +
-    DBin[2]     + frontTags[2]  +
-    DBin[3]     + backTags[5]   +
-    DBin[4]     + backTags[4]   +
-    DBin[5]     + backTags[3]   +
-    DBin[6]     + backTags[2]   +
-    DBin[7]     + backTags[1]   +
-    DBin[8]     + backTags[0]   ;
-    return Serial;
+    // if (data.has_value()) 
+    // {
+    //     DBin[3] = BIN
+    //     (  
+    //         reinterpret_cast<char*>(data.value().data()),
+    //         dataLength * sizeof(float)
+    //     );
+    // } 
+    // if(sharedMemoryInfo.has_value()) 
+    // {
+    //     DBin[4] = sharedMemoryInfo.value();
+    // } 
+    
+    // BIN Serial = 
+    // DBin[0]     + frontTags[0]  +
+    // DBin[1]     + frontTags[1]  +
+    // DBin[2]     + frontTags[2]  +
+    // DBin[3]     + backTags[5]   +
+    // DBin[4]     + backTags[4]   +
+    // DBin[5]     + backTags[3]   +
+    // DBin[6]     + backTags[2]   +
+    // DBin[7]     + backTags[1]   +
+    // DBin[8]     + backTags[0]   ;
+    // return Serial;
 }
 
 
 void
-FFTRequest::Deserialize(const BIN& binData )
+FFTRequest::Deserialize()
 {
-    if(false)
-    {
-        ERR_DIVE: // Error Dive
-        windowRadix         = -1;
-        overlapRate         = 0.0f;
-        data                = std::nullopt;
-        sharedMemoryInfo    = std::nullopt;
-        __mappedID          = -1;
-        return;
-    }
-    size_t tagPos[9];
-    for (int i = 0; i < 3; ++i) 
-    {
-        auto pos = binData.find( frontTags[i] );
-        if (pos == std::string::npos ) 
-        {
-            goto ERR_DIVE;
-        }
-        tagPos[i] = pos;
-    }
+    binPtr
+    = kj::ArrayPtr<const capnp::word>
+    (
+        reinterpret_cast<const capnp::word*>(BinData.data()),
+        BinData.size() / sizeof(capnp::word)
+    );
+    
+    std::cout<< BinData.size()<<", "<< binPtr.size()<<std::endl;
+    rField = std::make_unique<capnp::FlatArrayMessageReader>(binPtr);
+    // rField = capnp::FlatArrayMessageReader(binRead);
+    mr = rField->getRoot<RequestCapnp>();
+    // if(false)
+    // {
+    //     ERR_DIVE: // Error Dive
+    //     windowRadix         = -1;
+    //     overlapRate         = 0.0f;
+    //     data                = std::nullopt;
+    //     sharedMemoryInfo    = std::nullopt;
+    //     __mappedID          = -1;
+    //     return;
+    // }
+    // size_t tagPos[9];
+    // for (int i = 0; i < 3; ++i) 
+    // {
+    //     auto pos = binData.find( frontTags[i] );
+    //     if (pos == std::string::npos ) 
+    //     {
+    //         goto ERR_DIVE;
+    //     }
+    //     tagPos[i] = pos;
+    // }
 
-    for (int i = 0; i < 6; ++i)
-    {
-        auto pos = binData.rfind( backTags[i] );
-        if (pos == std::string::npos) 
-        {
-            goto ERR_DIVE;
-        }
-        tagPos[8 - i] = pos;
-    }
-
-
-    auto binBeg = binData.begin();
-    std::vector<std::string::const_iterator> position(11);
-    position[0]     = binBeg + tagPos[0]    + TAG_SIZE;
-    position[1]     = binBeg + tagPos[1]    + TAG_SIZE;
-    position[2]     = binBeg + tagPos[2]    + TAG_SIZE;
-    position[3]     = binBeg + tagPos[3]    + TAG_SIZE;
-    position[4]     = binBeg + tagPos[4]    + TAG_SIZE;
-    position[5]     = binBeg + tagPos[5]    + TAG_SIZE;
-    position[6]     = binBeg + tagPos[6]    + TAG_SIZE;
-    position[7]     = binBeg + tagPos[7]    + TAG_SIZE;
-    position[8]     = binBeg + tagPos[8]    + TAG_SIZE;
+    // for (int i = 0; i < 6; ++i)
+    // {
+    //     auto pos = binData.rfind( backTags[i] );
+    //     if (pos == std::string::npos) 
+    //     {
+    //         goto ERR_DIVE;
+    //     }
+    //     tagPos[8 - i] = pos;
+    // }
 
 
-    BIN winRad              (binBeg,        position[0]     - TAG_SIZE);
-    BIN overRate            (position[0],   position[1]     - TAG_SIZE);
-    BIN dataL               (position[1],   position[2]     - TAG_SIZE);
-    BIN dataBin             (position[2],   position[3]     - TAG_SIZE);
-    BIN memPath             (position[3],   position[4]     - TAG_SIZE);
-    __mappedID = std::string(position[4],   position[5]     - TAG_SIZE);
-    BIN memAdd              (position[5],   position[6]     - TAG_SIZE);
-    BIN PosixFD             (position[6],   position[7]     - TAG_SIZE);
-    BIN WinHand             (position[7],   position[8]     - TAG_SIZE);
+    // auto binBeg = binData.begin();
+    // std::vector<std::string::const_iterator> position(11);
+    // position[0]     = binBeg + tagPos[0]    + TAG_SIZE;
+    // position[1]     = binBeg + tagPos[1]    + TAG_SIZE;
+    // position[2]     = binBeg + tagPos[2]    + TAG_SIZE;
+    // position[3]     = binBeg + tagPos[3]    + TAG_SIZE;
+    // position[4]     = binBeg + tagPos[4]    + TAG_SIZE;
+    // position[5]     = binBeg + tagPos[5]    + TAG_SIZE;
+    // position[6]     = binBeg + tagPos[6]    + TAG_SIZE;
+    // position[7]     = binBeg + tagPos[7]    + TAG_SIZE;
+    // position[8]     = binBeg + tagPos[8]    + TAG_SIZE;
 
-    try
-    {
-        windowRadix         = std::stoi(winRad);
-        overlapRate         = std::stof(overRate);
-        dataLength          = std::stoul(dataL);
-        __POSIX_FileDes     = std::stoi(PosixFD);
-        __memPtr            = reinterpret_cast<void*>(std::stoull(memAdd));
-        __WINDOWS_HANDLEPtr = reinterpret_cast<void*>(std::stoull(WinHand));
-    } 
-    catch (const std::exception &e) { goto ERR_DIVE; }
 
-    if (dataBin == "") { data = std::nullopt; } 
-    else 
-    {
-        data = std::vector<float>(dataLength);
-        memcpy
-        ( 
-            data.value().data(), 
-            dataBin.data(), 
-            dataLength * sizeof(float)
-        );
-    }
+    // BIN winRad              (binBeg,        position[0]     - TAG_SIZE);
+    // BIN overRate            (position[0],   position[1]     - TAG_SIZE);
+    // BIN dataL               (position[1],   position[2]     - TAG_SIZE);
+    // BIN dataBin             (position[2],   position[3]     - TAG_SIZE);
+    // BIN memPath             (position[3],   position[4]     - TAG_SIZE);
+    // __mappedID = std::string(position[4],   position[5]     - TAG_SIZE);
+    // BIN memAdd              (position[5],   position[6]     - TAG_SIZE);
+    // BIN PosixFD             (position[6],   position[7]     - TAG_SIZE);
+    // BIN WinHand             (position[7],   position[8]     - TAG_SIZE);
 
-    if (memPath == "") { sharedMemoryInfo = std::nullopt; } 
-    else { sharedMemoryInfo = memPath; }
+    // try
+    // {
+    //     windowRadix         = std::stoi(winRad);
+    //     overlapRate         = std::stof(overRate);
+    //     dataLength          = std::stoul(dataL);
+    //     __POSIX_FileDes     = std::stoi(PosixFD);
+    //     __memPtr            = reinterpret_cast<void*>(std::stoull(memAdd));
+    //     __WINDOWS_HANDLEPtr = reinterpret_cast<void*>(std::stoull(WinHand));
+    // } 
+    // catch (const std::exception &e) { goto ERR_DIVE; }
 
-    return;//Safe return
+    // if (dataBin == "") { data = std::nullopt; } 
+    // else 
+    // {
+    //     data = std::vector<float>(dataLength);
+    //     memcpy
+    //     ( 
+    //         data.value().data(), 
+    //         dataBin.data(), 
+    //         dataLength * sizeof(float)
+    //     );
+    // }
 
+    // if (memPath == "") { sharedMemoryInfo = std::nullopt; } 
+    // else { sharedMemoryInfo = memPath; }
+
+    // return;//Safe return
+
+}
+
+
+FFTRequest::FFTRequest(const BIN& binary)
+:BinData(std::move(binary))
+{
+    Deserialize();
+}
+
+FFTRequest::FFTRequest(const int& WR, const float& OLR, ULL& mapCounter)
+{
+
+    mw = wField.initRoot<RequestCapnp>();
+    auto pw = &mw.value();
+    
+    // writeTemp = writeTemp.memField.initRoot<RequestCapnp>();
+    pw->setWindowRadix(WR);
+    pw->setOvarlapRate(OLR);
+    pw->setMappedID(std::to_string(mapCounter));
+    pw->setSharedMemory("");
+    pw->setMemPTR(0);
+    pw->setPosixFileDes(-1);
+    pw->setWindowsHandlePTR(-1);
+    pw->setDataLength(0);
+    
+}
+
+void
+FFTRequest::MakeWField()
+{
+    mw = wField.initRoot<RequestCapnp>();
+    auto pw = &mw.value();
+    auto pr = &mr.value();
+    pw->setWindowRadix(pr->getWindowRadix());
+    pw->setOvarlapRate(pr->getOvarlapRate());
+    pw->setMappedID(pr->getMappedID().cStr());
+    pw->setSharedMemory(pr->getSharedMemory().cStr());
+    pw->setMemPTR(pr->getMemPTR());
+    pw->setPosixFileDes(pr->getPosixFileDes());
+    pw->setWindowsHandlePTR(pr->getWindowsHandlePTR());
+    pw->setDataLength(pr->getDataLength());
 }

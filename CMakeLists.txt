@@ -42,7 +42,7 @@ find_package(ZLIB REQUIRED)
 find_package(CUDA QUIET)
 find_package(OpenCL)
 find_package(OpenMP)
-
+find_package(CapnProto REQUIRED)
 
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
@@ -117,7 +117,7 @@ set(mainsrc
     ${CMAKE_SOURCE_DIR}/src/runtimeChecker.cpp
     ${CMAKE_SOURCE_DIR}/src/STFTProxy.cpp
     ${CMAKE_SOURCE_DIR}/src/FFTStruct.cpp
-    
+    ${CMAKE_SOURCE_DIR}/src/FFTcapnp.capnp.c++
     )
 message(${ixws_BINARY_DIR})
 add_executable(STFTMain ${mainsrc})
@@ -125,7 +125,8 @@ add_executable(STFTMain ${mainsrc})
 
 add_executable(TEST_STFT ${mainsrc})
 
-
+target_link_libraries(STFTMain PRIVATE CapnProto::capnp CapnProto::kj)
+target_link_libraries(TEST_STFT PRIVATE CapnProto::capnp CapnProto::kj)
 
 
 

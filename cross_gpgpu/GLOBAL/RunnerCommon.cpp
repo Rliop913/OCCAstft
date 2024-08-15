@@ -37,6 +37,7 @@ Runner::AccessData(FFTRequest& req)
     auto mempath = req.GetSharedMemPath();
     if(mempath.has_value())
     {
+        std::cout<<"got mempath RC:40"<< mempath.value() <<std::endl;
         dataInfo = req.GetSHMPtr();
         if(!dataInfo.has_value())
         {
@@ -44,16 +45,17 @@ Runner::AccessData(FFTRequest& req)
         }
         else
         {
-            VECF accResult(req.dataLength);
+            VECF accResult(req.get_dataLength());
             memcpy( accResult.data(), 
                     dataInfo.value().first, 
-                    req.dataLength * sizeof(float));
+                    req.get_dataLength() * sizeof(float));
             return std::move(accResult);
         }
         
     }
     else
     {
+        std::cout<<"got data RC:58"<<std::endl;
         return std::move(req.GetData());
     }
 }
@@ -80,28 +82,30 @@ Runner::ServerInit(const int& pNum)
                 {
                     if(msg->binary)
                     {
-                        FFTRequest received;
-                        received.Deserialize(msg->str);
+                        
+                        FFTRequest received(msg->str);
+                        received.MakeWField();
                         auto data = AccessData(received);
                         if(data.has_value())
                         {
                             auto result =
                             ActivateSTFT(   data.value(), 
-                                            received.windowRadix,
-                                            received.overlapRate);
+                                            received.get_WindowRadix(),
+                                            received.get_OverlapRate());
                             if(dataInfo.has_value() && result.has_value())
                             {
                                 memcpy( dataInfo.value().first, 
                                         result.value().data(),
-                                        received.dataLength * sizeof(float));
+                                        received.get_dataLength() * sizeof(float));
                             }
                             else if(result.has_value())
                             {
+                            std::cout<<"calced RC:90"<<std::endl;
                                 received.SetData(result.value());
                             }
                             else
                             {
-                                received.BreakIntegrity();
+                                received.StoreErrorMessage();
                             }
                             if(dataInfo.has_value())
                             {
@@ -110,10 +114,13 @@ Runner::ServerInit(const int& pNum)
                         }
                         else//error message
                         {
-                            received.BreakIntegrity();
+                            received.StoreErrorMessage();
                         }
-                        
-                        webSocket.sendBinary(received.Serialize());
+                        auto serialResult = received.Serialize();
+                        if(serialResult.has_value())
+                        {
+                            webSocket.sendBinary(serialResult.value());
+                        }
                     }
                     else
                     {

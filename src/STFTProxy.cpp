@@ -40,9 +40,8 @@ STFTProxy::SetWebSocketCallback()
         {
             if(msg->binary)
             {
-                FFTRequest datas;
-                datas.Deserialize(msg->str);
-                workingPromises[datas.getID()].set_value(datas);
+                FFTRequest datas(msg->str);
+                workingPromises[datas.getID()].set_value(datas.FreeAndGetData());
             }
             else
             {
@@ -176,15 +175,6 @@ STFTProxy::KillRunner()
     return false;
 }
 
-FFTRequest
-STFTProxy::LoadToRequest(std::vector<float>& data, const int& windowRadix, const float& overlapRate)
-{
-    FFTRequest request(windowRadix, overlapRate, promiseCounter);
-    request.MakeSharedMemory(gpuType, data.size());
-    request.SetData(data);
-    return request;
-}
-
 MAYBE_FUTURE_DATA
 STFTProxy::RequestSTFT(std::vector<float>& data, const int& windowRadix, const float& overlapRate)
 {
@@ -192,13 +182,20 @@ STFTProxy::RequestSTFT(std::vector<float>& data, const int& windowRadix, const f
     {
         return std::nullopt;
     }
+
+    FFTRequest loaded(windowRadix, overlapRate, promiseCounter);
+    loaded.MakeSharedMemory(gpuType, data.size());
+    loaded.SetData(data);
     
-    auto loaded = LoadToRequest(data, windowRadix, overlapRate);
-
-
     PROMISE_DATA pData;
     workingPromises[loaded.getID()] = std::move(pData);
-    proxyOBJ.sendBinary(loaded.Serialize());
+    auto serializeResult = loaded.Serialize();
+    if(!serializeResult.has_value())
+    {
+        return std::nullopt;
+    }
+    
+    proxyOBJ.sendBinary(loaded.Serialize().value());
     return workingPromises[loaded.getID()].get_future();
 }
 
@@ -206,8 +203,87 @@ STFTProxy::RequestSTFT(std::vector<float>& data, const int& windowRadix, const f
 
 int main()
 {
+    // ULL coutn =0;
+    // FFTRequest originTemp(10, 0.5,coutn);
+    
+    // std::vector<float> testZeroData(100);
+    // for(int i=0; i<testZeroData.size(); ++i)
+    // {
+    //     testZeroData[i] = float(i)/testZeroData.size()+1.0f;
+    // }
+    // originTemp.MakeSharedMemory(SERVER, testZeroData.size());
+    // std::cout<< originTemp.GetSharedMemPath().value();
+    // originTemp.SetData(testZeroData);
+    // auto result = originTemp.Serialize();
+
+    // FFTRequest cloned(result.value());
+    // cloned.MakeSharedMemory(SERVER, testZeroData.size());
+    // auto overres = cloned.get_OverlapRate();
+    // std::cout << overres << std::endl;
+    // auto dat = cloned.FreeAndGetData();
+    // for(int i=0; i<100; ++i)
+    // {
+    //     std::cout << dat.value()[i]<<" , ";
+    // }
+
+
+    // int testData= 9758;
+    // int* Dptr = &testData;
+    // int handle = 5435;
+    // int* hanptr= &handle;
+
+
+    // capnp::MallocMessageBuilder memField;
+    // RequestCapnp::Builder reqObj = memField.initRoot<RequestCapnp>();
+    // reqObj.setSharedMemory("TempText");
+    // auto data = reqObj.initData(3);
+    // data.set(0, 0.5);
+    // data.set(1, 54.5);
+    // data.set(2, -95.34);
+    // reqObj.setMappedID("sample map id");
+    // reqObj.setMemPTR(reinterpret_cast<ULL>(Dptr));
+    // reqObj.setPosixFileDes(443);
+    // reqObj.setWindowsHandlePTR(reinterpret_cast<ULL>(hanptr));
+    // reqObj.setWindowRadix(32);
+    // reqObj.setOvarlapRate(0.5324);
+    // reqObj.setDataLength(42123);
+    // std::cout << reqObj.getSharedMemory().cStr()<<std::endl;
+    
+    // auto flatOut = capnp::messageToFlatArray(memField);
+    // auto bytoOut = flatOut.asBytes();
+    // std::string binary;
+    // binary.resize(bytoOut.size());
+    // memcpy(binary.data(), bytoOut.begin(), bytoOut.size());
+    // std::cout<< binary<<std::endl;
+    
+    // kj::ArrayPtr<const capnp::word> readedbyte
+    // (
+    //     reinterpret_cast<const capnp::word*>(binary.data()),
+    //     binary.size() / sizeof(capnp::word)
+    // );
+    // auto readed_Out = capnp::FlatArrayMessageReader(readedbyte);
+    
+    // RequestCapnp::Reader redobj = readed_Out.getRoot<RequestCapnp>();
+    // auto memptr = reinterpret_cast<int*>(redobj.getMemPTR());
+    // auto handleptr = reinterpret_cast<int*>( redobj.getWindowsHandlePTR());
+    // std::cout<<
+    // redobj.getSharedMemory().cStr() << std::endl<<
+    // redobj.getData()[0] << std::endl<<
+    // redobj.getMappedID().cStr()<< std::endl<<
+    // *memptr<< std::endl<<
+    // redobj.getPosixFileDes()<< std::endl<<
+    // *handleptr<< std::endl<<
+    // redobj.getWindowRadix()<< std::endl<<
+    // redobj.getOvarlapRate()<< std::endl<<
+    // redobj.getDataLength()<< std::endl;
+
+
+
+
+
     FallbackList list;
     list.SerialFallback.push_back("./cross_gpgpu/Serial");
+    // list.ServerFallback.push_back("127.0.0.1:54500");
     auto temp = STFTProxy([](const ix::WebSocketErrorInfo& err)
     {
         std::cout<<err.reason<<std::endl;
@@ -216,10 +292,6 @@ int main()
     std::cout<<temp.STATUS<<std::endl;
     //temp.proxyOBJ.send("CLOSE_REQUEST");
     std::vector<float> testZeroData(10000);
-
-
-
-
     for(int i=0; i<testZeroData.size(); ++i)
     {
         testZeroData[i] = float(i)/testZeroData.size()+1.0f;
@@ -229,8 +301,7 @@ int main()
     if(promisedData.has_value())
     {
         std::cout<<"got future"<<std::endl;
-        auto result = promisedData.value().get();
-        auto resOut = result.FreeAndGetData();
+        auto resOut = promisedData.value().get();
         if(resOut.has_value())
         {
             std::cout<<"got Data!!!"<<std::endl;
@@ -247,40 +318,7 @@ int main()
     {
         std::cerr<<"not closed" <<std::endl;
     }
-    // ULL counter = 4132;
-    // std::vector<float> testData(10);
-    // for(auto& i : testData)
-    // {
-    //     i = 3213;
-    // }
-    // FFTRequest origin(10, 0.5, counter);
-    // origin.MakeSharedMemory(CUDA, testData.size());
-    // origin.SetData(testData);
-
-    // auto bintest = origin.Serialize();
-    // std::cout << bintest <<std::endl;
-    // // return 0;
-    // FFTRequest cloned;
-    // cloned.Deserialize(bintest);
-    // auto cloneID = cloned.getID();
-    // auto cloneOut = cloned.FreeAndGetData();
-    // if(cloneID != origin.getID())
-    // {
-    //     std::cout << "ID NOT MATCHED" << std::endl;
-    // }
-    // if(!cloneOut.has_value())
-    // {
-    //     std::cout << "NO VALUE" << std::endl;
-    // }
-    // for(int i = 0; i < testData.size();++i)
-    // {
-    //     std::cout << cloneOut.value()[i] << std::endl;
-    //     if(testData[i] != cloneOut.value()[i])
-    //     {
-    //         std::cout << "IDX: "<< i << "NOT MATCHED. cD: " 
-    //         << cloneOut.value()[i] << "originD: " << testData[i] << std::endl;
-    //     }
-    // }
+    
     return 0;
 }
 //     ix::WebSocket webs;

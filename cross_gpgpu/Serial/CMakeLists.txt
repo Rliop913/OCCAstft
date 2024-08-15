@@ -19,18 +19,20 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(ixws)
 
 find_package(ZLIB REQUIRED)
+find_package(CapnProto REQUIRED)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(serialsrc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SerialImpl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL/RunnerCommon.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTcapnp.capnp.c++
     ${CMAKE_CURRENT_SOURCE_DIR}/../../miniaudio.c)
 
 
 
 add_executable(serialRun ${serialsrc})
-
+target_link_libraries(serialRun PRIVATE CapnProto::capnp CapnProto::kj)
 
 target_include_directories(serialRun PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL#reverseOOP

@@ -42,19 +42,19 @@ Additionally, the project allows users to request calculations from a server via
 
 1. Clone the repository.
 
-   \`\`\`bash
+   ```bash
    git clone https://github.com/Rliop913/GPGPU_Batch_STFT.git
    cd GPGPU_Batch_STFT
-   \`\`\`
+   ```
 
 2. Generate the build using CMake.
 
-   \`\`\`bash
+   ```bash
    mkdir build
    cd build
    cmake ..
    make
-   \`\`\`
+   ```
 
 3. Once the build is complete, executables for each vendor will be generated under the `cross_build/` directory.
 
@@ -70,9 +70,9 @@ The program processes input signal data through STFT and returns the results. Yo
 
    To run the WebSocket server using the built executable, use the following command:
 
-   \`\`\`bash
+   ```bash
    ./cross_build/CUDA/cudaRun.exe 54500
-   \`\`\`
+   ```
 
    This command runs the `cudaRun.exe` program and starts the WebSocket server on port `54500`.
 
@@ -80,7 +80,7 @@ The program processes input signal data through STFT and returns the results. Yo
 
    The following is an example of using the `STFTProxy` object to manage the executable and set up WebSocket communication:
 
-   \`\`\`cpp
+   ```cpp
    #include "STFTProxy.hpp"
    #include <iostream>
    #include <vector>
@@ -132,7 +132,7 @@ The program processes input signal data through STFT and returns the results. Yo
 
        return 0;
    }
-   \`\`\`
+   ```
 
    This code demonstrates how to manage executables and set up WebSocket communication for STFT processing. The `KillRunner` function works **only if the proxy object directly started the Runner** and requests a safe shutdown. Additionally, if the proxy starts the Runner directly, the proxy and Runner can use shared memory between processes, enabling faster execution.
 
@@ -148,23 +148,23 @@ Contributions, especially PRs implementing **Metal** and **HIP** support, are hi
 
 - First, create a directory for the new vendor under `cross_gpgpu/`. For example, if the new vendor is "MyVendor", create the directory as follows:
 
-   \`\`\`bash
+   ```bash
    mkdir cross_gpgpu/MyVendor
-   \`\`\`
+   ```
 
 ### 2. Copy RunnerTemplate
 
 - Copy the template files from the `RunnerTemplate` folder to the new vendor directory.
 
-   \`\`\`bash
+   ```bash
    cp -r cross_gpgpu/RunnerTemplate/* cross_gpgpu/MyVendor/
-   \`\`\`
+   ```
 
 ### 3. Modify `TemplateImpl.cpp`
 
 - `TemplateImpl.cpp` is the core implementation file for the new vendor. Below is a key portion of this file:
 
-   \`\`\`cpp
+   ```cpp
    #include "RunnerInterface.hpp"
    //include your gpgpu kernel codes.
 
@@ -221,7 +221,7 @@ Contributions, especially PRs implementing **Metal** and **HIP** support, are hi
 
        return std::move(outMem);
    }
-   \`\`\`
+   ```
 
    Modify the `Genv` and `Gcodes` structures to suit the new vendor, and implement the `BuildKernel` and `ActivateSTFT` functions.
 
@@ -229,13 +229,13 @@ Contributions, especially PRs implementing **Metal** and **HIP** support, are hi
 
 - Create a `CMakeLists.txt` file in the new vendor directory to define the build settings. For example:
 
-   \`\`\`cmake
+   ```cmake
    # cross_gpgpu/MyVendor/CMakeLists.txt
    cmake_minimum_required(VERSION 3.5)
    project(MyVendorSTFT)
 
    add_executable(myvendorRun src/TemplateImpl.cpp)
-   \`\`\`
+   ```
 
 ### 5. Build and Test
 
@@ -249,9 +249,9 @@ Contributions, especially PRs implementing **Metal** and **HIP** support, are hi
 
 - When using `STFTProxy`, add the new vendor to the `FallbackList` so that users can select it. For example:
 
-   \`\`\`cpp
+   ```cpp
    list.MyVendorFallback.push_back("./cross_gpgpu/MyVendor");
-   \`\`\`
+   ```
 
 ### 8. Submit a Pull Request
 

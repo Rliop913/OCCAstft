@@ -38,9 +38,10 @@ set(openclsrc
     ${CMAKE_CURRENT_SOURCE_DIR}/CL_Wrapper/src/cl_FACADE.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CL_Wrapper/src/cl_global_custom.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL/RunnerCommon.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct_SetGet.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTcapnp.capnp.c++
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../miniaudio.c)
+    )
 
 
 add_executable(openclRun ${openclsrc})
@@ -52,7 +53,6 @@ target_include_directories(openclRun PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/CL_Wrapper/include
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel
     ${opencl_hpp_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../miniaudio.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../include
 )
 message(${ixws_BINARY_DIR})

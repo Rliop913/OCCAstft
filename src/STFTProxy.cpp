@@ -282,14 +282,14 @@ int main()
 
 
     FallbackList list;
+    list.OpenMPFallback.push_back("./cross_gpgpu/OpenMP");
     list.SerialFallback.push_back("./cross_gpgpu/Serial");
-    // list.ServerFallback.push_back("127.0.0.1:54500");
+    list.ServerFallback.push_back("127.0.0.1:54500");
     auto temp = STFTProxy([](const ix::WebSocketErrorInfo& err)
     {
         std::cout<<err.reason<<std::endl;
         return;
     },list);
-    std::cout<<temp.STATUS<<std::endl;
     //temp.proxyOBJ.send("CLOSE_REQUEST");
     std::vector<float> testZeroData(10000);
     for(int i=0; i<testZeroData.size(); ++i)
@@ -300,7 +300,6 @@ int main()
 
     if(promisedData.has_value())
     {
-        std::cout<<"got future"<<std::endl;
         auto resOut = promisedData.value().get();
         if(resOut.has_value())
         {

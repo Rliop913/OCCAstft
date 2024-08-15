@@ -1,4 +1,4 @@
-
+#include <cmath>
 
 typedef struct complex_t {
   float real, imag;

@@ -1,5 +1,6 @@
 #include "RunnerInterface.hpp"
-#include "compiled_serial.hpp"
+#include "compiled_opemmp.hpp"
+
 
 struct Genv{
     //no use

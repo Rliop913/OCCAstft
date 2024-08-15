@@ -83,20 +83,6 @@ set(test_dummy
 set(testSrcs
     ${CMAKE_SOURCE_DIR}/test/test_fft_struct.cpp)
 
-#add_executable(occaSTFT ${srcs} ${test_dummy})
-#add_executable(testerOcca ${testSrcs} ${srcs})
-#add_test(NAME OccaTest COMMAND testerOcca)
-if(WIN32)
-#find_library(OccaLib occa.lib HINTS ${CMAKE_SOURCE_DIR}/OCCA/lib)
-# target_link_libraries(occaSTFT PUBLIC ${CMAKE_SOURCE_DIR}/OCCA/lib/occa.lib)
-# target_link_libraries(testerOcca PRIVATE gtest_main gtest ${OccaLib})
-else()
-# target_link_libraries(occaSTFT PUBLIC OCCA::libocca)
-# target_link_libraries(testerOcca PRIVATE gtest_main gtest OCCA::libocca)
-endif()
-
-
-
 
 
 if(CUDA_FOUND)
@@ -108,7 +94,7 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/OpenCL)
 endif()
 
 if(OpenMP_FOUND)
-#add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/OpenMP)
+add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/OpenMP)
 endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/Serial)
@@ -118,6 +104,7 @@ set(mainsrc
     ${CMAKE_SOURCE_DIR}/src/STFTProxy.cpp
     ${CMAKE_SOURCE_DIR}/src/FFTStruct.cpp
     ${CMAKE_SOURCE_DIR}/src/FFTcapnp.capnp.c++
+    ${CMAKE_SOURCE_DIR}/src/FFTStruct_SetGet.cpp    
     )
 message(${ixws_BINARY_DIR})
 add_executable(STFTMain ${mainsrc})

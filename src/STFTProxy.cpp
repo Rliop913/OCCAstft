@@ -125,7 +125,7 @@ STFTProxy::TryConnect(PATH& path)
                 return false;
             }
             proxyOBJ.setUrl(
-                "ws://localhost:" +
+                "ws://127.0.0.1:" +
                 std::to_string(portNumber)
             );
             runnerkilled = std::promise<bool>();
@@ -282,15 +282,14 @@ int main()
 
 
     FallbackList list;
-    list.OpenMPFallback.push_back("./cross_gpgpu/OpenMP");
+    //list.OpenMPFallback.push_back("./cross_gpgpu/OpenMP");
     list.SerialFallback.push_back("./cross_gpgpu/Serial");
-    list.ServerFallback.push_back("127.0.0.1:54500");
+    //list.ServerFallback.push_back("127.0.0.1:54500");
     auto temp = STFTProxy([](const ix::WebSocketErrorInfo& err)
     {
-        std::cout<<err.reason<<std::endl;
+        std::cout<<err.reason << " custom messages"<<std::endl;
         return;
     },list);
-    //temp.proxyOBJ.send("CLOSE_REQUEST");
     std::vector<float> testZeroData(10000);
     for(int i=0; i<testZeroData.size(); ++i)
     {

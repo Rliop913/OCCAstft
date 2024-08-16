@@ -1,5 +1,5 @@
-#include <cmath>
-
+#define _USE_MATH_DEFINES
+#include <math.h>
 typedef struct complex_t {
   float real, imag;
 } complex;

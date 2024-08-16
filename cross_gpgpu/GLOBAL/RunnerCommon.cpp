@@ -5,8 +5,11 @@
 
 Runner::Runner(const int& portNumber)
 {
+    std::cout<<"RC:INIT"<<std::endl;
     InitEnv();
+    std::cout<<"RC:9"<<std::endl;
     BuildKernel();
+    std::cout<<"RC:11"<<std::endl;
     if(!ServerInit(portNumber))
     {
         std::cerr<<"ERR on server init"<<std::endl;
@@ -30,7 +33,6 @@ Runner::~Runner()
         delete server;
     }
 }
-
 MAYBE_DATA
 Runner::AccessData(FFTRequest& req)
 {
@@ -39,16 +41,20 @@ Runner::AccessData(FFTRequest& req)
     {
         std::cout<<"got mempath RC:40"<< mempath.value() <<std::endl;
         dataInfo = req.GetSHMPtr();
+        std::cout << "RC:44 gotshmptr"<<std::endl;
         if(!dataInfo.has_value())
         {
+            std::cout << "RC:47 nullopt"<<std::endl;
             return std::nullopt;
         }
         else
         {
             VECF accResult(req.get_dataLength());
+            std::cout << "RC:52 memcpy"<<std::endl;
             memcpy( accResult.data(), 
                     dataInfo.value().first, 
                     req.get_dataLength() * sizeof(float));
+                    std::cout << "RC:55 memcpy"<<std::endl;
             return std::move(accResult);
         }
         
@@ -68,7 +74,7 @@ Runner::ServerInit(const int& pNum)
         delete server;
     }
     server = new ix::WebSocketServer(pNum, "0.0.0.0");//need to add random
-
+    
     server->setOnClientMessageCallback([&](
             std::shared_ptr<ix::ConnectionState> connectionState,
             ix::WebSocket &webSocket,
@@ -163,6 +169,7 @@ int main(int argc, char *argv[])
     std::cout<<"runner started" << portNumber <<std::endl;
     ix::initNetSystem();
     Runner mainOBJ = Runner(portNumber);
+    std::cout<<"RC:169"<<std::endl;
     mainOBJ.server->wait();
     std::cout<<"end Runner"<<std::endl;
     ix::uninitNetSystem();

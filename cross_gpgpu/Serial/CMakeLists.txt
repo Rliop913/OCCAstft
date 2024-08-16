@@ -44,6 +44,7 @@ target_include_directories(serialRun PRIVATE
 )
 
 if(WIN32)
+    target_link_libraries(serialRun PRIVATE ws2_32)
     if(MSVC)
         target_link_libraries(serialRun PRIVATE
             $<$<CONFIG:Release>:${ixws_BINARY_DIR}/Release/ixwebsocket.lib>

@@ -13,17 +13,18 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstring>
+using SHMOBJ        = std::pair<void*, int>;
 
 
 #endif
 #ifdef OS_WINDOWS
 #include <Windows.h>
+using SHMOBJ        = std::pair<LPVOID, HANDLE>;
 #endif
 #include "runtimeChecker.hpp"
 
 
 using BIN           = std::string;
-using SHMOBJ        = std::pair<void*, int>;
 
 using R             = RequestCapnp::Reader;
 using W             = RequestCapnp::Builder;
@@ -125,6 +126,7 @@ public:
 
 };
 
+#ifdef OS_POSIX
 
 template<typename T>
 ULL
@@ -135,6 +137,22 @@ FFTRequest::adjustToPage(const ULL& length)
     return ((dataSize + PageSize - 1) / PageSize) * PageSize;
 }
 
+#else
+
+template<typename T>
+ULL
+FFTRequest::adjustToPage(const ULL& length)
+{
+    SYSTEM_INFO sysInfo;
+    GetSystemInfo(&sysInfo);
+    DWORD pageSize  = sysInfo.dwPageSize;
+    ULL DSize = length * sizeof(T);
+    DSize = ((DSize + pageSize - 1) / pageSize) * pageSize;
+    return DSize;
+}
+
+
+#endif
 
 template<typename T>
 void

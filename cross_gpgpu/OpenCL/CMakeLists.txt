@@ -57,12 +57,13 @@ target_include_directories(openclRun PRIVATE
 )
 message(${ixws_BINARY_DIR})
 if(WIN32)
+  target_link_libraries(openclRun PRIVATE ws2_32)
     if(MSVC)
-        target_link_libraries(openclRun PRIVATE
-            OpenCL::OpenCL
-            $<$<CONFIG:Release>:${ixws_BINARY_DIR}/Release/ixwebsocket.lib>
-            $<$<CONFIG:Debug>:${ixws_BINARY_DIR}/Debug/ixwebsocket.lib>
-            )
+      target_link_libraries(openclRun PRIVATE
+          OpenCL::OpenCL
+          $<$<CONFIG:Release>:${ixws_BINARY_DIR}/Release/ixwebsocket.lib>
+          $<$<CONFIG:Debug>:${ixws_BINARY_DIR}/Debug/ixwebsocket.lib>
+          )
     else()
         target_link_libraries(openclRun PRIVATE 
         OpenCL::OpenCL

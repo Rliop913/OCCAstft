@@ -2,7 +2,7 @@
 #include "FFTStruct.hpp"
 #ifdef OS_POSIX
 void
-FFTRequest::MakeSharedMemory(const SupportedRuntimes& Type, const unsigned long long& dataSize)
+FFTRequest::MakeSharedMemory(const SupportedRuntimes& Type, const ULL& dataSize)
 {
     if(!mw.has_value())
     {
@@ -163,36 +163,36 @@ FFTRequest::FreeSHMPtr(SHMOBJ& shobj)
 }
 
 
-MAYBE_DATA
-FFTRequest::GetData()
-{
-    if(!mr.has_value())
-    {
-        return std::nullopt;
-    }
-    auto mp = &mr.value();
-    std::string sharemem = mp->getSharedMemory().cStr();
-    auto dataLength = mp->getDataLength();
-    auto __memPtr = reinterpret_cast<void*>(mp->getMemPTR());
-    auto sourceSize = mp->getData().size();
-    if(sharemem != "")
-    {
-        std::vector<float> result(dataLength);
-        memcpy(result.data(), __memPtr, dataLength * sizeof(float));
-        return std::move(result);
-    }
-    else if(sourceSize != 0)
-    {
-        std::vector<float> result(sourceSize);
-        copyToVecParallel(result.data(), mp, sourceSize);
-        std::cout << "got data FS_Linux:187 "<< result[150] <<std::endl;
-        return std::move(result);
-    }
-    else
-    {
-        return std::nullopt;
-    }
-}
+// MAYBE_DATA
+// FFTRequest::GetData()
+// {
+//     if(!mr.has_value())
+//     {
+//         return std::nullopt;
+//     }
+//     auto mp = &mr.value();
+//     std::string sharemem = mp->getSharedMemory().cStr();
+//     auto dataLength = mp->getDataLength();
+//     auto __memPtr = reinterpret_cast<void*>(mp->getMemPTR());
+//     auto sourceSize = mp->getData().size();
+//     if(sharemem != "")
+//     {
+//         std::vector<float> result(dataLength);
+//         memcpy(result.data(), __memPtr, dataLength * sizeof(float));
+//         return std::move(result);
+//     }
+//     else if(sourceSize != 0)
+//     {
+//         std::vector<float> result(sourceSize);
+//         copyToVecParallel(result.data(), mp, sourceSize);
+//         std::cout << "got data FS_Linux:187 "<< result[150] <<std::endl;
+//         return std::move(result);
+//     }
+//     else
+//     {
+//         return std::nullopt;
+//     }
+// }
 
 void
 FFTRequest::FreeData()

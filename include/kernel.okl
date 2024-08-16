@@ -1,5 +1,6 @@
 #ifdef __SERIAL
-#include <cmath>
+#define _USE_MATH_DEFINES
+#include <math.h>
 #endif
 
 typedef struct complex_t{

@@ -43,6 +43,7 @@ target_include_directories(openmpRun PRIVATE
 )
 
 if(WIN32)
+    target_link_libraries(openmpRun PRIVATE ws2_32)
     if(MSVC)
         target_link_libraries(openmpRun PRIVATE
             $<$<CONFIG:Release>:${ixws_BINARY_DIR}/Release/ixwebsocket.lib>

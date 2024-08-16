@@ -4,13 +4,25 @@ set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
 project(occaSTFT VERSION 0.1.0 LANGUAGES C CXX)
 
 # add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
 # set(CMAKE_BUILD_TYPE Debug)
 
 include(FetchContent)
+if(WIN32)#window
+add_definitions(-DOS_WINDOWS)
+add_definitions(-DWIN32_LEAN_AND_MEAN)
+# set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};G:/vcpkg/installed/x64-windows")
+# set(CapnProto_DIR "G:/vcpkg/installed/x64-windows/share/capnproto")
+# set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+# set(VCPKG_TARGET_TRIPLET "x64-windows")
+else()
+add_definitions(-DOS_POSIX)
 
+
+endif()# linux
 # if(MSVC)
 #     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
 #     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
@@ -33,12 +45,11 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(ixws)
 FetchContent_MakeAvailable(Catch2)
-
+find_package(ZLIB REQUIRED)
 include(CTest)
 include(Catch)
 enable_testing()
 # find_package(ixwebsocket REQUIRED)
-find_package(ZLIB REQUIRED)
 find_package(CUDA QUIET)
 find_package(OpenCL)
 find_package(OpenMP)
@@ -46,16 +57,7 @@ find_package(CapnProto REQUIRED)
 
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
-if(WIN32)#window
-add_definitions(-DOS_WINDOWS)
 
-
-else()
-add_definitions(-DOS_POSIX)
-find_package(OCCA REQUIRED)
-
-
-endif()# linux
 
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

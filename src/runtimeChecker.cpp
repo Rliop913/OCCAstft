@@ -1,37 +1,44 @@
 #include "runtimeChecker.hpp"
 
 #ifdef OS_WINDOWS
-
-
-MAYBE_RUNNER&
-RuntimeCheck::ExcuteRunner(const std::string& executePath)
+#include <process.h>
+bool
+RuntimeCheck::ExcuteRunner(const std::string& executePath, const int& portNum)
 {
-    STARTUPINFO si;
-    RUNNER_INFO ri;
+    std::string ptnum = std::to_string(portNum);
+    auto exePath = fs::relative(executePath).string();
+    char *argv[] = {(char*)exePath.c_str(), (char*)ptnum.c_str(), NULL};
 
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    ZeroMemory(&ri, sizeof(ri));
-
-    bool result = CreateProcess
-    (
-        NULL, NULL, NULL, NULL,
-        FALSE,
-        0,
-        NULL, NULL,
-        &si,
-        &ri
-    );
-
-    if(result)
+    auto result = _spawnv(_P_NOWAIT, exePath.c_str(), argv);
+    if(result == -1)
     {
-        CloseHandle(ri.hProcess);
-        CloseHandle(ri.hThread);
-        return std::nullopt;
+        return false;
     }
+    return true;
+    //not implemented on Windows
+    // STARTUPINFO si;
+    // RUNNER_INFO ri;
 
+    // ZeroMemory(&si, sizeof(si));
+    // si.cb = sizeof(si);
+    // ZeroMemory(&ri, sizeof(ri));
 
-    return std::move(ri);
+    // bool result = CreateProcess
+    // (
+    //     NULL, NULL, NULL, NULL,
+    //     FALSE,
+    //     0,
+    //     NULL, NULL,
+    //     &si,
+    //     &ri
+    // );
+
+    // if(result)
+    // {
+    //     CloseHandle(ri.hProcess);
+    //     CloseHandle(ri.hThread);
+    //     return false;
+    // }
 }
 
 
@@ -44,7 +51,8 @@ RuntimeCheck::ExcuteRunner(const std::string& executePath, const int& portNum)
 {
     pid_t pid;
     std::string ptnum = std::to_string(portNum);
-    fs::path exePath(executePath);
+    auto exePath = fs::relative(executePath).string();
+
     char *argv[] = {(char*)exePath.c_str(), (char*)ptnum.c_str(), NULL};
     if (posix_spawn(&pid, exePath.c_str(), NULL, NULL, argv, environ) != 0)
     {

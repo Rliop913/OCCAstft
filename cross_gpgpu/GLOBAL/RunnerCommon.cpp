@@ -19,6 +19,7 @@ Runner::Runner(const int& portNumber)
 
 Runner::~Runner()
 {
+    UnInit();
     if(env != nullptr)
     {
         delete env;

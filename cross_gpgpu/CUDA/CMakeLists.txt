@@ -1,21 +1,63 @@
 cmake_minimum_required(VERSION 3.5.0)
-set(CMAKE_C_COMPILER clang)
-set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 project(cudaSTFT VERSION 0.1.0 LANGUAGES C CXX)
 
-find_package(CUDAToolkit REQUIRED)
+include(FetchContent)
 
+
+FetchContent_Declare(
+  ixws
+  GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
+  GIT_TAG v11.4.5
+)
+
+FetchContent_MakeAvailable(ixws)
+
+find_package(ZLIB REQUIRED)
+find_package(CapnProto REQUIRED)
+find_package(CUDAToolkit REQUIRED)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(cudasrc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+${CMAKE_CURRENT_SOURCE_DIR}/src/CudaImpl.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL/RunnerCommon.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct_SetGet.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTcapnp.capnp.c++
+)
 
 
-add_library(cudaRun cudasrc)
+add_executable(cudaRun ${cudasrc})
+target_link_libraries(cudaRun PRIVATE CapnProto::capnp CapnProto::kj)
 
 target_link_libraries(cudaRun PRIVATE CUDA::cuda_driver)
+target_include_directories(cudaRun PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
+target_include_directories(cudaRun PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL#reverseOOP
+    ${CMAKE_CURRENT_SOURCE_DIR}/kernel
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../include
+)
+
+
+if(WIN32)
+    target_link_libraries(cudaRun PRIVATE ws2_32)
+    if(MSVC)
+        target_link_libraries(cudaRun PRIVATE
+            $<$<CONFIG:Release>:${ixws_BINARY_DIR}/Release/ixwebsocket.lib>
+            $<$<CONFIG:Debug>:${ixws_BINARY_DIR}/Debug/ixwebsocket.lib>
+            )
+    else()
+        target_link_libraries(cudaRun PRIVATE 
+        ${ixws_BINARY_DIR}/ixwebsocket.lib)
+    endif()
+else()
+    target_link_libraries(cudaRun PRIVATE 
+    ${ixws_BINARY_DIR}/libixwebsocket.a)
+    
+endif()
+target_link_libraries(cudaRun PRIVATE ZLIB::ZLIB)
+target_include_directories(cudaRun PRIVATE ${ixws_SOURCE_DIR}/ixwebsocket)
 #ptx 변환작업 필요
 #libcuda만 사용, 즉 드라이버 API만 사용

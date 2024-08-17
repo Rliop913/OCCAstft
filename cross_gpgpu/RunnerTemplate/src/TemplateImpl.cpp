@@ -40,6 +40,11 @@ Runner::BuildKernel()
     //
 }
 
+void
+Runner::UnInit()
+{
+    //
+}
 
 /**
  * ActivateSTFT: Executes the Short-Time Fourier Transform (STFT) on the input data using GPGPU.

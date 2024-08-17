@@ -33,6 +33,11 @@ Runner::InitEnv()
     env->CQ = clboost::make_cq(env->CT, env->DV);
 }
 
+void
+Runner::UnInit()
+{
+    //nothing
+}
 
 void
 Runner::BuildKernel()

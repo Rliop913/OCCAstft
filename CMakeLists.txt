@@ -88,7 +88,7 @@ set(testSrcs
 
 
 if(CUDA_FOUND)
-#add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/CUDA)
+add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/CUDA)
 endif()
 
 if(OpenCL_FOUND)

@@ -282,9 +282,11 @@ int main()
 
 
     FallbackList list;
+    list.ServerFallback.push_back("127.0.0.1:54500");
+    //list.CUDAFallback.push_back("./cross_gpgpu/CUDA");
     //list.OpenMPFallback.push_back("./cross_gpgpu/OpenMP");
-    list.SerialFallback.push_back("./cross_gpgpu/Serial");
-    //list.ServerFallback.push_back("127.0.0.1:54500");
+    //list.SerialFallback.push_back("./cross_gpgpu/Serial");
+    //list.ServerFallback.push_back("192.168.35.90:54500");
     auto temp = STFTProxy([](const ix::WebSocketErrorInfo& err)
     {
         std::cout<<err.reason << " custom messages"<<std::endl;
@@ -308,6 +310,7 @@ int main()
     }
     getchar();
     
+    temp.proxyOBJ.sendText("CLOSE_REQUEST");
     if(temp.KillRunner())
     {
         std::cout <<"safe closed" << std::endl;

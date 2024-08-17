@@ -18,6 +18,12 @@ Runner::InitEnv()
 }
 
 void
+Runner::UnInit()
+{
+    
+}
+
+void
 Runner::BuildKernel()
 {
     //no need

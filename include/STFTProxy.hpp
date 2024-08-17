@@ -40,6 +40,7 @@ private:
     //initialized by outside
     FallbackList fallback;
     ERR_FUNC errorHandler;
+public:
     ix::WebSocket proxyOBJ;
     int portNumber = -1;
     //states

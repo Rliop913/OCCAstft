@@ -40,7 +40,7 @@ private:
 
     void InitEnv();
     void BuildKernel();
-    
+    void UnInit();
     
     bool ServerInit(const int& pNum);//common impl
     void ServerConnect();//common impl

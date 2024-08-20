@@ -37,7 +37,7 @@ Runner::InitEnv()
     CheckCudaError(cuInit(0));
     CheckCudaError(cuDeviceGet(&(env->device), 0));
     CheckCudaError(cuCtxCreate(&(env->context), 0, env->device));
-    CheckCudaError(cuModuleLoad(&(env->module), "./compiled_cuda.ptx"));
+    CheckCudaError(cuModuleLoad(&(env->module), "./compiled_cuda_copy.ptx"));
     std::cout<<"CU:41 end init"<<std::endl;
     kens = new Gcodes;
 }
@@ -54,10 +54,10 @@ void
 Runner::BuildKernel()
 {
     CheckCudaError(cuModuleGetFunction(&(kens->overlapNWindow), env->module, "_occa_overlap_N_window_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->rmDC), env->module, "_occa_removeDC_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->bitReverse), env->module, "_occa_bitReverse_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->endPreProcess), env->module, "_occa_endPreProcess_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->butterfly), env->module, "_occa_Butterfly_0"));
+    // CheckCudaError(cuModuleGetFunction(&(kens->rmDC), env->module, "_occa_removeDC_0"));
+    // CheckCudaError(cuModuleGetFunction(&(kens->bitReverse), env->module, "_occa_bitReverse_0"));
+    // CheckCudaError(cuModuleGetFunction(&(kens->endPreProcess), env->module, "_occa_endPreProcess_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->butterfly), env->module, "_occa_StockhamButterfly10_0"));
     CheckCudaError(cuModuleGetFunction(&(kens->toPower), env->module, "_occa_toPower_0"));
     std::cout<<"CU:64 end build"<<std::endl;
 }
@@ -127,60 +127,53 @@ Runner::ActivateSTFT(   VECF& inData,
     //     NULL
     // ));
 
-    void *bitRev[] =
-    {
-        &DoverlapBuffer,
-        (void*)&OFullSize,
-        (void*)&windowSize,
-        (void*)&windowRadix
-    };
-    CheckCudaError(cuLaunchKernel(
-        kens->bitReverse,
-        FullGridSize, 1, 1,
-        LOCAL_SIZE, 1, 1,
-        0,
-        stream,
-        bitRev,
-        NULL
-    ));
+    // void *bitRev[] =
+    // {
+    //     &DoverlapBuffer,
+    //     (void*)&OFullSize,
+    //     (void*)&windowSize,
+    //     (void*)&windowRadix
+    // };
+    // CheckCudaError(cuLaunchKernel(
+    //     kens->bitReverse,
+    //     FullGridSize, 1, 1,
+    //     LOCAL_SIZE, 1, 1,
+    //     0,
+    //     stream,
+    //     bitRev,
+    //     NULL
+    // ));
 
-    void *endPre[] =
-    {
-        &DoverlapBuffer,
-        (void*)&OFullSize
-    };
-    CheckCudaError(cuLaunchKernel(
-        kens->endPreProcess,
-        FullGridSize, 1, 1,
-        LOCAL_SIZE, 1, 1,
-        0,
-        stream,
-        endPre,
-        NULL
-    ));
+    // void *endPre[] =
+    // {
+    //     &DoverlapBuffer,
+    //     (void*)&OFullSize
+    // };
+    // CheckCudaError(cuLaunchKernel(
+    //     kens->endPreProcess,
+    //     FullGridSize, 1, 1,
+    //     LOCAL_SIZE, 1, 1,
+    //     0,
+    //     stream,
+    //     endPre,
+    //     NULL
+    // ));
 
     int powedStage = 0;
     void *butterfly[] =
     {
         &DoverlapBuffer,
-        (void*)&windowSize,
-        (void*)&powedStage,
-        (void*)&OHalfSize,
-        (void*)&windowRadix
+        (void*)&OHalfSize
     };
-    for(int iStage=0; iStage < windowRadix; ++iStage)
-    {
-        powedStage = 1 << iStage;
-        CheckCudaError(cuLaunchKernel(
-            kens->butterfly,
-            HalfGridSize, 1, 1,
-            LOCAL_SIZE, 1, 1,
-            0,
-            stream,
-            butterfly,
-            NULL
-        ));
-    }
+    CheckCudaError(cuLaunchKernel(
+        kens->butterfly,
+        HalfGridSize, 1, 1,
+        512, 1, 1,
+        0,
+        stream,
+        butterfly,
+        NULL
+    ));
 
     void *toPow[] =
     {

@@ -20,7 +20,7 @@ add_definitions(-DWIN32_LEAN_AND_MEAN)
 # set(VCPKG_TARGET_TRIPLET "x64-windows")
 else()
 add_definitions(-DOS_POSIX)
-
+find_package(OCCA REQUIRED)
 
 endif()# linux
 # if(MSVC)
@@ -73,11 +73,11 @@ include_directories(
 )
 
 set(srcs
-    ${CMAKE_SOURCE_DIR}/src/STFT.cpp
+    ${CMAKE_SOURCE_DIR}/src/occa.cpp
 )
 
 set(test_dummy
-    ${CMAKE_SOURCE_DIR}/src/template.cpp    
+    ${CMAKE_SOURCE_DIR}/src/occa.cpp    
     ${CMAKE_SOURCE_DIR}/miniaudio.c
 
 )
@@ -111,11 +111,13 @@ set(mainsrc
 message(${ixws_BINARY_DIR})
 add_executable(STFTMain ${mainsrc})
 
-
-add_executable(TEST_STFT ${mainsrc})
-
 target_link_libraries(STFTMain PRIVATE CapnProto::capnp CapnProto::kj)
+if(OCCA_FOUND)
+add_executable(TEST_STFT ${test_dummy})
 target_link_libraries(TEST_STFT PRIVATE CapnProto::capnp CapnProto::kj)
+else()
+add_library(TEST_STFT ${testSrcs})
+endif()
 
 
 
@@ -152,3 +154,7 @@ target_link_libraries(TEST_STFT PRIVATE Catch2::Catch2WithMain)
 #catch_discover_tests(TEST_STFT)
 message(${ZLIB_LIBRARIES})
 # gtest_discover_tests(TEST_STFT)
+if(OCCA_FOUND)
+target_link_libraries(TEST_STFT PRIVATE ${CMAKE_SOURCE_DIR}/libocca.so)
+target_include_directories(TEST_STFT PRIVATE ${OCCA_INCLUDE_DIR})
+endif()

@@ -37,7 +37,7 @@ Runner::InitEnv()
     CheckCudaError(cuInit(0));
     CheckCudaError(cuDeviceGet(&(env->device), 0));
     CheckCudaError(cuCtxCreate(&(env->context), 0, env->device));
-    CheckCudaError(cuModuleLoad(&(env->module), "./compiled_cuda_copy.ptx"));
+    CheckCudaError(cuModuleLoad(&(env->module), "./compiled_cuda.ptx"));
     std::cout<<"CU:41 end init"<<std::endl;
     kens = new Gcodes;
 }
@@ -57,7 +57,7 @@ Runner::BuildKernel()
     // CheckCudaError(cuModuleGetFunction(&(kens->rmDC), env->module, "_occa_removeDC_0"));
     // CheckCudaError(cuModuleGetFunction(&(kens->bitReverse), env->module, "_occa_bitReverse_0"));
     // CheckCudaError(cuModuleGetFunction(&(kens->endPreProcess), env->module, "_occa_endPreProcess_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->butterfly), env->module, "_occa_StockhamButterfly10_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->butterfly), env->module, "_occa_Stockhpotimized10_0"));
     CheckCudaError(cuModuleGetFunction(&(kens->toPower), env->module, "_occa_toPower_0"));
     std::cout<<"CU:64 end build"<<std::endl;
 }

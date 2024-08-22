@@ -114,6 +114,8 @@ int main(int, char**){
     occa::kernel endPreProcess = dev.buildKernel("../include/kernel.okl", "endPreProcess", prop);
     occa::kernel Butterfly = dev.buildKernel("../include/kernel.okl", "Butterfly", prop);
     occa::kernel StockHam = dev.buildKernel("../include/kernel.okl", "StockhamButterfly10", prop);
+    occa::kernel Stockopt = dev.buildKernel("../include/kernel.okl", "Stockhpotimized10", prop);
+    
     occa::kernel optimizedDIFBUTTERFLY = dev.buildKernel("../include/kernel.okl", "OptimizedDIFButterfly10", prop);
     
     occa::kernel toPower = dev.buildKernel("../include/kernel.okl", "toPower", prop);
@@ -137,7 +139,8 @@ int main(int, char**){
     occacplx* origin = new occacplx[OFullSize];
     occacplx* opti = new occacplx[OFullSize];
     
-    StockHam(stkbuf, OHalfSize);
+    Stockopt(stkbuf, OHalfSize);
+    // StockHam(stkbuf, OHalfSize);
     // optimizedDIFBUTTERFLY(stkbuf, OHalfSize);
     // bitReverseTemp(dev_buffer, stkbufout, OFullSize, windowSize, windowRadix);
     // Butterfly(stkbufout, windowSize, 1, OHalfSize, windowRadix);

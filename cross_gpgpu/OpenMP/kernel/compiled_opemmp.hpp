@@ -52,6 +52,23 @@ inline spair stockhamIndexer(const int localIdx,
   return res;
 }
 
+typedef struct futureIDX {
+  unsigned int Fidx, isR;
+} FIDX;
+
+inline FIDX GetNextIndex(const int localIdx,
+                         const int nextSegment,
+                         const int NsegmentRadix) {
+  FIDX fidx;
+  fidx.isR = (localIdx & nextSegment) >> (NsegmentRadix - 1);
+  unsigned int temp = fidx.isR;
+  unsigned int isL = (temp == 0);
+  fidx.Fidx = ((localIdx & (nextSegment - 1)) + ((localIdx >> (NsegmentRadix + 1)) << NsegmentRadix)) * ((isL)) + (((localIdx - nextSegment) & (nextSegment - 1)) + (((localIdx - nextSegment) >> (NsegmentRadix + 1)) << NsegmentRadix)) * temp;
+  fidx.isR = ((temp != 0));
+  printf("%u unsigned \n", fidx.isR);
+  return fidx;
+}
+
 
 // pairs
 // indexing(const unsigned int ID,const int powed_stage)
@@ -218,6 +235,114 @@ extern "C" void endPreProcess(complex * buffer,
   }
 }
 
+extern "C" void Stockhpotimized10(complex * buffer,
+                                  const unsigned int & OHalfSize) {
+#pragma omp parallel for
+  for (unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 512) {
+    complex FBank[1024];
+    complex SBank[1024];
+    for (int i_itr = 0; i_itr < 512; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 512, 512), 1024);
+      complex LEFT = buffer[o_itr * 2 + i_itr];
+      complex RIGHT = buffer[o_itr * 2 + i_itr + 512];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 512] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 512; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 256, 512), 1024);
+      unsigned int LeftIndex = (i_itr & 255) | ((i_itr >> 8) << 9);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 256];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 512] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 512; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 128, 512), 1024);
+      unsigned int LeftIndex = (i_itr & 127) | ((i_itr >> 7) << 8);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 128];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 512] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 512; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 64, 512), 1024);
+      unsigned int LeftIndex = (i_itr & 63) | ((i_itr >> 6) << 7);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 64];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 512] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 512; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 32, 512), 1024);
+      unsigned int LeftIndex = (i_itr & 31) | ((i_itr >> 5) << 6);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 32];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 512] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 512; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 16, 512), 1024);
+      unsigned int LeftIndex = (i_itr & 15) | ((i_itr >> 4) << 5);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 16];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 512] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 512; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 8, 512), 1024);
+      unsigned int LeftIndex = (i_itr & 7) | ((i_itr >> 3) << 4);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 8];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 512] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 512; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 4, 512), 1024);
+      unsigned int LeftIndex = (i_itr & 3) | ((i_itr >> 2) << 3);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 4];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 512] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 512; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 2, 512), 1024);
+      unsigned int LeftIndex = (i_itr & 1) | ((i_itr >> 1) << 2);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 2];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 512] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 512; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 1, 512), 1024);
+      unsigned int LeftIndex = (i_itr << 1);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 1];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      buffer[o_itr * 2 + i_itr] = storeL;
+      buffer[o_itr * 2 + i_itr + 512] = storeR;
+    }
+  }
+}
+
 extern "C" void StockhamButterfly10(complex * buffer,
                                     const unsigned int & OHalfSize) {
 #pragma omp parallel for
@@ -309,20 +434,8 @@ extern "C" void StockhamButterfly10(complex * buffer,
       buffer[GIDX.first] = cadd(cfirst, csecond);
       buffer[GIDX.second] = cmult(csub(cfirst, csecond), thisTwiddle);
     }
-
-    // for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-    // {
-    //     pairs GIDX;
-    //     GIDX.first = o_itr * 2 + i_itr;
-    //     GIDX.second= GIDX.first + 512;
-    //     buffer[GIDX.first] = bank_first[i_itr];
-    //     buffer[GIDX.second] = bank_first[i_itr + 512];
-    // }
   }
 }
-
-
-// printf("%d STKstage k = %d\n", POWSTAGE, calculateK(idx.first, POWSTAGE, WINSIZE));
 
 extern "C" void OptimizedDIFButterfly10(complex * buffer,
                                         const unsigned int & OHalfSize) {
@@ -470,51 +583,6 @@ extern "C" void OptimizedDIFButterfly10(complex * buffer,
       buffer[Gidx.first] = bank_first[idx.first];
       buffer[Gidx.second] = bank_first[idx.second];
     }
-    // for(int i_itr = 0; i_itr < 256; ++i_itr; @inner)
-    // {
-    //     @barrier();
-    //     pairs idx = indexer((i_itr + o_itr) % (1024 / 2), 512);
-    //     complex cfirst = bank_second[idx.first];
-    //     complex csecond = bank_second[idx.second];
-
-    //     complex this_twiddle = twiddle(calculateK(idx.first, 512, 1024), 1024);
-    //     complex tempcplx = cmult(csecond, this_twiddle);
-
-    //     pairs Gidx = indexer(i_itr + o_itr, 512);
-    //     buffer[Gidx.first] = cadd(cfirst, tempcplx);
-    //     buffer[Gidx.second] = csub(cfirst, tempcplx);
-
-    //     bank_first[idx.first] = cadd(cfirst, tempcplx);
-    //     bank_first[idx.second] = csub(cfirst, tempcplx);
-    // }
-    // for(int i_itr = 0; i_itr < 256; ++i_itr; @inner)
-    // {
-    //     pairs idx = indexer(i_itr, 256);
-    //     complex cfirst = bank_first[idx.first];
-    //     complex csecond = bank_first[idx.second];
-
-    //     complex this_twiddle = twiddle(calculateK(idx.first, 256, 1024), 1024);
-    //     complex tempcplx = cmult(csecond, this_twiddle);
-    //     pairs GIDX = indexer(o_itr + i_itr, 256);
-    //     buffer[GIDX.first] = cadd(cfirst, tempcplx);
-    //     buffer[GIDX.second] = csub(cfirst, tempcplx);
-    // }
-    // for(int i_itr = 0; i_itr < 256; ++i_itr; @inner)
-    // {
-    //     pairs LIDX = indexer((i_itr + o_itr) % 512, 512);
-    //     pairs GIDX = indexer(i_itr + o_itr, 512);
-    //     // o_itr = 432153245;
-    //     complex cfirst = buffer[GIDX.first];
-    //     complex csecond = buffer[GIDX.second];
-    //     // printf("GDIX F : %d, S : %d\n", GIDX.first, GIDX.second);
-    //     // printf("stk=%d\n", calculateK(LIDX.first, 512, 1024));
-    //     complex this_twiddle = twiddle(calculateK(GIDX.first, 512, 1024), 1024);
-    //     complex tempcplx = cmult(csecond, this_twiddle);
-    //     printf("%f , %f idx: %d idxS: %d\n", csecond.real, cfirst.real, GIDX.first, GIDX.second);
-    //     buffer[GIDX.first] = cadd(cfirst, tempcplx);
-    //     buffer[GIDX.second] = csub(cfirst, tempcplx);
-    // }
-
   }
 }
 

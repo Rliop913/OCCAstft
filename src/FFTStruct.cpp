@@ -41,6 +41,7 @@ FFTRequest::Serialize()
 {
     if(mw.has_value())
     {
+        
         auto serialized = capnp::messageToFlatArray(wField);
         BIN binOut;
         binOut.resize(serialized.size() * sizeof(capnp::word));
@@ -62,9 +63,11 @@ FFTRequest::Deserialize()
         reinterpret_cast<const capnp::word*>(BinData.data()),
         BinData.size() / sizeof(capnp::word)
     );
+    capnp::ReaderOptions options;
+    options.traversalLimitInWords = std::numeric_limits<ULL>::max();
     
     std::cout<< BinData.size()<<", "<< binPtr.size()<<std::endl;
-    rField = std::make_unique<capnp::FlatArrayMessageReader>(binPtr);
+    rField = std::make_unique<capnp::FlatArrayMessageReader>(binPtr, options);
     mr = rField->getRoot<RequestCapnp>();
 }
 

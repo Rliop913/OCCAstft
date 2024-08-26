@@ -118,7 +118,7 @@ FFTRequest::GetSHMPtr()
     auto mp = &mr.value();
     SHMOBJ sharedObj;
     std::string sharemem = mp->getSharedMemory().cStr();
-    auto dataLength = mp->getDataLength();
+    ULL dataLength = mp->getDataLength();
 
     if(sharemem == "")
     {

@@ -1,6 +1,4 @@
 
-
-
 #include <CL/opencl.hpp>
 #include "RunnerInterface.hpp"
 #include "CL_Wrapper.h"
@@ -15,11 +13,8 @@ struct Genv{
 
 
 struct Gcodes{
-    Kernel overlapNWindow;
-    Kernel rmDC;
-    Kernel bitReverse;
-    Kernel endPreProcess;
-    Kernel butterfly;
+    Kernel R10STFT;
+    Kernel R11STFT;
     Kernel toPower;
 };
 
@@ -44,25 +39,11 @@ Runner::BuildKernel()
 {
     kens = new Gcodes;
     okl_embed clCodes;
-    Program codeBase = clboost::make_prog(clCodes.compiled_code, env->CT, env->DV);
-    
-    kens->rmDC = clboost::make_kernel(codeBase, "_occa_removeDC_0"); 
-    // cl_facade::create_kernel(clCodes.compiled_code, "_occa_removeDC_0", env->CT, env->DV);
-
-    kens->overlapNWindow = clboost::make_kernel(codeBase, "_occa_overlap_N_window_0");
-    // cl_facade::create_kernel(clCodes.compiled_code, "_occa_overlap_N_window_0", env->CT, env->DV);
-
-    kens->bitReverse = clboost::make_kernel(codeBase, "_occa_bitReverse_0");
-    // cl_facade::create_kernel(clCodes.compiled_code, "_occa_bitReverse_0", env->CT, env->DV);
-
-    kens->endPreProcess = clboost::make_kernel(codeBase, "_occa_endPreProcess_0");
-    // cl_facade::create_kernel(clCodes.compiled_code, "_occa_endPreProcess_0", env->CT, env->DV);
-
-    kens->butterfly = clboost::make_kernel(codeBase, "_occa_Butterfly_0");
-    // cl_facade::create_kernel(clCodes.compiled_code, "_occa_Butterfly_0", env->CT, env->DV);
-
+    Program codeBase = clboost::make_prog(clCodes.compiled, env->CT, env->DV);
+    kens->R10STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW10_STH_STFT_0");
+    kens->R11STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW11_STH_STFT_0");
     kens->toPower = clboost::make_kernel(codeBase, "_occa_toPower_0");
-    // cl_facade::create_kernel(clCodes.compiled_code, "_occa_toPower_0", env->CT, env->DV);
+    
 
 }
 
@@ -79,53 +60,40 @@ Runner::ActivateSTFT(   VECF& inData,
     const unsigned int OMove     = windowSize * (1.0f - overlapRatio);
     Buffer inMem = clboost::HTDCopy<float>(env->CT, FullSize, inData.data());
     Buffer outMem = clboost::DMEM<float>(env->CT, OHalfSize);
-    Buffer qtBuffer = clboost::DMEM<float>(env->CT, qtConst);
     Buffer tempMem = clboost::DMEM<cplx_t>(env->CT, OFullSize);
     
     std::vector<int> error_container(30 + windowRadix);
     int error_itr = 0;
-
-    error_container[error_itr++] = kens->overlapNWindow.setArg(0, inMem);
-    error_container[error_itr++] = kens->overlapNWindow.setArg(1, tempMem);
-    error_container[error_itr++] = kens->overlapNWindow.setArg(2, FullSize);
-    error_container[error_itr++] = kens->overlapNWindow.setArg(3, OFullSize);
-    error_container[error_itr++] = kens->overlapNWindow.setArg(4, windowSize);
-    error_container[error_itr++] = kens->overlapNWindow.setArg(5, OMove);
+    Kernel* RAIO;
+    int workGroupSize = 0;
+    switch (windowRadix)
+    {
+    case 11:
+        RAIO = &(kens->R11STFT);
+        workGroupSize = 1024;
+        break;
+    case 10:
+        RAIO = &(kens->R10STFT);
+        workGroupSize = 512;
+        break;
+    default:
+        break;
+    }
     
-    error_container[error_itr++] = kens->rmDC.setArg(0, tempMem);
-    error_container[error_itr++] = kens->rmDC.setArg(1, OFullSize);
-    error_container[error_itr++] = kens->rmDC.setArg(2, qtBuffer);
-    error_container[error_itr++] = kens->rmDC.setArg(3, windowSize);
-    
-    error_container[error_itr++] = kens->bitReverse.setArg(0, tempMem);
-    error_container[error_itr++] = kens->bitReverse.setArg(1, OFullSize);
-    error_container[error_itr++] = kens->bitReverse.setArg(2, windowSize);
-    error_container[error_itr++] = kens->bitReverse.setArg(3, windowRadix);
-    
-    error_container[error_itr++] = kens->endPreProcess.setArg(0, tempMem);
-    error_container[error_itr++] = kens->endPreProcess.setArg(1, OFullSize);
-    
-    error_container[error_itr++] = kens->butterfly.setArg(0, tempMem);
-    error_container[error_itr++] = kens->butterfly.setArg(1, windowSize);
-    //idx 2 changes in stage loop
-    error_container[error_itr++] = kens->butterfly.setArg(3, OHalfSize);
-    error_container[error_itr++] = kens->butterfly.setArg(4, windowRadix);
+    error_container[error_itr++] = RAIO->setArg(0, inMem);
+    error_container[error_itr++] = RAIO->setArg(1, qtConst);
+    error_container[error_itr++] = RAIO->setArg(2, FullSize);
+    error_container[error_itr++] = RAIO->setArg(3, OMove);
+    error_container[error_itr++] = RAIO->setArg(4, OHalfSize);
+    error_container[error_itr++] = RAIO->setArg(5, tempMem);
     
     error_container[error_itr++] = kens->toPower.setArg(0, tempMem);
     error_container[error_itr++] = kens->toPower.setArg(1, outMem);
     error_container[error_itr++] = kens->toPower.setArg(2, OHalfSize);
     error_container[error_itr++] = kens->toPower.setArg(3, windowRadix);
     
-    error_container[error_itr++] = clboost::enq_q(env->CQ, kens->overlapNWindow, OFullSize, LOCAL_SIZE);
-    error_container[error_itr++] = clboost::enq_q(env->CQ, kens->rmDC, OFullSize, LOCAL_SIZE);
-    error_container[error_itr++] = clboost::enq_q(env->CQ, kens->bitReverse, OFullSize, LOCAL_SIZE);
-    error_container[error_itr++] = clboost::enq_q(env->CQ, kens->endPreProcess, OFullSize, LOCAL_SIZE);
+    error_container[error_itr++] = clboost::enq_q(env->CQ, (*RAIO), OFullSize, workGroupSize);
     
-    for(int iStage=0; iStage < windowRadix; ++iStage)
-    {
-        kens->butterfly.setArg(2, 1 << iStage);
-        error_container[error_itr++] = clboost::enq_q(env->CQ, kens->butterfly, OHalfSize, LOCAL_SIZE);
-    }
     error_container[error_itr++] = clboost::enq_q(env->CQ, kens->toPower, OHalfSize, LOCAL_SIZE);
     std::vector<float> outData(OHalfSize);
     error_container[error_itr++] = clboost::q_read(env->CQ, outMem, true, OHalfSize, outData.data());

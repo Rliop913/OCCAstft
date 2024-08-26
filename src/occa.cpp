@@ -70,7 +70,7 @@ int main(int, char**){
     
     constexpr int readFrame = 1024*1000;
     constexpr float overlap = 0.0f;
-    constexpr int windowRadix = 10;
+    constexpr int windowRadix = 11;
     constexpr int windowSize = 1 << windowRadix;
     float *hostBuffer = new float[readFrame];
     ma_decoder_seek_to_pcm_frame(&dec, 48000*20);
@@ -104,28 +104,34 @@ int main(int, char**){
     // occa::stream strm = dev.createStream();
     //okl_embed ken_code;
     //occa::kernel ken = dev.buildKernelFromString(ken_code.STFT, "STFT", prop);
-    occa::kernel removeDC = dev.buildKernel("../include/kernel.okl", "removeDC", prop);
+    //occa::kernel removeDC = dev.buildKernel("../include/kernel.okl", "removeDC", prop);
     occa::kernel overlap_N_window = dev.buildKernel("../include/kernel.okl", "overlap_N_window", prop);
-    occa::kernel overlap_N_window_imag = dev.buildKernel("../include/kernel.okl", "overlap_N_window_imag", prop);
-    
-    occa::kernel bitReverse = dev.buildKernel("../include/kernel.okl", "bitReverse", prop);
+    // occa::kernel overlap_N_window_imag = dev.buildKernel("../include/kernel.okl", "overlap_N_window_imag", prop);
+    occa::kernel preprocess10 = dev.buildKernel("../include/Radix10.okl", "preprocesses_ODW_10", prop);
+    // occa::kernel bitReverse = dev.buildKernel("../include/kernel.okl", "bitReverse", prop);
     occa::kernel bitReverseTemp = dev.buildKernel("../include/kernel.okl", "bitReverse_temp", prop);
+    occa::kernel ppodw11 = dev.buildKernel("../include/Radix11.okl", "preprocesses_ODW_11", prop);
+    occa::kernel sthm11 = dev.buildKernel("../include/Radix11.okl", "Stockhpotimized11", prop);
     
-    occa::kernel endPreProcess = dev.buildKernel("../include/kernel.okl", "endPreProcess", prop);
+    // occa::kernel endPreProcess = dev.buildKernel("../include/kernel.okl", "endPreProcess", prop);
     occa::kernel Butterfly = dev.buildKernel("../include/kernel.okl", "Butterfly", prop);
-    occa::kernel StockHam = dev.buildKernel("../include/kernel.okl", "StockhamButterfly10", prop);
-    occa::kernel Stockopt = dev.buildKernel("../include/kernel.okl", "Stockhpotimized10", prop);
+    occa::kernel Stockopt = dev.buildKernel("../include/Radix10.okl", "Stockhpotimized10", prop);
+    occa::kernel AIO = dev.buildKernel("../include/Radix11.okl", "preprocessed_ODW11_STH_STFT", prop);
     
-    occa::kernel optimizedDIFBUTTERFLY = dev.buildKernel("../include/kernel.okl", "OptimizedDIFButterfly10", prop);
+    // occa::kernel optimizedDIFBUTTERFLY = dev.buildKernel("../include/kernel.okl", "OptimizedDIFButterfly10", prop);
     
     occa::kernel toPower = dev.buildKernel("../include/kernel.okl", "toPower", prop);
     
     std::cout<<windowSize * (1.0f - overlap)<<std::endl;
     
-    //overlap_N_window_imag(dev_in, dev_buffer, readFrame, OFullSize, windowSize, (unsigned int)(windowSize * (1.0f - overlap)));
-    overlap_N_window(dev_in, dev_buffer, readFrame, OFullSize, windowSize, (unsigned int)(windowSize * (1.0f - overlap)));
-    overlap_N_window(dev_in, stkbuf, readFrame, OFullSize, windowSize, (unsigned int)(windowSize * (1.0f - overlap)));
+
+    ppodw11(dev_in, qt, readFrame, (unsigned int)(windowSize * (1.0f - overlap)), dev_buffer);
+    // ppodw11(dev_in, qt, readFrame, (unsigned int)(windowSize * (1.0f - overlap)), stkbuf);
     
+    //overlap_N_window_imag(dev_in, dev_buffer, readFrame, OFullSize, windowSize, (unsigned int)(windowSize * (1.0f - overlap)));
+    //overlap_N_window(dev_in, dev_buffer, readFrame, OFullSize, windowSize, (unsigned int)(windowSize * (1.0f - overlap)));
+    // overlap_N_window(dev_in, stkbuf, readFrame, OFullSize, windowSize, (unsigned int)(windowSize * (1.0f - overlap)));
+    // preprocess10(dev_in, qt, readFrame, (unsigned int)(windowSize * (1.0f - overlap)), stkbuf);
     // removeDC(dev_buffer, OFullSize, qt_buffer, windowSize);
     // bitReverse(dev_buffer, OFullSize, windowSize, windowRadix);
     // bitReverse(stkbuf, OFullSize, windowSize, windowRadix);
@@ -138,8 +144,12 @@ int main(int, char**){
     // dev.finish();
     occacplx* origin = new occacplx[OFullSize];
     occacplx* opti = new occacplx[OFullSize];
+
+    // sthm11(stkbuf, OHalfSize);
+
+    AIO(dev_in, qt, readFrame, (unsigned int)(windowSize * (1.0f - overlap)), OHalfSize, stkbuf);
     
-    Stockopt(stkbuf, OHalfSize);
+    // Stockopt(stkbuf, OHalfSize);
     // StockHam(stkbuf, OHalfSize);
     // optimizedDIFBUTTERFLY(stkbuf, OHalfSize);
     // bitReverseTemp(dev_buffer, stkbufout, OFullSize, windowSize, windowRadix);
@@ -154,6 +164,7 @@ int main(int, char**){
     // Butterfly(stkbufout, windowSize, 256, OHalfSize, windowRadix);
     // Butterfly(stkbufout, windowSize, 512, OHalfSize, windowRadix);
 
+    Butterfly(dev_buffer, windowSize, 1024, OHalfSize, windowRadix);
     Butterfly(dev_buffer, windowSize, 512, OHalfSize, windowRadix);
     Butterfly(dev_buffer, windowSize, 256, OHalfSize, windowRadix);
     Butterfly(dev_buffer, windowSize, 128, OHalfSize, windowRadix);

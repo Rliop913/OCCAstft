@@ -1,9 +1,12 @@
+#ifndef KERNEL_GUARD
+#define KERNEL_GUARD
+
 #ifdef __NEED_PI
-#define _USE_MATH_DEFINES
 #include <math.h>
 #endif
-// #include <math.h>
-// #include <cstdio>
+#include <math.h>
+#include <cstdio>
+
 typedef struct complex_t{
     float real;
     float imag;
@@ -14,12 +17,6 @@ typedef struct pairs_t{
     unsigned int second;
 }pairs;
 
-typedef struct stockhamPairs{
-    unsigned int lload;
-    unsigned int rload;
-    unsigned int lsave;
-    unsigned int rsave;
-}spair;
 
 inline 
 float 
@@ -51,73 +48,11 @@ indexer(const unsigned int firstMaximumID, const int powed_stage)
     return temp;
 }
 
-inline
-spair
-stockhamIndexer(const int localIdx, 
-                const int segmentSize,
-                const unsigned int HalfWinSize)
-{
-    spair res;
-    res.lload = localIdx + (localIdx & (~(segmentSize - 1)));
-    res.rload = res.lload + segmentSize;
-
-    res.lsave = localIdx;
-    res.rsave = HalfWinSize + res.lsave;
-    return res;
-}
-
-typedef struct futureIDX{
-    unsigned int Fidx;
-    unsigned int isR;
-}FIDX;
-
-inline
-FIDX
-GetNextIndex(   const int localIdx,
-                const int nextSegment,
-                const int NsegmentRadix)
-{
-    FIDX fidx;
-    fidx.isR = (localIdx & nextSegment) >> (NsegmentRadix - 1);
-    unsigned int temp = fidx.isR;
-    unsigned int isL = (temp == 0);
-
-    fidx.Fidx
-    = 
-    ((localIdx & (nextSegment - 1)) 
-    + 
-    ((localIdx >> (NsegmentRadix + 1)) << NsegmentRadix)) * ((isL))
-    +
-    (((localIdx - nextSegment) & (nextSegment - 1)) 
-    + 
-    (((localIdx - nextSegment) >> (NsegmentRadix + 1)) << NsegmentRadix)) * temp;
-    fidx.isR = ((temp != 0));
-    printf("%u unsigned \n", fidx.isR);
-    
-    return fidx;
-}
-
-// pairs
-// indexing(const unsigned int ID,const int powed_stage)
-// {
-//     pairs temp;
-//     temp.first = ID;
-//     temp.second = ID + (ID % (powed_stage*2) >= powed_stage ? -powed_stage : powed_stage);
-//     return temp;
-// }
-
-inline
-int calculateK(int windowIDX, int powed_stage, int windowSize) {
-
-    return ((windowIDX % powed_stage) * windowSize) / (powed_stage * 2);
-}
 
 inline
 int 
 segmentK(const int lsave, const int segmentSize, const int HwindowSize)
 {
-    // return lsave;
-    // return calculateK(lsave, segmentSize, windowSize);
     return ((lsave % segmentSize) * HwindowSize) / segmentSize;
 }
 
@@ -163,31 +98,44 @@ cmod(complex a){
     return (sqrt(a.real*a.real + a.imag*a.imag));
 }
 
-@kernel void removeDC(  complex* buffer,
-                        const unsigned int OFullSize,
-                        float* qt_buffer,
-                        const int windowSize)
+
+inline
+void
+DaCAdd(   const int i_itr,
+            const unsigned int Half,
+            float windowAdded[])
 {
-    for(unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256; @outer)
-    {
-        for(int i_itr = 0; i_itr < 256; ++i_itr; @inner)
-        {
-            unsigned int IDX = o_itr + i_itr;
-            @atomic qt_buffer[IDX / windowSize] += buffer[IDX].imag;
-        }
-    }
-
-    for(unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256; @outer)
-    {
-        for(int i_itr = 0; i_itr < 256; ++i_itr;@inner)
-        {
-            unsigned int IDX = o_itr + i_itr;
-            
-            buffer[IDX].imag -= (qt_buffer[IDX / windowSize] / (float)windowSize);
-        }
-    }
-
+    unsigned int inRange = i_itr < Half;
+    float Dpoint = windowAdded[i_itr];
+    float Apoint = windowAdded[i_itr + (Half * inRange)];
+    windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
 }
+
+
+#define OpSthmSecondTF(SEG, SEGMO, SEGR, SEGRPO, HW, WINDOWSIZE)\
+complex thisTwiddle = twiddle(segmentK(i_itr, SEG, HW), WINDOWSIZE);\
+unsigned int LeftIndex = (i_itr & SEGMO) | ((i_itr >> SEGR) << SEGRPO);\
+\
+complex LEFT = SBank[LeftIndex];\
+complex RIGHT= SBank[LeftIndex + SEG];\
+complex storeL = cadd(LEFT, RIGHT);\
+complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);\
+\
+FBank[i_itr] = storeL;\
+FBank[i_itr + HW] = storeR;
+
+#define OpSthmFirstTS(SEG, SEGMO, SEGR, SEGRPO, HW, WINDOWSIZE)\
+complex thisTwiddle = twiddle(segmentK(i_itr, SEG, HW), WINDOWSIZE);\
+unsigned int LeftIndex = (i_itr & SEGMO) | ((i_itr >> SEGR) << SEGRPO);\
+\
+complex LEFT = FBank[LeftIndex];\
+complex RIGHT= FBank[LeftIndex + SEG];\
+complex storeL = cadd(LEFT, RIGHT);\
+complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);\
+\
+SBank[i_itr] = storeL;\
+SBank[i_itr + HW] = storeR;
+
 
 @kernel void overlap_N_window(  float* in,
                                 complex* buffer,
@@ -217,31 +165,6 @@ cmod(complex a){
 
 
 
-@kernel void overlap_N_window_imag(  float* in,
-                                complex* buffer,
-                                const unsigned int fullSize,
-                                const unsigned int OFullSize,
-                                const int windowSize,
-                                const unsigned int OMove)
-{
-    for(unsigned int w_num=0; w_num < OFullSize; w_num += 256; @outer)
-    {
-        for(int w_itr=0; w_itr < 256; ++w_itr; @inner)
-        {
-            unsigned int FID = w_num + w_itr;
-            unsigned int read_point = 
-                (unsigned int)((FID) / windowSize) * OMove + ((FID) % windowSize);
-            
-            // printf("%u buffer overlap\n", OMove);//buffer[FID].imag);
-            
-            buffer[FID].imag = 
-            read_point >= fullSize ? 0.0
-            :
-            in[read_point] * window_func((FID) % windowSize, windowSize);
-            buffer[FID].real = 0.0;
-        }
-    }
-}
 @kernel void bitReverse_temp(
                         complex* buffer,
                         complex* result,
@@ -262,361 +185,8 @@ cmod(complex a){
     }
 }
 
-@kernel void bitReverse(complex* buffer,
-                        const unsigned int OFullSize,
-                        const int windowSize,
-                        const int radixData)
-{
-    for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 256; @outer)
-    {
-        for(int w_itr=0; w_itr < 256; ++w_itr; @inner)
-        {
-            
-            unsigned int dst_idx = reverseBits(((o_itr + w_itr) % windowSize), radixData);
-            unsigned int BID = o_itr + w_itr - ((o_itr + w_itr) % windowSize) + dst_idx;
-            buffer[BID].real = buffer[o_itr + w_itr].imag;
-        }
-    }
-}
-
-@kernel void endPreProcess( complex* buffer,
-                            const unsigned int OFullSize)
-{
-    for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 256; @outer)
-    {
-        for(int i_itr=0; i_itr < 256; ++i_itr; @inner)
-        {
-            // printf("%f data buffer\n", buffer[o_itr + i_itr].real);
-            buffer[o_itr + i_itr].imag = 0.0;
-            
-        }
-    }
-}
 
 
-#define FirstToSecond(POWSTAGE, WINSIZE, HWINSIZE)\
-for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)\
-{\
-    pairs idx = indexer((i_itr + o_itr) % (HWINSIZE), POWSTAGE);\
-    complex cfirst = bank_first[idx.first];\
-    complex csecond = bank_first[idx.second];\
-\
-    complex this_twiddle = twiddle(calculateK(idx.first, POWSTAGE, WINSIZE), WINSIZE);\
-    complex tempcplx = cmult(csecond, this_twiddle);\
-\
-\
-    bank_second[idx.first] = cadd(cfirst, csecond);\
-    bank_second[idx.second] = cmult(csub(cfirst, csecond), this_twiddle);\
-\
-    pairs Gidx = indexer(i_itr + o_itr, POWSTAGE);\
-    buffer[Gidx.first] = bank_second[idx.first];\
-    buffer[Gidx.second] = bank_second[idx.second];\
-\
-}
-
-
-#define SecondToFirst(POWSTAGE, WINSIZE, HWINSIZE)\
-for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)\
-{\
-    pairs idx = indexer((i_itr + o_itr) % (HWINSIZE), POWSTAGE);\
-    complex cfirst = bank_second[idx.first];\
-    complex csecond = bank_second[idx.second];\
-\
-    complex this_twiddle = twiddle(calculateK(idx.first, POWSTAGE, WINSIZE), WINSIZE);\
-    complex tempcplx = cmult(csecond, this_twiddle);\
-\
-    bank_first[idx.first] = cadd(cfirst, csecond);\
-    bank_first[idx.second] = cmult(csub(cfirst, csecond), this_twiddle);\
-\
-    pairs Gidx = indexer(i_itr + o_itr, POWSTAGE);\
-    buffer[Gidx.first] = bank_first[idx.first];\
-    buffer[Gidx.second] = bank_first[idx.second];\
-\
-}
-
-#define SthmFirstToSecond(SEGMENTSIZE, HWINSIZE, WINDOWSIZE)\
-spair lidx = stockhamIndexer(i_itr, SEGMENTSIZE, HWINSIZE);\
-complex thisTwiddle = twiddle(segmentK(lidx.lsave, SEGMENTSIZE, HWINSIZE), WINDOWSIZE);\
-complex cfirst = bank_first[lidx.lload];\
-complex csecond= bank_first[lidx.rload];\
-bank_second[lidx.lsave] = cadd(cfirst, csecond);\
-bank_second[lidx.rsave] = cmult(csub(cfirst, csecond), thisTwiddle);
-
-#define SthmSecondToFirst(SEGMENTSIZE, HWINSIZE, WINDOWSIZE)\
-spair lidx = stockhamIndexer(i_itr, SEGMENTSIZE, HWINSIZE);\
-complex thisTwiddle = twiddle(segmentK(lidx.lsave, SEGMENTSIZE, HWINSIZE), WINDOWSIZE);\
-complex cfirst = bank_second[lidx.lload];\
-complex csecond= bank_second[lidx.rload];\
-bank_first[lidx.lsave] = cadd(cfirst, csecond);\
-bank_first[lidx.rsave] = cmult(csub(cfirst, csecond), thisTwiddle);
-
-@kernel void Stockhpotimized10(complex* buffer, const unsigned int OHalfSize)
-{
-    for(unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 512; @outer)
-    {
-        @shared complex FBank[1024];
-        @shared complex SBank[1024];
-        
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            complex thisTwiddle = twiddle(segmentK(i_itr, 512, 512), 1024);
-            
-            complex LEFT = buffer[o_itr * 2 + i_itr];
-            complex RIGHT= buffer[o_itr * 2 + i_itr + 512];
-            complex storeL = cadd(LEFT, RIGHT);
-            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
-            SBank[i_itr] = storeL;
-            SBank[i_itr + 512] = storeR;
-        }
-
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            complex thisTwiddle = twiddle(segmentK(i_itr, 256, 512), 1024);
-            unsigned int LeftIndex = (i_itr & 255) | ((i_itr >> 8) << 9);
-            
-            complex LEFT = SBank[LeftIndex];
-            complex RIGHT= SBank[LeftIndex + 256];
-            complex storeL = cadd(LEFT, RIGHT);
-            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
-            
-            FBank[i_itr] = storeL;
-            FBank[i_itr + 512] = storeR;
-        }
-
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            complex thisTwiddle = twiddle(segmentK(i_itr, 128, 512), 1024);
-            
-            unsigned int LeftIndex = (i_itr & 127) | ((i_itr >> 7) << 8);
-            
-            complex LEFT = FBank[LeftIndex];
-            complex RIGHT= FBank[LeftIndex + 128];
-            complex storeL = cadd(LEFT, RIGHT);
-            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
-            
-            SBank[i_itr] = storeL;
-            SBank[i_itr + 512] = storeR;
-        }
-
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            complex thisTwiddle = twiddle(segmentK(i_itr, 64, 512), 1024);
-
-            unsigned int LeftIndex = (i_itr & 63) | ((i_itr >> 6) << 7);
-            
-            complex LEFT = SBank[LeftIndex];
-            complex RIGHT= SBank[LeftIndex + 64];
-            complex storeL = cadd(LEFT, RIGHT);
-            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
-            
-            FBank[i_itr] = storeL;
-            FBank[i_itr + 512] = storeR;
-        }
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            complex thisTwiddle = twiddle(segmentK(i_itr, 32, 512), 1024);
-
-            unsigned int LeftIndex = (i_itr & 31) | ((i_itr >> 5) << 6);
-            
-            complex LEFT = FBank[LeftIndex];
-            complex RIGHT= FBank[LeftIndex + 32];
-            complex storeL = cadd(LEFT, RIGHT);
-            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
-            
-            SBank[i_itr] = storeL;
-            SBank[i_itr + 512] = storeR;
-        }
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            complex thisTwiddle = twiddle(segmentK(i_itr, 16, 512), 1024);
-            
-            unsigned int LeftIndex = (i_itr & 15) | ((i_itr >> 4) << 5);
-
-            complex LEFT = SBank[LeftIndex];
-            complex RIGHT= SBank[LeftIndex + 16];
-            complex storeL = cadd(LEFT, RIGHT);
-            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
-            
-            FBank[i_itr] = storeL;
-            FBank[i_itr + 512] = storeR;
-        }
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            complex thisTwiddle = twiddle(segmentK(i_itr, 8, 512), 1024);
-            
-            unsigned int LeftIndex = (i_itr & 7) | ((i_itr >> 3) << 4);
-
-            complex LEFT = FBank[LeftIndex];
-            complex RIGHT= FBank[LeftIndex + 8];
-            complex storeL = cadd(LEFT, RIGHT);
-            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
-            
-            SBank[i_itr] = storeL;
-            SBank[i_itr + 512] = storeR;
-        }
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            complex thisTwiddle = twiddle(segmentK(i_itr, 4, 512), 1024);
-            
-            unsigned int LeftIndex = (i_itr & 3) | ((i_itr >> 2) << 3);
-
-            complex LEFT = SBank[LeftIndex];
-            complex RIGHT= SBank[LeftIndex + 4];
-            complex storeL = cadd(LEFT, RIGHT);
-            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
-            
-            FBank[i_itr] = storeL;
-            FBank[i_itr + 512] = storeR;
-        }
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            complex thisTwiddle = twiddle(segmentK(i_itr, 2, 512), 1024);
-            
-            unsigned int LeftIndex = (i_itr & 1) | ((i_itr >> 1) << 2);
-            
-            complex LEFT = FBank[LeftIndex];
-            complex RIGHT= FBank[LeftIndex + 2];
-            complex storeL = cadd(LEFT, RIGHT);
-            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
-
-            SBank[i_itr] = storeL;
-            SBank[i_itr + 512] = storeR;
-        }
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            complex thisTwiddle = twiddle(segmentK(i_itr, 1, 512), 1024);
-            
-            unsigned int LeftIndex =  (i_itr << 1);
-            
-            complex LEFT = SBank[LeftIndex];
-            complex RIGHT= SBank[LeftIndex + 1];
-            complex storeL = cadd(LEFT, RIGHT);
-            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
-
-            buffer[o_itr * 2 + i_itr] = storeL;
-            buffer[o_itr * 2 + i_itr + 512] = storeR;
-        }
-    }
-}
-
-
-@kernel void StockhamButterfly10(complex* buffer, const unsigned int OHalfSize)
-{
-    for(unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 512; @outer)
-    {
-        @shared complex bank_first[1024];
-        @shared complex bank_second[1024];
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            unsigned int global_idx = (o_itr + i_itr);
-            pairs idx = indexer(global_idx, 512);
-            
-            spair lidx = stockhamIndexer(i_itr, 512, 512);
-            complex thisTwiddle = twiddle(segmentK(lidx.lsave, 512, 512), 1024);
-            complex cfirst = buffer[idx.first];
-            complex csecond= buffer[idx.second];
-            bank_second[lidx.lsave] = cadd(cfirst, csecond);
-            bank_second[lidx.rsave] = cmult(csub(cfirst, csecond), thisTwiddle);
-        }
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            SthmSecondToFirst(256, 512, 1024)
-        }
-        
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            SthmFirstToSecond(128, 512, 1024)
-        }
-
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            SthmSecondToFirst(64, 512, 1024)
-        }
-
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            SthmFirstToSecond(32, 512, 1024)
-        }
-
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            SthmSecondToFirst(16, 512, 1024)
-        }
-
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            SthmFirstToSecond(8, 512, 1024)
-        }
-
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            SthmSecondToFirst(4, 512, 1024)
-        }
-
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            SthmFirstToSecond(2, 512, 1024)
-        }
-
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            pairs GIDX;
-            GIDX.first = o_itr * 2 + i_itr;
-            GIDX.second= GIDX.first + 512;
-            spair lidx = stockhamIndexer(i_itr, 1, 512);
-            complex thisTwiddle = twiddle(segmentK(lidx.lsave, 1, 512), 1024);
-            complex cfirst = bank_second[lidx.lload];
-            complex csecond= bank_second[lidx.rload];
-            buffer[GIDX.first] = cadd(cfirst, csecond);
-            buffer[GIDX.second] = cmult(csub(cfirst, csecond), thisTwiddle);
-        }
-    }
-}
-
-
-@kernel void OptimizedDIFButterfly10( complex* buffer, const unsigned int OHalfSize)
-{
-    
-    for(unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 512; @outer)
-    {
-        @shared complex bank_first[1024];
-        @shared complex bank_second[1024];
-        for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-        {
-            int global_idx = (o_itr + i_itr);
-            pairs idx = indexer(global_idx, 512);
-            pairs Lidx = indexer((i_itr + o_itr) % 512 , 512);
-            complex cfirst = buffer[idx.first];
-            complex csecond = buffer[idx.second];
-
-            complex this_twiddle = twiddle(calculateK(i_itr, 512, 1024), 1024);
-            
-            // printf("first: %f second: %f  idx: %u\n", cfirst.real, csecond.real, idx.first);
-
-
-            bank_second[Lidx.first] = cadd(cfirst, csecond);
-            bank_second[Lidx.second] = cmult(csub(cfirst, csecond), this_twiddle);
-            //debug
-            buffer[idx.first] = bank_second[Lidx.first];
-            buffer[idx.second] = bank_second[Lidx.second];
-            //debug
-        }
-        SecondToFirst(256, 1024, 512)
-
-        FirstToSecond(128, 1024, 512)
-        SecondToFirst(64, 1024, 512)
-        FirstToSecond(32, 1024, 512)
-        SecondToFirst(16, 1024, 512)
-        FirstToSecond(8, 1024, 512)
-        SecondToFirst(4, 1024, 512)
-        FirstToSecond(2, 1024, 512)
-        SecondToFirst(1, 1024, 512)
-    }
-}
-
-
-// quot = (fullSize / overlap_ratio) / overlap_ratio / window_size
-//calculateK(int low_in_window, int powed_stage, int windowSize)
 @kernel void Butterfly( complex* buffer,
                         const int windowSize,
                         const int powed_stage,
@@ -629,20 +199,11 @@ bank_first[lidx.rsave] = cmult(csub(cfirst, csecond), thisTwiddle);
         {
             unsigned int GID = o_itr + i_itr;
             pairs butterfly_target = indexer(GID, powed_stage);
-            // 12 34 56 78 
-            //(windowSize/powed_stage)
+            
             int k = (GID % powed_stage) * (windowSize / (2 * powed_stage));//(GID%powed_stage) * (windowSize / powed_stage);
            
             complex this_twiddle = twiddle(k, windowSize);
-            // printf("%f -- %f <gpu>> %d\n", this_twiddle.real, this_twiddle.imag, k);
-            // printf("%f -- %f\n", buffer[butterfly_target.first].real, buffer[butterfly_target.second].real);
             
-            //complex tempcplx = cmult(buffer[butterfly_target.second], this_twiddle);
-            // if(powed_stage == 512)
-            // {
-            //     printf("%f , %f -- %d __ %d\n", buffer[butterfly_target.first].real, buffer[butterfly_target.second].real, butterfly_target.first, butterfly_target.second);
-
-            // }
             complex first = buffer[butterfly_target.first];
             complex second = buffer[butterfly_target.second];
             complex tempx = cadd(first, second);
@@ -675,3 +236,6 @@ bank_first[lidx.rsave] = cmult(csub(cfirst, csecond), thisTwiddle);
     }
     return;
 }
+
+
+#endif

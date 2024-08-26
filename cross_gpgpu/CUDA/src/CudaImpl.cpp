@@ -20,11 +20,7 @@ struct Genv{
 
 // Gcodes: Structure to manage and store GPGPU kernel codes.
 struct Gcodes{
-    CUfunction overlapNWindow;
-    CUfunction rmDC;
-    CUfunction bitReverse;
-    CUfunction endPreProcess;
-    CUfunction butterfly;
+    
     CUfunction toPower;
 };
 
@@ -37,7 +33,7 @@ Runner::InitEnv()
     CheckCudaError(cuInit(0));
     CheckCudaError(cuDeviceGet(&(env->device), 0));
     CheckCudaError(cuCtxCreate(&(env->context), 0, env->device));
-    CheckCudaError(cuModuleLoad(&(env->module), "./compiled_cuda.ptx"));
+    CheckCudaError(cuModuleLoad(&(env->module), "./compiled.ptx"));
     std::cout<<"CU:41 end init"<<std::endl;
     kens = new Gcodes;
 }
@@ -45,8 +41,14 @@ Runner::InitEnv()
 void
 Runner::UnInit()
 {
-    cuCtxDestroy(env->context);
-    cuModuleUnload(env->module);
+    cuCtxSynchronize();
+    std::cout << "CU:48 end uninit"<<std::endl;
+    
+    CheckCudaError(cuModuleUnload(env->module));
+    std::cout << "CU:51 end uninit"<<std::endl;
+    CheckCudaError(cuCtxDestroy(env->context));
+    std::cout << "CU:53 end uninit"<<std::endl;
+
 }
 
 // BuildKernel: Compiles or prepares the GPGPU kernel for execution.
@@ -54,9 +56,7 @@ void
 Runner::BuildKernel()
 {
     CheckCudaError(cuModuleGetFunction(&(kens->overlapNWindow), env->module, "_occa_overlap_N_window_0"));
-    // CheckCudaError(cuModuleGetFunction(&(kens->rmDC), env->module, "_occa_removeDC_0"));
-    // CheckCudaError(cuModuleGetFunction(&(kens->bitReverse), env->module, "_occa_bitReverse_0"));
-    // CheckCudaError(cuModuleGetFunction(&(kens->endPreProcess), env->module, "_occa_endPreProcess_0"));
+    
     CheckCudaError(cuModuleGetFunction(&(kens->butterfly), env->module, "_occa_Stockhpotimized10_0"));
     CheckCudaError(cuModuleGetFunction(&(kens->toPower), env->module, "_occa_toPower_0"));
     std::cout<<"CU:64 end build"<<std::endl;
@@ -69,8 +69,8 @@ Runner::ActivateSTFT(   VECF& inData,
 {
     //default code blocks
     const unsigned int  FullSize    = inData.size();
-    const int           windowSize  = 1 << windowRadix;
-    const int           qtConst     = toQuot(FullSize, overlapRatio, windowSize);//number of windows
+    const unsigned int  windowSize  = 1 << windowRadix;
+    const unsigned int  qtConst     = toQuot(FullSize, overlapRatio, windowSize);//number of windows
     const unsigned int  OFullSize   = qtConst * windowSize; // overlaped fullsize
     const unsigned int  OHalfSize   = OFullSize / 2;
     const unsigned int  OMove       = windowSize * (1.0f - overlapRatio);// window move distance
@@ -158,7 +158,7 @@ Runner::ActivateSTFT(   VECF& inData,
     //     endPre,
     //     NULL
     // ));
-
+std::cout << "CU:161 end overlap"<<std::endl;
     int powedStage = 0;
     void *butterfly[] =
     {
@@ -167,14 +167,14 @@ Runner::ActivateSTFT(   VECF& inData,
     };
     CheckCudaError(cuLaunchKernel(
         kens->butterfly,
-        HalfGridSize, 1, 1,
+        OHalfSize / 512, 1, 1,
         512, 1, 1,
         0,
         stream,
         butterfly,
         NULL
     ));
-
+    std::cout << "CU:177 end butterfly"<<std::endl;
     void *toPow[] =
     {
         &DoverlapBuffer,
@@ -191,15 +191,17 @@ Runner::ActivateSTFT(   VECF& inData,
         toPow,
         NULL
     ));
-
+    std::cout << "CU:194 end pow"<<std::endl;
     std::vector<float> outMem(OHalfSize);
-    cuMemcpyDtoHAsync(outMem.data(), DOutput, OHalfSize * sizeof(float), stream);
-    cuStreamSynchronize(stream);
-    cuMemFreeAsync(DInput, stream);
-    cuMemFreeAsync(DoverlapBuffer, stream);
-    cuMemFreeAsync(DqtBuffer, stream);
-    cuMemFreeAsync(DOutput, stream);
-    cuStreamDestroy(stream);
     
+    CheckCudaError(cuMemcpyDtoHAsync(outMem.data(), DOutput, OHalfSize * sizeof(float), stream));
+    CheckCudaError(cuStreamSynchronize(stream));
+    CheckCudaError(cuMemFreeAsync(DInput, stream));
+    CheckCudaError(cuMemFreeAsync(DoverlapBuffer, stream));
+    CheckCudaError(cuMemFreeAsync(DqtBuffer, stream));
+    CheckCudaError(cuMemFreeAsync(DOutput, stream));
+    CheckCudaError(cuStreamSynchronize(stream));
+    CheckCudaError(cuStreamDestroy(stream));
+    std::cout << "CU:203 end destroy"<<std::endl;
     return std::move(outMem); // If any error occurs during STFT execution, the function returns std::nullopt.
 }

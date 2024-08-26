@@ -509,3 +509,369 @@ extern "C" void Stockhpotimized10(complex * buffer,
   }
 }
 
+extern "C" void preprocesses_ODW_11(float * inData,
+                                    const unsigned int & qtConst,
+                                    const unsigned int & fullSize,
+                                    const unsigned int & OMove,
+                                    complex * bufferOut) {
+#pragma omp parallel for
+  for (unsigned int o_itr = 0; o_itr < qtConst; ++o_itr) {
+    complex windowBuffer[2048];
+    float windowAdded[1024];
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      unsigned int idx = o_itr * OMove + i_itr;
+      unsigned int Ridx = o_itr * OMove + i_itr + 1024;
+      int isOverflowed = (idx < fullSize);
+      int RisOverflowed = (Ridx < fullSize);
+      idx *= isOverflowed;
+      Ridx *= RisOverflowed;
+      windowBuffer[i_itr].real = inData[idx] * isOverflowed;
+      windowBuffer[i_itr].imag = 0;
+      windowBuffer[i_itr + 1024].real = inData[Ridx] * RisOverflowed;
+      windowBuffer[i_itr + 1024].imag = 0;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      float Dpoint = windowBuffer[i_itr].real;
+      float Apoint = windowBuffer[i_itr + (1024)].real;
+      windowAdded[i_itr] = (Dpoint + Apoint);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 512, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 256, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 128, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 64, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 32, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 16, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 8, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 4, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 2, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 1, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      windowBuffer[i_itr].real -= (windowAdded[0] / 2048.0);
+      windowBuffer[i_itr + 1024].real -= (windowAdded[0] / 2048.0);
+      windowBuffer[i_itr].real *= window_func(i_itr, 2048);
+      windowBuffer[i_itr + 1024].real *= window_func(i_itr + 1024, 2048);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      bufferOut[o_itr * 2048 + i_itr] = windowBuffer[i_itr];
+      bufferOut[o_itr * 2048 + i_itr + 1024] = windowBuffer[i_itr + 1024];
+    }
+  }
+}
+
+extern "C" void Stockhpotimized11(complex * buffer,
+                                  const unsigned int & OHalfSize) {
+#pragma omp parallel for
+  for (unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 1024) {
+    complex FBank[2048];
+    complex SBank[2048];
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 1024, 1024), 2048);
+      complex LEFT = buffer[o_itr * 2 + i_itr];
+      complex RIGHT = buffer[o_itr * 2 + i_itr + 1024];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 512, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 511) | ((i_itr >> 9) << 10);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 512];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 1024] = storeR;
+      ;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 256, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 255) | ((i_itr >> 8) << 9);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 256];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 128, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 127) | ((i_itr >> 7) << 8);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 128];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 64, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 63) | ((i_itr >> 6) << 7);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 64];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 32, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 31) | ((i_itr >> 5) << 6);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 32];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 16, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 15) | ((i_itr >> 4) << 5);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 16];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 8, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 7) | ((i_itr >> 3) << 4);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 8];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 4, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 3) | ((i_itr >> 2) << 3);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 4];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 2, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 1) | ((i_itr >> 1) << 2);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 2];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 1, 1024), 2048);
+      unsigned int LeftIndex = (i_itr << 1);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 1];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      buffer[o_itr * 2 + i_itr] = storeL;
+      buffer[o_itr * 2 + i_itr + 1024] = storeR;
+    }
+  }
+}
+
+extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
+                                            const unsigned int & qtConst,
+                                            const unsigned int & fullSize,
+                                            const unsigned int & OMove,
+                                            const unsigned int & OHalfSize,
+                                            complex * bufferOut) {
+#pragma omp parallel for
+  for (unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 1024) {
+    complex FBank[2048];
+    complex SBank[2048];
+    float windowAdded[1024];
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      unsigned int q_itr = o_itr >> 10;
+      unsigned int idx = q_itr * OMove + i_itr;
+      unsigned int Ridx = q_itr * OMove + i_itr + 1024;
+      int isOverflowed = (idx < fullSize);
+      int RisOverflowed = (Ridx < fullSize);
+      idx *= isOverflowed;
+      Ridx *= RisOverflowed;
+      FBank[i_itr].real = inData[idx] * isOverflowed;
+      FBank[i_itr].imag = 0;
+      FBank[i_itr + 1024].real = inData[Ridx] * RisOverflowed;
+      FBank[i_itr + 1024].imag = 0;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      float Dpoint = FBank[i_itr].real;
+      float Apoint = FBank[i_itr + (1024)].real;
+      windowAdded[i_itr] = (Dpoint + Apoint);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 512, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 256, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 128, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 64, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 32, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 16, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 8, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 4, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 2, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      DaCAdd(i_itr, 1, windowAdded);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      FBank[i_itr].real -= (windowAdded[0] / 2048.0);
+      FBank[i_itr].real *= window_func(i_itr, 2048);
+      FBank[i_itr + 1024].real -= (windowAdded[0] / 2048.0);
+      FBank[i_itr + 1024].real *= window_func(i_itr + 1024, 2048);
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 1024, 1024), 2048);
+      complex LEFT = FBank[i_itr];
+      complex RIGHT = FBank[i_itr + 1024];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 512, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 511) | ((i_itr >> 9) << 10);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 512];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 1024] = storeR;
+      ;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 256, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 255) | ((i_itr >> 8) << 9);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 256];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 128, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 127) | ((i_itr >> 7) << 8);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 128];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 64, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 63) | ((i_itr >> 6) << 7);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 64];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 32, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 31) | ((i_itr >> 5) << 6);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 32];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 16, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 15) | ((i_itr >> 4) << 5);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 16];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 8, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 7) | ((i_itr >> 3) << 4);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 8];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 4, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 3) | ((i_itr >> 2) << 3);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 4];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      SBank[i_itr] = storeL;
+      SBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 2, 1024), 2048);
+      unsigned int LeftIndex = (i_itr & 1) | ((i_itr >> 1) << 2);
+      complex LEFT = SBank[LeftIndex];
+      complex RIGHT = SBank[LeftIndex + 2];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      FBank[i_itr] = storeL;
+      FBank[i_itr + 1024] = storeR;
+    }
+    for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      complex thisTwiddle = twiddle(segmentK(i_itr, 1, 1024), 2048);
+      unsigned int LeftIndex = (i_itr << 1);
+      complex LEFT = FBank[LeftIndex];
+      complex RIGHT = FBank[LeftIndex + 1];
+      complex storeL = cadd(LEFT, RIGHT);
+      complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+      bufferOut[o_itr * 2 + i_itr] = storeL;
+      bufferOut[o_itr * 2 + i_itr + 1024] = storeR;
+    }
+  }
+}
+

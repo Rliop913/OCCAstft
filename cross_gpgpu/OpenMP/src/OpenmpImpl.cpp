@@ -1,5 +1,5 @@
 #include "RunnerInterface.hpp"
-#include "compiled_opemmp.hpp"
+#include "compiled.hpp"
 
 
 struct Genv{
@@ -49,15 +49,34 @@ Runner::ActivateSTFT(   VECF& inData,
 
     std::vector<float> outMem(OHalfSize);
 
-    overlap_N_window(inData.data(), tempMem, FullSize, OFullSize, windowSize, OMove);
-    removeDC(tempMem, OFullSize, qtBuffer, windowSize);
-    bitReverse(tempMem, OFullSize, windowSize, windowRadix);
-    endPreProcess(tempMem, OFullSize);
-
-    for(int iStage=0; iStage < windowRadix; ++iStage)
+    switch (windowRadix)
     {
-        Butterfly(tempMem, windowSize, 1<<iStage, OHalfSize, windowRadix);
+    case 10:
+        preprocessed_ODW10_STH_STFT
+        (
+            inData.data(), 
+            qtConst, 
+            FullSize, 
+            OMove,
+            OHalfSize,
+            tempMem
+        );
+        break;
+    case 11:
+        preprocessed_ODW11_STH_STFT
+        (
+            inData.data(), 
+            qtConst, 
+            FullSize, 
+            OMove,
+            OHalfSize,
+            tempMem
+        );
+        break;
+    default:
+        break;
     }
+    
     toPower(tempMem, outMem.data(), OHalfSize, windowRadix);
     delete[] tempMem;
     delete[] qtBuffer;

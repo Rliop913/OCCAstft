@@ -152,8 +152,9 @@ FFTRequest::GetSHMPtr()
     auto mp = &mr.value();
     SHMOBJ sharedObj;
     std::string sharemem = mp->getSharedMemory().cStr();
-    auto dataLength = mp->getDataLength();
-    std::cout<<"FW:150 sharemem: "<<sharemem<<std::endl;
+    ULL dataLength = mp->getDataLength();
+    std::cout<<"FW:156 dataLength: "<<dataLength<<std::endl;
+    std::cout<<"FW:157 sharemem: "<<sharemem<<std::endl;
     if(sharemem == "")
     {
         std::cout << "FW:153 no sharemem"<<std::endl;
@@ -172,6 +173,7 @@ FFTRequest::GetSHMPtr()
         return std::nullopt;
     }
     auto pagedSize = adjustToPage<float>(dataLength);
+    std::cout<<"FW:176 pagedSize: "<<pagedSize<<std::endl;
     sharedObj.first = MapViewOfFile
     (
         sharedObj.second,

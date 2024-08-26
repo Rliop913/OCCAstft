@@ -101,9 +101,11 @@ Runner::ServerInit(const int& pNum)
                                             received.get_OverlapRate());
                             if(dataInfo.has_value() && result.has_value())
                             {
+                                std::cout<<"RC:104 "<<result.value().size() * sizeof(float)<<std::endl;
                                 memcpy( dataInfo.value().first, 
                                         result.value().data(),
-                                        received.get_dataLength() * sizeof(float));
+                                        result.value().size() * sizeof(float));
+                                std::cout<<"RC:108 "<<result.has_value()<<std::endl;
                             }
                             else if(result.has_value())
                             {
@@ -116,7 +118,9 @@ Runner::ServerInit(const int& pNum)
                             }
                             if(dataInfo.has_value())
                             {
+                                std::cout << "RC:120 shm uninit"<<std::endl;
                                 received.FreeSHMPtr(dataInfo.value());
+                                std::cout << "RC:122 shm uninit"<<std::endl;
                             }
                         }
                         else//error message

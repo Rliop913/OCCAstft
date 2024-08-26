@@ -1,0 +1,7 @@
+#ifndef ROOTISBASH  
+#include "../include/Radix10.okl"
+#include "../include/Radix11.okl"
+#else
+#include "./include/Radix10.okl"
+#include "./include/Radix11.okl"
+#endif

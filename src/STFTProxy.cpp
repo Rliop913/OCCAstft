@@ -283,7 +283,7 @@ int main()
 
     FallbackList list;
     list.ServerFallback.push_back("127.0.0.1:54500");
-    //list.CUDAFallback.push_back("./cross_gpgpu/CUDA");
+    // list.CUDAFallback.push_back("./cross_gpgpu/CUDA");
     //list.OpenMPFallback.push_back("./cross_gpgpu/OpenMP");
     //list.SerialFallback.push_back("./cross_gpgpu/Serial");
     //list.ServerFallback.push_back("192.168.35.90:54500");
@@ -292,12 +292,12 @@ int main()
         std::cout<<err.reason << " custom messages"<<std::endl;
         return;
     },list);
-    std::vector<float> testZeroData(10000);
-    for(int i=0; i<testZeroData.size(); ++i)
+    std::vector<float> testZeroData(100000000);
+    for(ULL i=0; i<testZeroData.size(); ++i)
     {
         testZeroData[i] = float(i)/testZeroData.size()+1.0f;
     }
-    auto promisedData = temp.RequestSTFT(testZeroData, 10, 0.5);
+    auto promisedData = temp.RequestSTFT(testZeroData, 10, 0.0);
 
     if(promisedData.has_value())
     {

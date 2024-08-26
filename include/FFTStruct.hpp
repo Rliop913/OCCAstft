@@ -146,8 +146,9 @@ FFTRequest::adjustToPage(const ULL& length)
     SYSTEM_INFO sysInfo;
     GetSystemInfo(&sysInfo);
     DWORD pageSize  = sysInfo.dwPageSize;
-    ULL DSize = length * sizeof(T);
+    ULL DSize = length;
     DSize = ((DSize + pageSize - 1) / pageSize) * pageSize;
+    DSize *= sizeof(T);
     return DSize;
 }
 

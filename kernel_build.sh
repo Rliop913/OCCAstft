@@ -3,12 +3,24 @@
 
 
 
-occa translate -m opencl ./include/kernel.okl > ./cross_gpgpu/OpenCL/kernel/compiled_code.cl
-occa translate -D __NEED_PI -m cuda ./include/kernel.okl > ./cross_gpgpu/CUDA/kernel/compiled_cuda.cu
-occa translate -D __NEED_PI -m openmp ./include/kernel.okl > ./cross_gpgpu/OpenMP/kernel/compiled_opemmp.hpp
-occa translate -D __NEED_PI -m serial ./include/kernel.okl > ./cross_gpgpu/Serial/kernel/compiled_serial.hpp
+occa translate -D ROOTISBASH -m opencl ./include/RadixALL.okl \
+> ./cross_gpgpu/OpenCL/kernel/compiled.cl
 
+{
+    echo "#define _USE_MATH_DEFINES";
+    occa translate -D __NEED_PI -D ROOTISBASH -m cuda ./include/RadixALL.okl
+}> ./cross_gpgpu/CUDA/kernel/compiled.cu
+
+{
+    echo "#define _USE_MATH_DEFINES";
+    occa translate -D __NEED_PI -D ROOTISBASH -m openmp ./include/RadixALL.okl 
+}> ./cross_gpgpu/OpenMP/kernel/compiled.hpp
+
+{
+    echo "#define _USE_MATH_DEFINES";
+    occa translate -D __NEED_PI -D ROOTISBASH -m serial ./include/RadixALL.okl 
+}> ./cross_gpgpu/Serial/kernel/compiled.hpp
 
 python KERNEL_Embedder.py
 
-nvcc -ptx ./cross_gpgpu/CUDA/kernel/compiled_cuda.cu -o ./cross_gpgpu/CUDA/kernel/compiled_cuda.ptx
+nvcc -ptx ./cross_gpgpu/CUDA/kernel/compiled.cu -o ./cross_gpgpu/CUDA/kernel/compiled.ptx

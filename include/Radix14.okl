@@ -1,0 +1,318 @@
+#ifndef ROOTISBASH  
+#include "../include/kernel.okl"
+#else
+#include "./include/kernel.okl"
+#endif
+
+#define CUSTOM_FOR(CODES) QQFOR(0, 1024, 2048, 3072, 4096, 5120, 6144, 7168, 8192, CODES)
+
+
+@kernel void preprocesses_ODW_14(
+    float* inData,
+    const unsigned int qtConst,
+    const unsigned int fullSize,
+    const unsigned int OMove,
+    complex* bufferOut   
+    )
+{
+    for(unsigned int o_itr=0; o_itr < qtConst; ++o_itr; @outer)
+    {
+        @shared complex windowBuffer[16384];
+        @shared float   windowAdded[8192];
+
+        CUSTOM_FOR(
+            unsigned int idx = o_itr * OMove + i_itr;
+            unsigned int Ridx = o_itr * OMove + i_itr + 8192;
+            int isOverflowed = (idx < fullSize);
+            int RisOverflowed= (Ridx< fullSize);
+            idx *= isOverflowed;
+            Ridx*=RisOverflowed;
+            windowBuffer[i_itr].real = inData[idx] * isOverflowed;
+            windowBuffer[i_itr].imag = 0;
+            windowBuffer[i_itr + 8192].real = inData[Ridx] * RisOverflowed;
+            windowBuffer[i_itr + 8192].imag = 0;
+        )
+
+        CUSTOM_FOR(
+            float Dpoint = windowBuffer[i_itr].real;
+            float Apoint = windowBuffer[i_itr + (8192)].real;
+            windowAdded[i_itr] = (Dpoint + Apoint);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 4096, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 2048, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 1024, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 512, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 256, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 128, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 64, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 32, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 16, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 8, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 4, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 2, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 1, windowAdded);
+        )
+        CUSTOM_FOR(
+            windowBuffer[i_itr].real -= (windowAdded[0] / 16384.0);
+            windowBuffer[i_itr + 8192].real -= (windowAdded[0] / 16384.0);
+            windowBuffer[i_itr].real *= window_func(i_itr, 16384);
+            windowBuffer[i_itr + 8192].real *= window_func(i_itr + 8192, 16384);
+        )
+        CUSTOM_FOR(
+
+            bufferOut[o_itr * 16384 + i_itr] = windowBuffer[i_itr];
+            bufferOut[o_itr * 16384 + i_itr + 8192] = windowBuffer[i_itr + 8192];
+        )   
+    }
+}
+
+
+
+
+@kernel void Stockhpotimized14(complex* buffer, const unsigned int OHalfSize)
+{
+    for(unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 8192; @outer)
+    {
+        @shared complex FBank[16384];
+        @shared complex SBank[16384];
+        
+        CUSTOM_FOR(
+        {
+            complex thisTwiddle = twiddle(segmentK(i_itr, 8192, 8192), 16384);
+            
+            complex LEFT = buffer[o_itr * 2 + i_itr];
+            complex RIGHT= buffer[o_itr * 2 + i_itr + 8192];
+            complex storeL = cadd(LEFT, RIGHT);
+            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+            FBank[i_itr] = storeL;
+            FBank[i_itr + 8192] = storeR;
+        }
+        )
+        CUSTOM_FOR(
+            OpSthmFirstTS(4096, 4095, 12, 13, 8192, 16384);
+        )
+        CUSTOM_FOR(
+            OpSthmSecondTF(2048, 2047, 11, 12, 8192, 16384);
+        )
+        CUSTOM_FOR(
+            OpSthmFirstTS(1024, 1023, 10, 11, 8192, 16384);
+        )
+
+        CUSTOM_FOR(
+            OpSthmSecondTF(512, 511, 9, 10, 8192, 16384);
+        )
+
+        CUSTOM_FOR(
+            OpSthmFirstTS(256, 255, 8, 9, 8192, 16384)
+        )
+
+        CUSTOM_FOR(
+            OpSthmSecondTF(128, 127, 7, 8, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            OpSthmFirstTS(64, 63, 6, 7, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            OpSthmSecondTF(32, 31, 5, 6, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            OpSthmFirstTS(16, 15, 4, 5, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            OpSthmSecondTF(8, 7, 3, 4, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            OpSthmFirstTS(4, 3, 2, 3, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            OpSthmSecondTF(2, 1, 1, 2, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            complex thisTwiddle = twiddle(segmentK(i_itr, 1, 8192), 16384);
+            
+            unsigned int LeftIndex =  (i_itr << 1);
+            
+            complex LEFT = FBank[LeftIndex];
+            complex RIGHT= FBank[LeftIndex + 1];
+            complex storeL = cadd(LEFT, RIGHT);
+            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+
+            buffer[o_itr * 2 + i_itr] = storeL;
+            buffer[o_itr * 2 + i_itr + 8192] = storeR;
+        )
+    }
+}
+
+
+@kernel void preprocessed_ODW14_STH_STFT(
+    float* inData,
+    const unsigned int qtConst,
+    const unsigned int fullSize,
+    const unsigned int OMove,
+    const unsigned int OHalfSize,
+    complex* bufferOut)
+{
+    for(unsigned int o_itr=0; o_itr < OHalfSize; o_itr += 8192; @outer)
+    {
+        @shared complex FBank[16384];
+        @shared complex SBank[16384];
+        @shared float   windowAdded[8192];
+        CUSTOM_FOR(//overlap and extends
+        
+            unsigned int q_itr = o_itr >> 13;
+            unsigned int idx = q_itr * OMove + i_itr;
+            unsigned int Ridx = q_itr * OMove + i_itr + 8192;
+            int isOverflowed = (idx < fullSize);
+            int RisOverflowed= (Ridx< fullSize);
+            idx *= isOverflowed;
+            Ridx*=RisOverflowed;
+            FBank[i_itr].real = inData[idx] * isOverflowed;
+            FBank[i_itr].imag = 0;
+            FBank[i_itr + 8192].real = inData[Ridx] * RisOverflowed;
+            FBank[i_itr + 8192].imag = 0;
+        )
+
+        CUSTOM_FOR(//removing DC
+        
+            float Dpoint = FBank[i_itr].real;
+            float Apoint = FBank[i_itr + (8192)].real;
+            windowAdded[i_itr] = (Dpoint + Apoint);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 4096, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 2048, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 1024, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 512, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 256, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 128, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 64, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 32, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 16, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 8, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 4, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 2, windowAdded);
+        )
+        CUSTOM_FOR(
+            DaCAdd(i_itr, 1, windowAdded);
+        )
+        CUSTOM_FOR(
+            FBank[i_itr].real -= (windowAdded[0] / 16384.0);
+            FBank[i_itr].real *= window_func(i_itr, 16384);
+            FBank[i_itr + 8192].real -= (windowAdded[0] / 16384.0);
+            FBank[i_itr + 8192].real *= window_func(i_itr + 8192, 16384);
+        )
+
+        CUSTOM_FOR(
+            complex thisTwiddle = twiddle(segmentK(i_itr, 8192, 8192), 16384);
+            
+            complex LEFT = FBank[i_itr];
+            complex RIGHT= FBank[i_itr + 8192];
+            complex storeL = cadd(LEFT, RIGHT);
+            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+            SBank[i_itr] = storeL;
+            SBank[i_itr + 8192] = storeR;
+        )
+
+        CUSTOM_FOR(
+            OpSthmSecondTF(4096, 4095, 12, 13, 8192, 16384);
+        )
+
+        CUSTOM_FOR(
+            OpSthmFirstTS(2048, 2047, 11, 12, 8192, 16384);
+        )
+        CUSTOM_FOR(
+            OpSthmSecondTF(1024, 1023, 10, 11, 8192, 16384);
+        )
+
+        CUSTOM_FOR(
+            OpSthmFirstTS(512, 511, 9, 10, 8192, 16384);
+        )
+
+        CUSTOM_FOR(
+            OpSthmSecondTF(256, 255, 8, 9, 8192, 16384)
+        )
+
+        CUSTOM_FOR(
+            OpSthmFirstTS(128, 127, 7, 8, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            OpSthmSecondTF(64, 63, 6, 7, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            OpSthmFirstTS(32, 31, 5, 6, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            OpSthmSecondTF(16, 15, 4, 5, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            OpSthmFirstTS(8, 7, 3, 4, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            OpSthmSecondTF(4, 3, 2, 3, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            OpSthmFirstTS(2, 1, 1, 2, 8192, 16384)
+        )
+        CUSTOM_FOR(
+            complex thisTwiddle = twiddle(segmentK(i_itr, 1, 8192), 16384);
+            
+            unsigned int LeftIndex =  (i_itr << 1);
+            
+            complex LEFT = SBank[LeftIndex];
+            complex RIGHT= SBank[LeftIndex + 1];
+            complex storeL = cadd(LEFT, RIGHT);
+            complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
+
+            bufferOut[o_itr * 2 + i_itr] = storeL;
+            bufferOut[o_itr * 2 + i_itr + 8192] = storeR;
+        )
+    }
+}
+#undef CUSTOM_FOR

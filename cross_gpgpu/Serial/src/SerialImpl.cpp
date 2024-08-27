@@ -72,6 +72,50 @@ Runner::ActivateSTFT(   VECF& inData,
             tempMem
         );
         break;
+    case 12:
+        preprocessed_ODW12_STH_STFT
+        (
+            inData.data(), 
+            qtConst, 
+            FullSize, 
+            OMove,
+            OHalfSize,
+            tempMem
+        );
+        break;
+    case 13:
+        preprocessed_ODW13_STH_STFT
+        (
+            inData.data(), 
+            qtConst, 
+            FullSize, 
+            OMove,
+            OHalfSize,
+            tempMem
+        );
+        break;
+    case 14:
+        preprocessed_ODW14_STH_STFT
+        (
+            inData.data(), 
+            qtConst, 
+            FullSize, 
+            OMove,
+            OHalfSize,
+            tempMem
+        );
+        break;
+    case 15:
+        preprocessed_ODW15_STH_STFT
+        (
+            inData.data(), 
+            qtConst, 
+            FullSize, 
+            OMove,
+            OHalfSize,
+            tempMem
+        );
+        break;
     default:
         break;
     }

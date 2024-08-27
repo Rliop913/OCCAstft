@@ -15,6 +15,10 @@ struct Genv{
 struct Gcodes{
     Kernel R10STFT;
     Kernel R11STFT;
+    Kernel R12STFT;
+    Kernel R13STFT;
+    Kernel R14STFT;
+    Kernel R15STFT;
     Kernel toPower;
 };
 
@@ -42,6 +46,11 @@ Runner::BuildKernel()
     Program codeBase = clboost::make_prog(clCodes.compiled, env->CT, env->DV);
     kens->R10STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW10_STH_STFT_0");
     kens->R11STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW11_STH_STFT_0");
+    kens->R12STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW12_STH_STFT_0");
+    kens->R13STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW13_STH_STFT_0");
+    kens->R14STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW14_STH_STFT_0");
+    kens->R15STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW15_STH_STFT_0");
+    
     kens->toPower = clboost::make_kernel(codeBase, "_occa_toPower_0");
     
 
@@ -68,6 +77,22 @@ Runner::ActivateSTFT(   VECF& inData,
     int workGroupSize = 0;
     switch (windowRadix)
     {
+    case 15:
+        RAIO = &(kens->R15STFT);
+        workGroupSize = 1024;
+        break;
+    case 14:
+        RAIO = &(kens->R14STFT);
+        workGroupSize = 1024;
+        break;
+    case 13:
+        RAIO = &(kens->R13STFT);
+        workGroupSize = 1024;
+        break;
+    case 12:
+        RAIO = &(kens->R12STFT);
+        workGroupSize = 1024;
+        break;
     case 11:
         RAIO = &(kens->R11STFT);
         workGroupSize = 1024;
@@ -106,40 +131,3 @@ Runner::ActivateSTFT(   VECF& inData,
 
     return std::move(outData);
 }
-
-
-
-
-
-
-// #include <iostream>
-// int
-// main()
-// {
-//     STFT temp = STFT();
-//     ma_decoder_config decconf = ma_decoder_config_init(ma_format_f32, 1, 48000);
-//     ma_decoder dec;
-
-//     int res = ma_decoder_init_file("../../../candy.wav", &decconf, &dec);
-//     constexpr int readFrame = 1024*1000;
-//     std::vector<float> hostBuffer(readFrame);
-//     ma_decoder_seek_to_pcm_frame(&dec, 48000*20);
-//     ma_decoder_read_pcm_frames(&dec, hostBuffer.data(), readFrame, NULL);
-//     int windowRadix = 10;
-//     float overlapRatio = 0.5f;
-//     auto out = temp.ActivateSTFT(hostBuffer, windowRadix, overlapRatio);
-//     if(out.has_value()){
-//         const int windowSize = 1 << windowRadix;
-//         auto tout = out.value();
-//         for(int i=0;i<10;++i)//csv out
-//         {
-//             for(int j=0;j<windowSize/2;++j)
-//             {
-//                 float data=tout.at(i*windowSize/2+j); 
-//                 std::cout<<data<<",";
-//             }
-//             std::cout<<std::endl;
-//         }
-//     }
-//     return 0;
-// }

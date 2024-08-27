@@ -7,6 +7,44 @@
 #include <math.h>
 #include <cstdio>
 
+
+#define DFOR(S, M, E, CODES)\
+for(int i_itr=S; i_itr < M; ++i_itr; @inner)\
+{\
+    CODES;\
+}\
+for(int i_itr=M; i_itr < E; ++i_itr; @inner)\
+{\
+    CODES;\
+}
+
+#define QFOR(S, M1, M2, M3, E, CODES)\
+for(int i_itr=S; i_itr < M1; ++i_itr; @inner)\
+{\
+    CODES;\
+}\
+for(int i_itr=M1; i_itr < M2; ++i_itr; @inner)\
+{\
+    CODES;\
+}\
+for(int i_itr=M2; i_itr < M3; ++i_itr; @inner)\
+{\
+    CODES;\
+}\
+for(int i_itr=M3; i_itr < E; ++i_itr; @inner)\
+{\
+    CODES;\
+}
+
+#define QQFOR(S, M1, M2, M3, M4, M5, M6, M7, E, CODES)\
+QFOR(S, M1, M2, M3, M4, CODES)\
+QFOR(M4, M5, M6, M7, E, CODES)
+
+#define QQQQFOR(S, M1, M2, M3, M4, M5, M6, M7, M8, M9, M10, M11, M12, M13, M14, M15, E, CODES)\
+QQFOR(S, M1, M2, M3, M4, M5, M6, M7, M8, CODES)\
+QQFOR(M8, M9, M10, M11, M12, M13, M14, M15, E, CODES)
+
+
 typedef struct complex_t{
     float real;
     float imag;

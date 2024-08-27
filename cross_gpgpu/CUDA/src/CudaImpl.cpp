@@ -20,7 +20,8 @@ struct Genv{
 
 // Gcodes: Structure to manage and store GPGPU kernel codes.
 struct Gcodes{
-    
+    CUfunction R10STFT;
+    CUfunction R11STFT;
     CUfunction toPower;
 };
 
@@ -55,9 +56,8 @@ Runner::UnInit()
 void
 Runner::BuildKernel()
 {
-    CheckCudaError(cuModuleGetFunction(&(kens->overlapNWindow), env->module, "_occa_overlap_N_window_0"));
-    
-    CheckCudaError(cuModuleGetFunction(&(kens->butterfly), env->module, "_occa_Stockhpotimized10_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->R10STFT), env->module, "_occa_preprocessed_ODW10_STH_STFT_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->R11STFT), env->module, "_occa_preprocessed_ODW11_STH_STFT_0"));
     CheckCudaError(cuModuleGetFunction(&(kens->toPower), env->module, "_occa_toPower_0"));
     std::cout<<"CU:64 end build"<<std::endl;
 }
@@ -81,99 +81,57 @@ Runner::ActivateSTFT(   VECF& inData,
     std::cout<<"CU:81 end stream init"<<std::endl;
     CUdeviceptr DInput;
     CUdeviceptr DoverlapBuffer;
-    CUdeviceptr DqtBuffer;
     CUdeviceptr DOutput;
     CheckCudaError(cuMemAllocAsync(&DInput, sizeof(float) * FullSize, stream));
     CheckCudaError(cuMemAllocAsync(&DoverlapBuffer, sizeof(cplx_t) * OFullSize, stream));
-    CheckCudaError(cuMemAllocAsync(&DqtBuffer, sizeof(float) * qtConst, stream));
+    
     CheckCudaError(cuMemAllocAsync(&DOutput, sizeof(float) * OHalfSize, stream));
-    CheckCudaError(cuMemsetD32Async(DqtBuffer, 0, qtConst, stream));
+    
     CheckCudaError(cuMemcpyHtoDAsync(DInput, inData.data(), sizeof(float) * FullSize, stream));
     ULL FullGridSize = OFullSize / LOCAL_SIZE;
     ULL HalfGridSize = OHalfSize / LOCAL_SIZE;
-    void *overlapArgs[] = 
+    
+    std::cout << "CU:94 end overlap"<<std::endl;
+    
+    void *AllInOne[] =
     {
-        &DInput, 
-        &DoverlapBuffer,
-        (void*)&FullSize, 
-        (void*)&OFullSize,
-        (void*)&windowSize, 
-        (void*)&OMove
+        &DInput,
+        (void*)&qtConst,
+        (void*)&FullSize,
+        (void*)&OMove,
+        (void*)&OHalfSize,
+        &DoverlapBuffer
     };
-    CheckCudaError(cuLaunchKernel(
-        kens->overlapNWindow,
-        FullGridSize, 1, 1,
-        LOCAL_SIZE, 1, 1,
-        0,
-        stream,
-        overlapArgs,
-        NULL
-    ));
 
-    // void *rmdc[] =
-    // {
-    //     &DoverlapBuffer,
-    //     (void*)&OFullSize,
-    //     &DqtBuffer,
-    //     (void*)&windowSize
-    // };
-    // CheckCudaError(cuLaunchKernel(
-    //     kens->rmDC,
-    //     FullGridSize, 1, 1,
-    //     LOCAL_SIZE, 1, 1,
-    //     0,
-    //     stream,
-    //     rmdc,
-    //     NULL
-    // ));
-
-    // void *bitRev[] =
-    // {
-    //     &DoverlapBuffer,
-    //     (void*)&OFullSize,
-    //     (void*)&windowSize,
-    //     (void*)&windowRadix
-    // };
-    // CheckCudaError(cuLaunchKernel(
-    //     kens->bitReverse,
-    //     FullGridSize, 1, 1,
-    //     LOCAL_SIZE, 1, 1,
-    //     0,
-    //     stream,
-    //     bitRev,
-    //     NULL
-    // ));
-
-    // void *endPre[] =
-    // {
-    //     &DoverlapBuffer,
-    //     (void*)&OFullSize
-    // };
-    // CheckCudaError(cuLaunchKernel(
-    //     kens->endPreProcess,
-    //     FullGridSize, 1, 1,
-    //     LOCAL_SIZE, 1, 1,
-    //     0,
-    //     stream,
-    //     endPre,
-    //     NULL
-    // ));
-std::cout << "CU:161 end overlap"<<std::endl;
-    int powedStage = 0;
-    void *butterfly[] =
+    switch (windowRadix)
     {
-        &DoverlapBuffer,
-        (void*)&OHalfSize
-    };
-    CheckCudaError(cuLaunchKernel(
-        kens->butterfly,
-        OHalfSize / 512, 1, 1,
-        512, 1, 1,
-        0,
-        stream,
-        butterfly,
-        NULL
-    ));
+    case 10:
+        CheckCudaError(cuLaunchKernel(
+            kens->R10STFT,
+            OHalfSize / 512, 1, 1,
+            512, 1, 1,
+            0,
+            stream,
+            AllInOne,
+            NULL
+        ));
+        break;
+    case 11:
+        CheckCudaError(cuLaunchKernel(
+            kens->R11STFT,
+            OHalfSize / 1024, 1, 1,
+            1024, 1, 1,
+            0,
+            stream,
+            AllInOne,
+            NULL
+        ));
+        break;
+    default:
+        break;
+    }
+
+
     std::cout << "CU:177 end butterfly"<<std::endl;
     void *toPow[] =
     {
@@ -198,7 +156,6 @@ std::cout << "CU:161 end overlap"<<std::endl;
     CheckCudaError(cuStreamSynchronize(stream));
     CheckCudaError(cuMemFreeAsync(DInput, stream));
     CheckCudaError(cuMemFreeAsync(DoverlapBuffer, stream));
-    CheckCudaError(cuMemFreeAsync(DqtBuffer, stream));
     CheckCudaError(cuMemFreeAsync(DOutput, stream));
     CheckCudaError(cuStreamSynchronize(stream));
     CheckCudaError(cuStreamDestroy(stream));

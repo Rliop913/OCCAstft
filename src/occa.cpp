@@ -70,7 +70,7 @@ int main(int, char**){
     
     constexpr int readFrame = 1024*1000;
     constexpr float overlap = 0.0f;
-    constexpr int windowRadix = 11;
+    constexpr int windowRadix = 15;
     constexpr int windowSize = 1 << windowRadix;
     float *hostBuffer = new float[readFrame];
     ma_decoder_seek_to_pcm_frame(&dec, 48000*20);
@@ -110,13 +110,13 @@ int main(int, char**){
     occa::kernel preprocess10 = dev.buildKernel("../include/Radix10.okl", "preprocesses_ODW_10", prop);
     // occa::kernel bitReverse = dev.buildKernel("../include/kernel.okl", "bitReverse", prop);
     occa::kernel bitReverseTemp = dev.buildKernel("../include/kernel.okl", "bitReverse_temp", prop);
-    occa::kernel ppodw11 = dev.buildKernel("../include/Radix11.okl", "preprocesses_ODW_11", prop);
+    occa::kernel ppodw11 = dev.buildKernel("../include/Radix15.okl", "preprocesses_ODW_15", prop);
     occa::kernel sthm11 = dev.buildKernel("../include/Radix11.okl", "Stockhpotimized11", prop);
     
     // occa::kernel endPreProcess = dev.buildKernel("../include/kernel.okl", "endPreProcess", prop);
     occa::kernel Butterfly = dev.buildKernel("../include/kernel.okl", "Butterfly", prop);
     occa::kernel Stockopt = dev.buildKernel("../include/Radix10.okl", "Stockhpotimized10", prop);
-    occa::kernel AIO = dev.buildKernel("../include/Radix11.okl", "preprocessed_ODW11_STH_STFT", prop);
+    occa::kernel AIO = dev.buildKernel("../include/Radix15.okl", "preprocessed_ODW15_STH_STFT", prop);
     
     // occa::kernel optimizedDIFBUTTERFLY = dev.buildKernel("../include/kernel.okl", "OptimizedDIFButterfly10", prop);
     
@@ -163,7 +163,10 @@ int main(int, char**){
     // Butterfly(stkbufout, windowSize, 128, OHalfSize, windowRadix);
     // Butterfly(stkbufout, windowSize, 256, OHalfSize, windowRadix);
     // Butterfly(stkbufout, windowSize, 512, OHalfSize, windowRadix);
-
+    Butterfly(dev_buffer, windowSize, 16384, OHalfSize, windowRadix);
+    Butterfly(dev_buffer, windowSize, 8192, OHalfSize, windowRadix);
+    Butterfly(dev_buffer, windowSize, 4096, OHalfSize, windowRadix);
+    Butterfly(dev_buffer, windowSize, 2048, OHalfSize, windowRadix);
     Butterfly(dev_buffer, windowSize, 1024, OHalfSize, windowRadix);
     Butterfly(dev_buffer, windowSize, 512, OHalfSize, windowRadix);
     Butterfly(dev_buffer, windowSize, 256, OHalfSize, windowRadix);
@@ -211,7 +214,7 @@ int main(int, char**){
         auto result = ifft(cv);
         for(auto j : result)
         {
-            mus_data.push_back(j.real()/(windowSize* 5));
+            mus_data.push_back(j.real()/(windowSize));
         }
         
     }

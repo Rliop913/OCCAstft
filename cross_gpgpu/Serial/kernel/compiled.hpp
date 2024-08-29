@@ -60,6 +60,20 @@ inline complex cmult(const complex a,
   return result;
 }
 
+inline float RMult(const float Ra,
+                   const float Rb,
+                   const float Ia,
+                   const float Ib) {
+  return (Ra * Rb) - (Ia * Ib);
+}
+
+inline float IMult(const float Ra,
+                   const float Rb,
+                   const float Ia,
+                   const float Ib) {
+  return (Ra * Rb) + (Ia * Ib);
+}
+
 inline complex cadd(complex a,
                     const complex b) {
   a.real += b.real;
@@ -82,11 +96,11 @@ inline float cmod(complex a) {
 
 inline void DaCAdd(const int i_itr,
                    const unsigned int Half,
-                   float windowAdded[]) {
+                   complex windowAdded[]) {
   unsigned int inRange = i_itr < Half;
-  float Dpoint = windowAdded[i_itr];
-  float Apoint = windowAdded[i_itr + (Half * inRange)];
-  windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+  float Dpoint = windowAdded[i_itr].imag;
+  float Apoint = windowAdded[i_itr + (Half * inRange)].imag;
+  windowAdded[i_itr].imag = (Dpoint + Apoint) * inRange;
 }
 
 extern "C" void overlap_N_window(float * in,
@@ -193,31 +207,31 @@ extern "C" void preprocessed_ODW10_STH_STFT(float * inData,
       windowAdded[i_itr] = (Dpoint + Apoint);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
       FBank[i_itr].real -= (windowAdded[0] / 1024.0);
@@ -355,31 +369,31 @@ extern "C" void preprocesses_ODW_10(float * inData,
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
       windowBuffer[i_itr].real -= (windowAdded[0] / 1024.0);
@@ -528,34 +542,34 @@ extern "C" void preprocesses_ODW_11(float * inData,
       windowAdded[i_itr] = (Dpoint + Apoint);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
       windowBuffer[i_itr].real -= (windowAdded[0] / 2048.0);
@@ -717,34 +731,34 @@ extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
       windowAdded[i_itr] = (Dpoint + Apoint);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
       FBank[i_itr].real -= (windowAdded[0] / 2048.0);
@@ -872,7 +886,6 @@ extern "C" void preprocesses_ODW_12(float * inData,
                                     complex * bufferOut) {
   for (unsigned int o_itr = 0; o_itr < qtConst; ++o_itr) {
     complex windowBuffer[4096];
-    float windowAdded[2048];
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
       unsigned int idx = o_itr * OMove + i_itr;
       unsigned int Ridx = o_itr * OMove + i_itr + 2048;
@@ -902,123 +915,127 @@ extern "C" void preprocesses_ODW_12(float * inData,
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
       float Dpoint = windowBuffer[i_itr].real;
       float Apoint = windowBuffer[i_itr + (2048)].real;
-      windowAdded[i_itr] = (Dpoint + Apoint);
+      windowBuffer[i_itr].imag = (Dpoint + Apoint);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
       float Dpoint = windowBuffer[i_itr].real;
       float Apoint = windowBuffer[i_itr + (2048)].real;
-      windowAdded[i_itr] = (Dpoint + Apoint);
+      windowBuffer[i_itr].imag = (Dpoint + Apoint);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowBuffer);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowBuffer);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowBuffer);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowBuffer);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowBuffer);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowBuffer);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowBuffer);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowBuffer);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowBuffer);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowBuffer);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowBuffer);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowBuffer);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowBuffer);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowBuffer);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowBuffer);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowBuffer);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowBuffer);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowBuffer);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowBuffer);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowBuffer);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowBuffer);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowBuffer);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      windowBuffer[i_itr].real -= (windowAdded[0] / 4096.0);
-      windowBuffer[i_itr + 2048].real -= (windowAdded[0] / 4096.0);
+      windowBuffer[i_itr].real -= (windowBuffer[0].imag / 4096.0);
+      windowBuffer[i_itr + 2048].real -= (windowBuffer[0].imag / 4096.0);
       windowBuffer[i_itr].real *= window_func(i_itr, 4096);
       windowBuffer[i_itr + 2048].real *= window_func(i_itr + 2048, 4096);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      windowBuffer[i_itr].real -= (windowAdded[0] / 4096.0);
-      windowBuffer[i_itr + 2048].real -= (windowAdded[0] / 4096.0);
+      windowBuffer[i_itr].real -= (windowBuffer[0].imag / 4096.0);
+      windowBuffer[i_itr + 2048].real -= (windowBuffer[0].imag / 4096.0);
       windowBuffer[i_itr].real *= window_func(i_itr, 4096);
       windowBuffer[i_itr + 2048].real *= window_func(i_itr + 2048, 4096);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
+      windowBuffer[i_itr].imag = 0;
+      windowBuffer[i_itr + 2048].imag = 0;
       bufferOut[o_itr * 4096 + i_itr] = windowBuffer[i_itr];
       bufferOut[o_itr * 4096 + i_itr + 2048] = windowBuffer[i_itr + 2048];
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
+      windowBuffer[i_itr].imag = 0;
+      windowBuffer[i_itr + 2048].imag = 0;
       bufferOut[o_itr * 4096 + i_itr] = windowBuffer[i_itr];
       bufferOut[o_itr * 4096 + i_itr + 2048] = windowBuffer[i_itr + 2048];
       ;
@@ -1313,7 +1330,6 @@ extern "C" void preprocessed_ODW12_STH_STFT(float * inData,
   for (unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 2048) {
     complex FBank[4096];
     complex SBank[4096];
-    float windowAdded[2048];
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
       //overlap and extends
       unsigned int q_itr = o_itr >> 11;
@@ -1348,120 +1364,122 @@ extern "C" void preprocessed_ODW12_STH_STFT(float * inData,
       //removing DC
       float Dpoint = FBank[i_itr].real;
       float Apoint = FBank[i_itr + (2048)].real;
-      windowAdded[i_itr] = (Dpoint + Apoint);
+      FBank[i_itr].imag = (Dpoint + Apoint);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
       //removing DC
       float Dpoint = FBank[i_itr].real;
       float Apoint = FBank[i_itr + (2048)].real;
-      windowAdded[i_itr] = (Dpoint + Apoint);
+      FBank[i_itr].imag = (Dpoint + Apoint);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, FBank);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, FBank);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, FBank);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, FBank);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, FBank);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, FBank);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, FBank);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, FBank);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, FBank);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, FBank);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, FBank);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, FBank);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, FBank);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, FBank);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, FBank);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, FBank);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, FBank);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, FBank);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, FBank);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, FBank);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, FBank);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, FBank);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      FBank[i_itr].real -= (windowAdded[0] / 4096.0);
+      FBank[i_itr].real -= (FBank[0].imag / 4096.0);
       FBank[i_itr].real *= window_func(i_itr, 4096);
-      FBank[i_itr + 2048].real -= (windowAdded[0] / 4096.0);
+      FBank[i_itr + 2048].real -= (FBank[0].imag / 4096.0);
       FBank[i_itr + 2048].real *= window_func(i_itr + 2048, 4096);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      FBank[i_itr].real -= (windowAdded[0] / 4096.0);
+      FBank[i_itr].real -= (FBank[0].imag / 4096.0);
       FBank[i_itr].real *= window_func(i_itr, 4096);
-      FBank[i_itr + 2048].real -= (windowAdded[0] / 4096.0);
+      FBank[i_itr + 2048].real -= (FBank[0].imag / 4096.0);
       FBank[i_itr + 2048].real *= window_func(i_itr + 2048, 4096);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
       complex thisTwiddle = twiddle(segmentK(i_itr, 2048, 2048), 4096);
+      FBank[i_itr].imag = 0;
+      FBank[i_itr + 2048].imag = 0;
       complex LEFT = FBank[i_itr];
       complex RIGHT = FBank[i_itr + 2048];
       complex storeL = cadd(LEFT, RIGHT);
@@ -1472,6 +1490,8 @@ extern "C" void preprocessed_ODW12_STH_STFT(float * inData,
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
       complex thisTwiddle = twiddle(segmentK(i_itr, 2048, 2048), 4096);
+      FBank[i_itr].imag = 0;
+      FBank[i_itr + 2048].imag = 0;
       complex LEFT = FBank[i_itr];
       complex RIGHT = FBank[i_itr + 2048];
       complex storeL = cadd(LEFT, RIGHT);
@@ -1814,195 +1834,195 @@ extern "C" void preprocesses_ODW_13(float * inData,
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
@@ -2751,195 +2771,195 @@ extern "C" void preprocessed_ODW13_STH_STFT(float * inData,
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
@@ -3714,419 +3734,419 @@ extern "C" void preprocesses_ODW_14(float * inData,
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
@@ -5695,419 +5715,419 @@ extern "C" void preprocessed_ODW14_STH_STFT(float * inData,
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
@@ -7738,899 +7758,899 @@ extern "C" void preprocesses_ODW_15(float * inData,
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
@@ -11935,899 +11955,899 @@ extern "C" void preprocessed_ODW15_STH_STFT(float * inData,
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 8192, windowAdded);
+      //DaCAdd(i_itr, 8192, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 4096, windowAdded);
+      //DaCAdd(i_itr, 4096, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 2048, windowAdded);
+      //DaCAdd(i_itr, 2048, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 1024, windowAdded);
+      //DaCAdd(i_itr, 1024, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      //DaCAdd(i_itr, 512, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      //DaCAdd(i_itr, 256, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      //DaCAdd(i_itr, 128, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      //DaCAdd(i_itr, 64, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      //DaCAdd(i_itr, 32, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      //DaCAdd(i_itr, 16, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      //DaCAdd(i_itr, 8, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      //DaCAdd(i_itr, 4, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      //DaCAdd(i_itr, 2, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 1024; i_itr < 2048; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 2048; i_itr < 3072; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 3072; i_itr < 4096; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 4096; i_itr < 5120; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 5120; i_itr < 6144; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 6144; i_itr < 7168; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 7168; i_itr < 8192; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 8192; i_itr < 9216; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 9216; i_itr < 10240; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 10240; i_itr < 11264; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 11264; i_itr < 12288; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 12288; i_itr < 13312; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 13312; i_itr < 14336; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 14336; i_itr < 15360; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 15360; i_itr < 16384; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      //DaCAdd(i_itr, 1, windowAdded);
       ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {

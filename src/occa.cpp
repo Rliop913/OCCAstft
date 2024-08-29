@@ -70,7 +70,7 @@ int main(int, char**){
     
     constexpr int readFrame = 1024*1000;
     constexpr float overlap = 0.0f;
-    constexpr int windowRadix = 15;
+    constexpr int windowRadix = 10;
     constexpr int windowSize = 1 << windowRadix;
     float *hostBuffer = new float[readFrame];
     ma_decoder_seek_to_pcm_frame(&dec, 48000*20);
@@ -93,9 +93,15 @@ int main(int, char**){
     occa::memory stkbufout = dev.malloc(OFullSize, complex);
     occa::memory stkout = dev.malloc<float>(OHalfSize);
     
+    occa::memory FReal = dev.malloc<float>(OFullSize);
+    occa::memory FImag = dev.malloc<float>(OFullSize);
+    occa::memory SReal = dev.malloc<float>(OFullSize);
+    occa::memory SImag = dev.malloc<float>(OFullSize);
+    
     occa::memory qt_buffer = dev.malloc<float>(qt);
 
-
+    std::vector<float> ftempf(OFullSize);
+    // FImag.copyFrom(ftempf.data());
     std::vector<float> qtbuf(qt);
     qtbuf.clear();
     qt_buffer.copyFrom(qtbuf.data());
@@ -107,16 +113,19 @@ int main(int, char**){
     //occa::kernel removeDC = dev.buildKernel("../include/kernel.okl", "removeDC", prop);
     occa::kernel overlap_N_window = dev.buildKernel("../include/kernel.okl", "overlap_N_window", prop);
     // occa::kernel overlap_N_window_imag = dev.buildKernel("../include/kernel.okl", "overlap_N_window_imag", prop);
-    occa::kernel preprocess10 = dev.buildKernel("../include/Radix10.okl", "preprocesses_ODW_10", prop);
+    // occa::kernel preprocess10 = dev.buildKernel("../include/Radix10.okl", "preprocesses_ODW_10", prop);
     // occa::kernel bitReverse = dev.buildKernel("../include/kernel.okl", "bitReverse", prop);
     occa::kernel bitReverseTemp = dev.buildKernel("../include/kernel.okl", "bitReverse_temp", prop);
-    occa::kernel ppodw11 = dev.buildKernel("../include/Radix15.okl", "preprocesses_ODW_15", prop);
-    occa::kernel sthm11 = dev.buildKernel("../include/Radix11.okl", "Stockhpotimized11", prop);
+    occa::kernel ppodw11 = dev.buildKernel("../include/Radix12.okl", "preprocesses_ODW_12", prop);
+    // occa::kernel sthm11 = dev.buildKernel("../include/Radix11.okl", "Stockhpotimized11", prop);
     
     // occa::kernel endPreProcess = dev.buildKernel("../include/kernel.okl", "endPreProcess", prop);
     occa::kernel Butterfly = dev.buildKernel("../include/kernel.okl", "Butterfly", prop);
-    occa::kernel Stockopt = dev.buildKernel("../include/Radix10.okl", "Stockhpotimized10", prop);
-    occa::kernel AIO = dev.buildKernel("../include/Radix15.okl", "preprocessed_ODW15_STH_STFT", prop);
+    
+    occa::kernel overlap_common = dev.buildKernel("../include/RadixCommon.okl", "Overlap_Common", prop);
+    occa::kernel STHM_Common = dev.buildKernel("../include/RadixCommon.okl", "StockHamDITCommon", prop);
+    // occa::kernel Stockopt = dev.buildKernel("../include/Radix10.okl", "Stockhpotimized10", prop);
+    occa::kernel AIO = dev.buildKernel("../include/Radix12.okl", "preprocessed_ODW12_STH_STFT", prop);
     
     // occa::kernel optimizedDIFBUTTERFLY = dev.buildKernel("../include/kernel.okl", "OptimizedDIFButterfly10", prop);
     
@@ -124,12 +133,42 @@ int main(int, char**){
     
     std::cout<<windowSize * (1.0f - overlap)<<std::endl;
     
+    
 
-    ppodw11(dev_in, qt, readFrame, (unsigned int)(windowSize * (1.0f - overlap)), dev_buffer);
+    overlap_common( dev_in, 
+                    OFullSize, 
+                    readFrame, 
+                    windowRadix, 
+                    (unsigned int)(windowSize * (1.0f - overlap)), 
+                    FReal
+                    );
+    
+    for(int stageRadix = 0; stageRadix < windowRadix; stageRadix+=2)
+    {
+        STHM_Common(FReal,
+                    FImag,
+                    SReal,
+                    SImag,
+                    windowSize / 2,
+                    stageRadix,
+                    OHalfSize,
+                    windowRadix
+                    );
+        STHM_Common(SReal,
+                    SImag,
+                    FReal,
+                    FImag,
+                    windowSize / 2,
+                    (stageRadix + 1),
+                    OHalfSize,
+                    windowRadix
+                    );
+    }
+    // ppodw11(dev_in, qt, readFrame, (unsigned int)(windowSize * (1.0f - overlap)), dev_buffer);
     // ppodw11(dev_in, qt, readFrame, (unsigned int)(windowSize * (1.0f - overlap)), stkbuf);
     
-    //overlap_N_window_imag(dev_in, dev_buffer, readFrame, OFullSize, windowSize, (unsigned int)(windowSize * (1.0f - overlap)));
-    //overlap_N_window(dev_in, dev_buffer, readFrame, OFullSize, windowSize, (unsigned int)(windowSize * (1.0f - overlap)));
+    // overlap_N_window_imag(dev_in, dev_buffer, readFrame, OFullSize, windowSize, (unsigned int)(windowSize * (1.0f - overlap)));
+    overlap_N_window(dev_in, dev_buffer, readFrame, OFullSize, windowSize, (unsigned int)(windowSize * (1.0f - overlap)));
     // overlap_N_window(dev_in, stkbuf, readFrame, OFullSize, windowSize, (unsigned int)(windowSize * (1.0f - overlap)));
     // preprocess10(dev_in, qt, readFrame, (unsigned int)(windowSize * (1.0f - overlap)), stkbuf);
     // removeDC(dev_buffer, OFullSize, qt_buffer, windowSize);
@@ -143,11 +182,12 @@ int main(int, char**){
 
     // dev.finish();
     occacplx* origin = new occacplx[OFullSize];
-    occacplx* opti = new occacplx[OFullSize];
+    float * Ropti = new float[OFullSize];
+    float * Iopti = new float[OFullSize];
 
     // sthm11(stkbuf, OHalfSize);
 
-    AIO(dev_in, qt, readFrame, (unsigned int)(windowSize * (1.0f - overlap)), OHalfSize, stkbuf);
+    // AIO(dev_in, qt, readFrame, (unsigned int)(windowSize * (1.0f - overlap)), OHalfSize, stkbuf);
     
     // Stockopt(stkbuf, OHalfSize);
     // StockHam(stkbuf, OHalfSize);
@@ -163,11 +203,11 @@ int main(int, char**){
     // Butterfly(stkbufout, windowSize, 128, OHalfSize, windowRadix);
     // Butterfly(stkbufout, windowSize, 256, OHalfSize, windowRadix);
     // Butterfly(stkbufout, windowSize, 512, OHalfSize, windowRadix);
-    Butterfly(dev_buffer, windowSize, 16384, OHalfSize, windowRadix);
-    Butterfly(dev_buffer, windowSize, 8192, OHalfSize, windowRadix);
-    Butterfly(dev_buffer, windowSize, 4096, OHalfSize, windowRadix);
-    Butterfly(dev_buffer, windowSize, 2048, OHalfSize, windowRadix);
-    Butterfly(dev_buffer, windowSize, 1024, OHalfSize, windowRadix);
+    // Butterfly(dev_buffer, windowSize, 16384, OHalfSize, windowRadix);
+    // Butterfly(dev_buffer, windowSize, 8192, OHalfSize, windowRadix);
+    // Butterfly(dev_buffer, windowSize, 4096, OHalfSize, windowRadix);
+    // Butterfly(dev_buffer, windowSize, 2048, OHalfSize, windowRadix);
+    // Butterfly(dev_buffer, windowSize, 1024, OHalfSize, windowRadix);
     Butterfly(dev_buffer, windowSize, 512, OHalfSize, windowRadix);
     Butterfly(dev_buffer, windowSize, 256, OHalfSize, windowRadix);
     Butterfly(dev_buffer, windowSize, 128, OHalfSize, windowRadix);
@@ -182,14 +222,15 @@ int main(int, char**){
     // bitReverseTemp(stkbuf, stkbufout, OFullSize, windowSize, windowRadix);
     dev.finish();
     // stkbufout.copyTo(opti);
-    stkbuf.copyTo(opti);
+    FReal.copyTo(Ropti);
+    FImag.copyTo(Iopti);
     dev_bufferout.copyTo(origin);
 
     for(unsigned int i =0; i< OFullSize; ++i)
     {
-        if(origin[i].real != opti[i].real || origin[i].imag != opti[i].imag)
+        if(origin[i].real != Ropti[i] || origin[i].imag != Iopti[i])
         {
-            std::cout << "DIFF: " << opti[i].real - origin[i].real <<std::endl;
+            std::cout << "DIFF: " << Ropti[i] - origin[i].real <<std::endl;
         }
     }
     // return 0;
@@ -199,8 +240,12 @@ int main(int, char**){
     //     dev.finish();
     // }
     occacplx* Butterout = new occacplx[OFullSize];
+    float * Rout = new float[OFullSize];
+    float * Iout = new float[OFullSize];
     // dev_buffer.copyTo(Butterout);
-    stkbuf.copyTo(Butterout);
+    // stkbuf.copyTo(Butterout);
+    FReal.copyTo(Rout);
+    FImag.copyTo(Iout);
     // stkbufout.copyTo(Butterout);
     std::vector<float> mus_data;
     for(int i = 0;i<qt;++i)
@@ -208,12 +253,14 @@ int main(int, char**){
         ComplexVector cv(windowSize);
         for(int j=0;j<windowSize;++j)
         {
-            cv[j].real(Butterout[i*windowSize + j].real);
-            cv[j].imag(Butterout[i*windowSize + j].imag);
+            cv[j].real(Rout[i*windowSize + j]);
+            cv[j].imag(Iout[i*windowSize + j]);
         }
         auto result = ifft(cv);
+        
         for(auto j : result)
         {
+        
             mus_data.push_back(j.real()/(windowSize));
         }
         

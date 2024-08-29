@@ -8,6 +8,10 @@
 #include <cstdio>
 
 
+#define BPOW(DATA, N) DATA << N
+#define BDIV(DATA, N) DATA >> N
+#define BREMAIN(DATA, N) (DATA & (N - 1))
+
 #define DFOR(S, M, E, CODES)\
 for(int i_itr=S; i_itr < M; ++i_itr; @inner)\
 {\
@@ -115,6 +119,19 @@ cmult(const complex a, const complex b){
 }
 
 inline
+float
+RMult(const float Ra, const float Rb, const float Ia, const float Ib)
+{
+    return (Ra * Rb) - (Ia * Ib);
+}
+inline
+float
+IMult(const float Ra, const float Rb, const float Ia, const float Ib)
+{
+    return (Ra * Ib) + (Ia * Rb);
+}
+
+inline
 complex
 cadd(complex a, const complex b){
     a.real += b.real;
@@ -141,12 +158,12 @@ inline
 void
 DaCAdd(   const int i_itr,
             const unsigned int Half,
-            float windowAdded[])
+            complex windowAdded[])
 {
     unsigned int inRange = i_itr < Half;
-    float Dpoint = windowAdded[i_itr];
-    float Apoint = windowAdded[i_itr + (Half * inRange)];
-    windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+    float Dpoint = windowAdded[i_itr].imag;
+    float Apoint = windowAdded[i_itr + (Half * inRange)].imag;
+    windowAdded[i_itr].imag = (Dpoint + Apoint) * inRange;
 }
 
 

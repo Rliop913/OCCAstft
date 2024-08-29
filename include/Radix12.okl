@@ -18,7 +18,6 @@
     for(unsigned int o_itr=0; o_itr < qtConst; ++o_itr; @outer)
     {
         @shared complex windowBuffer[4096];
-        @shared float   windowAdded[2048];
 
         CUSTOM_FOR(
             unsigned int idx = o_itr * OMove + i_itr;
@@ -36,49 +35,51 @@
         CUSTOM_FOR(
             float Dpoint = windowBuffer[i_itr].real;
             float Apoint = windowBuffer[i_itr + (2048)].real;
-            windowAdded[i_itr] = (Dpoint + Apoint);
+            windowBuffer[i_itr].imag = (Dpoint + Apoint);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 1024, windowAdded);
+            DaCAdd(i_itr, 1024, windowBuffer);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 512, windowAdded);
+            DaCAdd(i_itr, 512, windowBuffer);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 256, windowAdded);
+            DaCAdd(i_itr, 256, windowBuffer);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 128, windowAdded);
+            DaCAdd(i_itr, 128, windowBuffer);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 64, windowAdded);
+            DaCAdd(i_itr, 64, windowBuffer);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 32, windowAdded);
+            DaCAdd(i_itr, 32, windowBuffer);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 16, windowAdded);
+            DaCAdd(i_itr, 16, windowBuffer);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 8, windowAdded);
+            DaCAdd(i_itr, 8, windowBuffer);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 4, windowAdded);
+            DaCAdd(i_itr, 4, windowBuffer);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 2, windowAdded);
+            DaCAdd(i_itr, 2, windowBuffer);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 1, windowAdded);
+            DaCAdd(i_itr, 1, windowBuffer);
         )
         CUSTOM_FOR(
-            windowBuffer[i_itr].real -= (windowAdded[0] / 4096.0);
-            windowBuffer[i_itr + 2048].real -= (windowAdded[0] / 4096.0);
+            windowBuffer[i_itr].real -= (windowBuffer[0].imag / 4096.0);
+            windowBuffer[i_itr + 2048].real -= (windowBuffer[0].imag / 4096.0);
             windowBuffer[i_itr].real *= window_func(i_itr, 4096);
             windowBuffer[i_itr + 2048].real *= window_func(i_itr + 2048, 4096);
         )
         CUSTOM_FOR(
-
+            windowBuffer[i_itr].imag = 0;
+            windowBuffer[i_itr + 2048].imag = 0;
+            
             bufferOut[o_itr * 4096 + i_itr] = windowBuffer[i_itr];
             bufferOut[o_itr * 4096 + i_itr + 2048] = windowBuffer[i_itr + 2048];
         )   
@@ -170,7 +171,7 @@
     {
         @shared complex FBank[4096];
         @shared complex SBank[4096];
-        @shared float   windowAdded[2048];
+        
         CUSTOM_FOR(//overlap and extends
         
             unsigned int q_itr = o_itr >> 11;
@@ -190,51 +191,52 @@
         
             float Dpoint = FBank[i_itr].real;
             float Apoint = FBank[i_itr + (2048)].real;
-            windowAdded[i_itr] = (Dpoint + Apoint);
+            FBank[i_itr].imag = (Dpoint + Apoint);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 1024, windowAdded);
+            DaCAdd(i_itr, 1024, FBank);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 512, windowAdded);
+            DaCAdd(i_itr, 512, FBank);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 256, windowAdded);
+            DaCAdd(i_itr, 256, FBank);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 128, windowAdded);
+            DaCAdd(i_itr, 128, FBank);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 64, windowAdded);
+            DaCAdd(i_itr, 64, FBank);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 32, windowAdded);
+            DaCAdd(i_itr, 32, FBank);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 16, windowAdded);
+            DaCAdd(i_itr, 16, FBank);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 8, windowAdded);
+            DaCAdd(i_itr, 8, FBank);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 4, windowAdded);
+            DaCAdd(i_itr, 4, FBank);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 2, windowAdded);
+            DaCAdd(i_itr, 2, FBank);
         )
         CUSTOM_FOR(
-            DaCAdd(i_itr, 1, windowAdded);
+            DaCAdd(i_itr, 1, FBank);
         )
         CUSTOM_FOR(
-            FBank[i_itr].real -= (windowAdded[0] / 4096.0);
+            FBank[i_itr].real -= (FBank[0].imag / 4096.0);
             FBank[i_itr].real *= window_func(i_itr, 4096);
-            FBank[i_itr + 2048].real -= (windowAdded[0] / 4096.0);
+            FBank[i_itr + 2048].real -= (FBank[0].imag / 4096.0);
             FBank[i_itr + 2048].real *= window_func(i_itr + 2048, 4096);
         )
 
         CUSTOM_FOR(
             complex thisTwiddle = twiddle(segmentK(i_itr, 2048, 2048), 4096);
-            
+            FBank[i_itr].imag = 0;
+            FBank[i_itr + 2048].imag = 0;
             complex LEFT = FBank[i_itr];
             complex RIGHT= FBank[i_itr + 2048];
             complex storeL = cadd(LEFT, RIGHT);

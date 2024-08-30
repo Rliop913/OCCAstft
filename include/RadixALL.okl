@@ -1,15 +1,9 @@
 #ifndef ROOTISBASH  
 #include "../include/Radix10.okl"
 #include "../include/Radix11.okl"
-#include "../include/Radix12.okl"
-#include "../include/Radix13.okl"
-#include "../include/Radix14.okl"
-#include "../include/Radix15.okl"
+#include "../include/RadixCommon.okl"
 #else
 #include "./include/Radix10.okl"
 #include "./include/Radix11.okl"
-#include "./include/Radix12.okl"
-#include "./include/Radix13.okl"
-#include "./include/Radix14.okl"
-#include "./include/Radix15.okl"
+#include "./include/RadixCommon.okl"
 #endif

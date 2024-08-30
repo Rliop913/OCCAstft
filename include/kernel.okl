@@ -156,14 +156,14 @@ cmod(complex a){
 
 inline
 void
-DaCAdd(   const int i_itr,
-            const unsigned int Half,
-            complex windowAdded[])
+DaCAdd( const int i_itr,
+        const unsigned int Half,
+        float windowAdded[])
 {
     unsigned int inRange = i_itr < Half;
-    float Dpoint = windowAdded[i_itr].imag;
-    float Apoint = windowAdded[i_itr + (Half * inRange)].imag;
-    windowAdded[i_itr].imag = (Dpoint + Apoint) * inRange;
+    float Dpoint = windowAdded[i_itr];
+    float Apoint = windowAdded[i_itr + (Half * inRange)];
+    windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
 }
 
 
@@ -171,25 +171,37 @@ DaCAdd(   const int i_itr,
 complex thisTwiddle = twiddle(segmentK(i_itr, SEG, HW), WINDOWSIZE);\
 unsigned int LeftIndex = (i_itr & SEGMO) | ((i_itr >> SEGR) << SEGRPO);\
 \
-complex LEFT = SBank[LeftIndex];\
-complex RIGHT= SBank[LeftIndex + SEG];\
+complex LEFT;\
+complex RIGHT;\
+LEFT.real = SRBank[LeftIndex];\
+LEFT.imag = SIBank[LeftIndex];\
+RIGHT.real= SRBank[LeftIndex + SEG];\
+RIGHT.imag= SIBank[LeftIndex + SEG];\
 complex storeL = cadd(LEFT, RIGHT);\
 complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);\
 \
-FBank[i_itr] = storeL;\
-FBank[i_itr + HW] = storeR;
+FRBank[i_itr] = storeL.real;\
+FIBank[i_itr] = storeL.imag;\
+FRBank[i_itr + HW] = storeR.real;\
+FIBank[i_itr + HW] = storeR.imag;
 
 #define OpSthmFirstTS(SEG, SEGMO, SEGR, SEGRPO, HW, WINDOWSIZE)\
 complex thisTwiddle = twiddle(segmentK(i_itr, SEG, HW), WINDOWSIZE);\
 unsigned int LeftIndex = (i_itr & SEGMO) | ((i_itr >> SEGR) << SEGRPO);\
 \
-complex LEFT = FBank[LeftIndex];\
-complex RIGHT= FBank[LeftIndex + SEG];\
+complex LEFT;\
+complex RIGHT;\
+LEFT.real = FRBank[LeftIndex];\
+LEFT.imag = FIBank[LeftIndex];\
+RIGHT.real= FRBank[LeftIndex + SEG];\
+RIGHT.imag= FIBank[LeftIndex + SEG];\
 complex storeL = cadd(LEFT, RIGHT);\
 complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);\
 \
-SBank[i_itr] = storeL;\
-SBank[i_itr + HW] = storeR;
+SRBank[i_itr] = storeL.real;\
+SIBank[i_itr] = storeL.imag;\
+SRBank[i_itr + HW] = storeR.real;\
+SIBank[i_itr + HW] = storeR.imag;
 
 
 @kernel void overlap_N_window(  float* in,

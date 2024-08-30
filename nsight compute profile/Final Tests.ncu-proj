@@ -1,0 +1,168 @@
+{
+    "extension": "ncu-proj",
+    "files": [
+        {
+            "is_open": true,
+            "path": "float100000/Radix-10_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float100000/Radix-11_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float100000/Radix-12_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float100000/Radix-13_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float100000/Radix-14_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float100000/Radix-15_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float1000000/Radix-10_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float1000000/Radix-11_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float1000000/Radix-12_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float1000000/Radix-13_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float1000000/Radix-14_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float1000000/Radix-15_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float10000000/Radix-10_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float10000000/Radix-11_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float10000000/Radix-12_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float10000000/Radix-13_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float10000000/Radix-14_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float10000000/Radix-15_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float100000000/Radix-10_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float100000000/Radix-11_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float100000000/Radix-12_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float100000000/Radix-13_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float100000000/Radix-14_1.ncu-rep"
+        },
+        {
+            "is_open": true,
+            "path": "float100000000/Radix-15_1.ncu-rep"
+        }
+    ],
+    "launcher": {
+        "activity/interactiveprofile/cachecontrol": "Flush All",
+        "activity/interactiveprofile/clockcontrol": "Base",
+        "activity/interactiveprofile/cpustacksupportoptions": "Native",
+        "activity/interactiveprofile/disableprofilingstartstop": false,
+        "activity/interactiveprofile/enablecpustacksupport": true,
+        "activity/interactiveprofile/enablenvtxsupport": true,
+        "activity/interactiveprofile/enableprofilingfromstart": true,
+        "activity/interactiveprofile/graphprofiling": "Node",
+        "activity/interactiveprofile/importsource": false,
+        "activity/occupancycalculator/file": "",
+        "activity/profile/applyrules": true,
+        "activity/profile/appreplaybuffer": "File",
+        "activity/profile/appreplaymatch": "Grid",
+        "activity/profile/appreplaymode": "Strict",
+        "activity/profile/cachecontrol": "Flush All",
+        "activity/profile/checkexitcode": true,
+        "activity/profile/clockcontrol": "Base",
+        "activity/profile/cpustacksupportoptions": "Native",
+        "activity/profile/devices": "",
+        "activity/profile/disableprofilingstartstop": false,
+        "activity/profile/enablecpustacksupport": false,
+        "activity/profile/enablenvtxsupport": false,
+        "activity/profile/enableprofilingfromstart": true,
+        "activity/profile/filtermode": "Global",
+        "activity/profile/forceoverwrite": true,
+        "activity/profile/graphprofiling": "Node",
+        "activity/profile/importsource": false,
+        "activity/profile/kernelid": "",
+        "activity/profile/kernelname": "",
+        "activity/profile/kernelnamebase": "Function",
+        "activity/profile/kill": false,
+        "activity/profile/launchcapturecount": 0,
+        "activity/profile/launchskipbeforematchcount": 0,
+        "activity/profile/launchskipcount": 0,
+        "activity/profile/nvtxincludeexcludeoptions": "",
+        "activity/profile/outputfile": "G:/Dropbox/Dropbox/box_inside/git_branch/cpps/STFT_SYCL/OCCAFFT/nsight compute profile/float100000000/Radix-15_%i",
+        "activity/profile/pmsamplingbuffersize": 0,
+        "activity/profile/pmsamplinginterval": 0,
+        "activity/profile/pmsamplingmaxpasses": 0,
+        "activity/profile/rangefilteroptions": "",
+        "activity/profile/rangereplayoptions": "",
+        "activity/profile/replaymode": "Kernel",
+        "activity/profile/samplingBufferSize": 33554432,
+        "activity/profile/samplingInterval": 5,
+        "activity/profile/samplingIntervalAuto": true,
+        "activity/profile/samplingMaxPasses": 5,
+        "activity/profile/sourcefolders": "",
+        "activity/profile/targetprocesses": "All",
+        "activity/systemtrace/target/command_line": "\"G:/Dropbox/Dropbox/box_inside/git_branch/cpps/STFT_SYCL/OCCAFFT/build/cross_gpgpu/CUDA/cudaRun.exe\" ",
+        "activity/systemtrace/target/process_name": "G:/Dropbox/Dropbox/box_inside/git_branch/cpps/STFT_SYCL/OCCAFFT/build/cross_gpgpu/CUDA/cudaRun.exe",
+        "platform/linux (x86_64)/device": "",
+        "platform/linux/arguments": "",
+        "platform/linux/environment": "",
+        "platform/linux/executable": "",
+        "platform/linux/workingdir": "",
+        "platform/win32/arguments": "",
+        "platform/win32/environment": "",
+        "platform/win32/executable": "G:/Dropbox/Dropbox/box_inside/git_branch/cpps/STFT_SYCL/OCCAFFT/build/cross_gpgpu/CUDA/cudaRun.exe",
+        "platform/win32/executable/history": [
+            "G:/Dropbox/Dropbox/box_inside/git_branch/cpps/STFT_SYCL/OCCAFFT/build/cross_gpgpu/CUDA/cudaRun.exe"
+        ],
+        "platform/win32/workingdir": "",
+        "platform/windows/device": "localhost"
+    },
+    "uuid": "{20cbebef-2e89-4a3b-93fd-791c9cc4bc9c}",
+    "version": "1.0"
+}

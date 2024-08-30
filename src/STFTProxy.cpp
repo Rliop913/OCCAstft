@@ -292,12 +292,12 @@ int main()
         std::cout<<err.reason << " custom messages"<<std::endl;
         return;
     },list);
-    std::vector<float> testZeroData(10000000);
+    std::vector<float> testZeroData(100000000);
     for(ULL i=0; i<testZeroData.size(); ++i)
     {
         testZeroData[i] = float(i)/testZeroData.size()+1.0f;
     }
-    auto promisedData = temp.RequestSTFT(testZeroData, 13, 0.0);
+    auto promisedData = temp.RequestSTFT(testZeroData, 15, 0.0);
 
     if(promisedData.has_value())
     {

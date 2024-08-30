@@ -51,71 +51,71 @@ Runner::ActivateSTFT(   VECF& inData,
     switch (windowRadix)
     {
     case 10:
-        preprocessed_ODW10_STH_STFT
-        (
-            inData.data(), 
-            qtConst, 
-            FullSize, 
-            OMove,
-            OHalfSize,
-            tempMem
-        );
-        break;
-    case 11:
-        preprocessed_ODW11_STH_STFT
-        (
-            inData.data(), 
-            qtConst, 
-            FullSize, 
-            OMove,
-            OHalfSize,
-            tempMem
-        );
-        break;
-    case 12:
-        preprocessed_ODW12_STH_STFT
-        (
-            inData.data(), 
-            qtConst, 
-            FullSize, 
-            OMove,
-            OHalfSize,
-            tempMem
-        );
-        break;
-    case 13:
-        preprocessed_ODW13_STH_STFT
-        (
-            inData.data(), 
-            qtConst, 
-            FullSize, 
-            OMove,
-            OHalfSize,
-            tempMem
-        );
-        break;
-    case 14:
-        preprocessed_ODW14_STH_STFT
-        (
-            inData.data(), 
-            qtConst, 
-            FullSize, 
-            OMove,
-            OHalfSize,
-            tempMem
-        );
-        break;
-    case 15:
-        preprocessed_ODW15_STH_STFT
-        (
-            inData.data(), 
-            qtConst, 
-            FullSize, 
-            OMove,
-            OHalfSize,
-            tempMem
-        );
-        break;
+    //     preprocessed_ODW10_STH_STFT
+    //     (
+    //         inData.data(), 
+    //         qtConst, 
+    //         FullSize, 
+    //         OMove,
+    //         OHalfSize,
+    //         tempMem
+    //     );
+    //     break;
+    // case 11:
+    //     preprocessed_ODW11_STH_STFT
+    //     (
+    //         inData.data(), 
+    //         qtConst, 
+    //         FullSize, 
+    //         OMove,
+    //         OHalfSize,
+    //         tempMem
+    //     );
+    //     break;
+    // case 12:
+    //     preprocessed_ODW12_STH_STFT
+    //     (
+    //         inData.data(), 
+    //         qtConst, 
+    //         FullSize, 
+    //         OMove,
+    //         OHalfSize,
+    //         tempMem
+    //     );
+    //     break;
+    // case 13:
+    //     preprocessed_ODW13_STH_STFT
+    //     (
+    //         inData.data(), 
+    //         qtConst, 
+    //         FullSize, 
+    //         OMove,
+    //         OHalfSize,
+    //         tempMem
+    //     );
+    //     break;
+    // case 14:
+    //     preprocessed_ODW14_STH_STFT
+    //     (
+    //         inData.data(), 
+    //         qtConst, 
+    //         FullSize, 
+    //         OMove,
+    //         OHalfSize,
+    //         tempMem
+    //     );
+    //     break;
+    // case 15:
+    //     preprocessed_ODW15_STH_STFT
+    //     (
+    //         inData.data(), 
+    //         qtConst, 
+    //         FullSize, 
+    //         OMove,
+    //         OHalfSize,
+    //         tempMem
+    //     );
+    //     break;
     default:
         break;
     }

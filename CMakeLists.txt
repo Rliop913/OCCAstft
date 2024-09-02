@@ -13,7 +13,6 @@ add_definitions(-DOS_WINDOWS)
 add_definitions(-DWIN32_LEAN_AND_MEAN)
 else()
 add_definitions(-DOS_POSIX)
-find_package(OCCA REQUIRED)
 
 endif()
 

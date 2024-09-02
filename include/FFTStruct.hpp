@@ -108,6 +108,11 @@ public:
     float get_OverlapRate();
     ULL get_dataLength();
     
+    ULL get_OverlapDataLength();
+    ULL toOverlapLength(const ULL& dataLength, 
+                        const float& overlapRatio, 
+                        const ULL& windowSize);
+
     //gets SharedMemory pointer from shmem path. The memory should be allocated.
     MAYBE_SHOBJ GetSHMPtr();
 

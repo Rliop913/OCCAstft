@@ -59,5 +59,3 @@ else()
 endif()
 target_link_libraries(cudaRun PRIVATE ZLIB::ZLIB)
 target_include_directories(cudaRun PRIVATE ${ixws_SOURCE_DIR}/ixwebsocket)
-#ptx 변환작업 필요
-#libcuda만 사용, 즉 드라이버 API만 사용

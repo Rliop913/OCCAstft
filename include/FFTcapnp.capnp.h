@@ -32,7 +32,7 @@ struct RequestCapnp {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(c1f97193a7bbbf4d, 5, 3)
+    CAPNP_DECLARE_STRUCT_HEADER(c1f97193a7bbbf4d, 6, 3)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -75,9 +75,11 @@ public:
 
   inline  ::uint32_t getWindowRadix() const;
 
-  inline float getOvarlapRate() const;
+  inline float getOverlapRatio() const;
 
   inline  ::uint64_t getDataLength() const;
+
+  inline  ::uint64_t getOverlapdataLength() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -141,11 +143,14 @@ public:
   inline  ::uint32_t getWindowRadix();
   inline void setWindowRadix( ::uint32_t value);
 
-  inline float getOvarlapRate();
-  inline void setOvarlapRate(float value);
+  inline float getOverlapRatio();
+  inline void setOverlapRatio(float value);
 
   inline  ::uint64_t getDataLength();
   inline void setDataLength( ::uint64_t value);
+
+  inline  ::uint64_t getOverlapdataLength();
+  inline void setOverlapdataLength( ::uint64_t value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -337,16 +342,16 @@ inline void RequestCapnp::Builder::setWindowRadix( ::uint32_t value) {
       ::capnp::bounded<6>() * ::capnp::ELEMENTS, value);
 }
 
-inline float RequestCapnp::Reader::getOvarlapRate() const {
+inline float RequestCapnp::Reader::getOverlapRatio() const {
   return _reader.getDataField<float>(
       ::capnp::bounded<7>() * ::capnp::ELEMENTS);
 }
 
-inline float RequestCapnp::Builder::getOvarlapRate() {
+inline float RequestCapnp::Builder::getOverlapRatio() {
   return _builder.getDataField<float>(
       ::capnp::bounded<7>() * ::capnp::ELEMENTS);
 }
-inline void RequestCapnp::Builder::setOvarlapRate(float value) {
+inline void RequestCapnp::Builder::setOverlapRatio(float value) {
   _builder.setDataField<float>(
       ::capnp::bounded<7>() * ::capnp::ELEMENTS, value);
 }
@@ -363,6 +368,20 @@ inline  ::uint64_t RequestCapnp::Builder::getDataLength() {
 inline void RequestCapnp::Builder::setDataLength( ::uint64_t value) {
   _builder.setDataField< ::uint64_t>(
       ::capnp::bounded<4>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint64_t RequestCapnp::Reader::getOverlapdataLength() const {
+  return _reader.getDataField< ::uint64_t>(
+      ::capnp::bounded<5>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint64_t RequestCapnp::Builder::getOverlapdataLength() {
+  return _builder.getDataField< ::uint64_t>(
+      ::capnp::bounded<5>() * ::capnp::ELEMENTS);
+}
+inline void RequestCapnp::Builder::setOverlapdataLength( ::uint64_t value) {
+  _builder.setDataField< ::uint64_t>(
+      ::capnp::bounded<5>() * ::capnp::ELEMENTS, value);
 }
 
 

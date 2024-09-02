@@ -42,96 +42,122 @@ Runner::ActivateSTFT(   VECF& inData,
     const unsigned int  OMove       = windowSize * (1.0f - overlapRatio);
     //end default
 
+    auto Real = new float  [OFullSize]();
+    auto Imag = new float  [OFullSize]();
+    
 
-    auto tempMem = new complex  [OFullSize]();
-    auto qtBuffer= new float    [qtConst]();
-
-    std::vector<float> outMem(OHalfSize);
+    std::vector<float> outMem(OFullSize);
     
     switch (windowRadix)
     {
     case 10:
-    //     preprocessed_ODW10_STH_STFT
-    //     (
-    //         inData.data(), 
-    //         qtConst, 
-    //         FullSize, 
-    //         OMove,
-    //         OHalfSize,
-    //         tempMem
-    //     );
-    //     break;
-    // case 11:
-    //     preprocessed_ODW11_STH_STFT
-    //     (
-    //         inData.data(), 
-    //         qtConst, 
-    //         FullSize, 
-    //         OMove,
-    //         OHalfSize,
-    //         tempMem
-    //     );
-    //     break;
-    // case 12:
-    //     preprocessed_ODW12_STH_STFT
-    //     (
-    //         inData.data(), 
-    //         qtConst, 
-    //         FullSize, 
-    //         OMove,
-    //         OHalfSize,
-    //         tempMem
-    //     );
-    //     break;
-    // case 13:
-    //     preprocessed_ODW13_STH_STFT
-    //     (
-    //         inData.data(), 
-    //         qtConst, 
-    //         FullSize, 
-    //         OMove,
-    //         OHalfSize,
-    //         tempMem
-    //     );
-    //     break;
-    // case 14:
-    //     preprocessed_ODW14_STH_STFT
-    //     (
-    //         inData.data(), 
-    //         qtConst, 
-    //         FullSize, 
-    //         OMove,
-    //         OHalfSize,
-    //         tempMem
-    //     );
-    //     break;
-    // case 15:
-    //     preprocessed_ODW15_STH_STFT
-    //     (
-    //         inData.data(), 
-    //         qtConst, 
-    //         FullSize, 
-    //         OMove,
-    //         OHalfSize,
-    //         tempMem
-    //     );
-    //     break;
+        preprocessed_ODW10_STH_STFT
+        (
+            inData.data(), 
+            qtConst, 
+            FullSize, 
+            OMove,
+            OHalfSize,
+            Real,
+            Imag
+        );
+        break;
+    case 11:
+        preprocessed_ODW11_STH_STFT
+        (
+            inData.data(), 
+            qtConst, 
+            FullSize, 
+            OMove,
+            OHalfSize,
+            Real,
+            Imag
+        );
+        break;
     default:
+        auto OReal = new float  [OFullSize]();
+        auto OImag = new float  [OFullSize]();
+        Overlap_Common
+        (
+            inData.data(),
+            OFullSize,
+            FullSize,
+            windowRadix,
+            OMove,
+            Real
+        );
+        DCRemove_Common
+        (
+            Real,
+            OFullSize,
+            windowSize
+        );
+        Window_Common
+        (
+            Real,
+            OFullSize,
+            windowRadix
+        );
+        unsigned int HWindowSize = windowSize >> 1;
+        for(unsigned int stage = 0; stage < windowRadix; ++stage)
+        {
+            if(stage % 2 == 0)
+            {
+                StockHamDITCommon
+                (
+                    Real,
+                    Imag,
+                    OReal,
+                    OImag,
+                    HWindowSize,
+                    stage,
+                    OHalfSize,
+                    windowRadix
+                );
+            }
+            else
+            {
+                StockHamDITCommon
+                (
+                    OReal,
+                    OImag,
+                    Real,
+                    Imag,
+                    HWindowSize,
+                    stage,
+                    OHalfSize,
+                    windowRadix
+                );
+            }
+        }
+        if(windowRadix % 2 == 0)
+        {
+            toPower
+            (
+                outMem.data(),
+                Real,
+                Imag,
+                OFullSize,
+                windowRadix
+            );
+        }
+        else
+        {
+            toPower
+            (
+                outMem.data(),
+                OReal,
+                OImag,
+                OFullSize,
+                windowRadix
+            );
+        }
+        delete[] OReal;
+        delete[] OImag;
         break;
     }
-
-    // overlap_N_window(inData.data(), tempMem, FullSize, OFullSize, windowSize, OMove);
-    // removeDC(tempMem, OFullSize, qtBuffer, windowSize);
-    // bitReverse(tempMem, OFullSize, windowSize, windowRadix);
-    // endPreProcess(tempMem, OFullSize);
-
-    // for(int iStage=0; iStage < windowRadix; ++iStage)
-    // {
-    //     Butterfly(tempMem, windowSize, 1<<iStage, OHalfSize, windowRadix);
-    // }
-    toPower(tempMem, outMem.data(), OHalfSize, windowRadix);
-    delete[] tempMem;
-    delete[] qtBuffer;
+    delete[] Real;
+    delete[] Imag;
 
     return std::move(outMem);
 }

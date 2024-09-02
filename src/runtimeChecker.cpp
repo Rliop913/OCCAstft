@@ -1,5 +1,5 @@
 #include "runtimeChecker.hpp"
-
+#include <iostream>
 #ifdef OS_WINDOWS
 #include <process.h>
 bool
@@ -15,30 +15,6 @@ RuntimeCheck::ExcuteRunner(const std::string& executePath, const int& portNum)
         return false;
     }
     return true;
-    //not implemented on Windows
-    // STARTUPINFO si;
-    // RUNNER_INFO ri;
-
-    // ZeroMemory(&si, sizeof(si));
-    // si.cb = sizeof(si);
-    // ZeroMemory(&ri, sizeof(ri));
-
-    // bool result = CreateProcess
-    // (
-    //     NULL, NULL, NULL, NULL,
-    //     FALSE,
-    //     0,
-    //     NULL, NULL,
-    //     &si,
-    //     &ri
-    // );
-
-    // if(result)
-    // {
-    //     CloseHandle(ri.hProcess);
-    //     CloseHandle(ri.hThread);
-    //     return false;
-    // }
 }
 
 
@@ -74,21 +50,47 @@ RuntimeCheck::isAvailable(PATH& path)
 #ifdef OS_WINDOWS
     std::string dllName;
     fs::path executePath(path.second);
+    if(executePath.extension() == "exe")
+    {
+        executePath.replace_extension("");
+    }
     switch (path.first)
     {
         case SupportedRuntimes::CUDA:
             dllName = "nvcuda.dll";
-            executePath.append("cudaRun.exe");
+            if(executePath.filename() != "cudaRun")
+            {
+                executePath.append("cudaRun.exe");
+            }
             break;
-
+        case SupportedRuntimes::HIP:
+            dllName = "amdhip64.dll";
+            if(executePath.filename() != "hipRun")
+            {
+                executePath.append("hipRun.exe");
+            }
+            break;
+        case SupportedRuntimes::METAL:
+            dllName = "SKIP";
+            if(executePath.filename() != "metalRun")
+            {
+                executePath.append("metalRun.exe");
+            }
+            break;
         case SupportedRuntimes::OPENCL:
             dllName = "OpenCL.dll";
-            executePath.append("openclRun.exe");
+            if(executePath.filename() != "openclRun")
+            {
+                executePath.append("openclRun.exe");
+            }
             break;
 
         case SupportedRuntimes::OPENMP:
             dllName = "SKIP";
-            executePath.append("openmpRun.exe");
+            if(executePath.filename() != "openmpRun")
+            {
+                executePath.append("openmpRun.exe");
+            }
             break;
 
         case SupportedRuntimes::SERVER:
@@ -97,8 +99,13 @@ RuntimeCheck::isAvailable(PATH& path)
 
         case SupportedRuntimes::SERIAL:
             dllName = "SKIP";
-            executePath.append("serialRun.exe");
+            if(executePath.filename() != "serialRun")
+            {
+                executePath.append("serialRun.exe");
+            }
             break;
+        case SupportedRuntimes::CUSTOM:
+            executePath.replace_extension(".exe");
         default:
             return false;
     }
@@ -128,21 +135,45 @@ RuntimeCheck::isAvailable(PATH& path)
 #else
     std::string soName;
     fs::path executePath(path.second);
+    if(executePath.extension() == "exe")
+    {
+        executePath.replace_extension("");
+    }
     switch (path.first)
     {
         case SupportedRuntimes::CUDA:
             soName = "libcuda.so";
-            executePath.append("cudaRun");
+            if(executePath.filename() != "cudaRun")
+            {
+                executePath.append("cudaRun");
+            }
             break;
-
+        case SupportedRuntimes::HIP:
+            soName = "libamdhip64.so";
+            if(executePath.filename() != "hipRun")
+            {
+                executePath.append("hipRun");
+            }
+            break;
+        case SupportedRuntimes::METAL:
+            soName = "SKIP";
+            if(executePath.filename() != "metalRun")
+            {
+                executePath.append("metalRun");
+            }
         case SupportedRuntimes::OPENCL:
             soName = "libOpenCL.so";
-            executePath.append("openclRun");
+            if(executePath.filename() != "openclRun")
+            {
+                executePath.append("openclRun");
+            }
             break;
-
         case SupportedRuntimes::OPENMP:
             soName = "SKIP";
-            executePath.append("openmpRun");
+            if(executePath.filename() != "openmpRun")
+            {
+                executePath.append("openmpRun");
+            }
             break;
 
         case SupportedRuntimes::SERVER:
@@ -151,9 +182,14 @@ RuntimeCheck::isAvailable(PATH& path)
 
         case SupportedRuntimes::SERIAL:
             soName = "SKIP";
-            executePath.append("serialRun");
+            if(executePath.filename() != "serialRun")
+            {
+                executePath.append("serialRun");
+            }
             break;
-
+        case SupportedRuntimes::CUSTOM:
+            soName = "SKIP";
+            break;
         default:
             return false;
     }
@@ -194,6 +230,14 @@ FallbackList::getNext()
     {
         return result;
     }
+    else if (VectorITR<HIP>(HIPFallback, result))
+    {
+        return result;
+    }
+    else if (VectorITR<METAL>(METALFallback, result))
+    {
+        return result;
+    }
     else if (VectorITR<OPENCL>(OpenCLFallback, result))
     {
         return result;
@@ -207,6 +251,10 @@ FallbackList::getNext()
         return result;
     }
     else if (VectorITR<SERIAL>(SerialFallback, result))
+    {
+        return result;
+    }
+    else if (VectorITR<CUSTOM>(CustomFallback, result))
     {
         return result;
     }

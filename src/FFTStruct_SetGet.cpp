@@ -36,11 +36,11 @@ FFTRequest::get_OverlapRate()
     float oRate = 0.0;
     if(mw.has_value())
     {
-        oRate = mw.value().getOvarlapRate();
+        oRate = mw.value().getOverlapRatio();
     }
     else if(mr.has_value())
     {
-        oRate = mr.value().getOvarlapRate();
+        oRate = mr.value().getOverlapRatio();
     }
     return oRate;
 }
@@ -56,6 +56,22 @@ FFTRequest::get_dataLength()
     else if(mr.has_value())
     {
         leng = mr.value().getDataLength();
+    }
+    return leng;
+}
+
+
+ULL
+FFTRequest::get_OverlapDataLength()
+{
+    ULL leng = 0;
+    if(mw.has_value())
+    {
+        leng = mw.value().getOverlapdataLength();
+    }
+    else if(mr.has_value())
+    {
+        leng = mr.value().getOverlapdataLength();
     }
     return leng;
 }

@@ -4,50 +4,11 @@
 #ifdef __NEED_PI
 #include <math.h>
 #endif
-#include <math.h>
-#include <cstdio>
 
 
 #define BPOW(DATA, N) DATA << N
 #define BDIV(DATA, N) DATA >> N
 #define BREMAIN(DATA, N) (DATA & (N - 1))
-
-#define DFOR(S, M, E, CODES)\
-for(int i_itr=S; i_itr < M; ++i_itr; @inner)\
-{\
-    CODES;\
-}\
-for(int i_itr=M; i_itr < E; ++i_itr; @inner)\
-{\
-    CODES;\
-}
-
-#define QFOR(S, M1, M2, M3, E, CODES)\
-for(int i_itr=S; i_itr < M1; ++i_itr; @inner)\
-{\
-    CODES;\
-}\
-for(int i_itr=M1; i_itr < M2; ++i_itr; @inner)\
-{\
-    CODES;\
-}\
-for(int i_itr=M2; i_itr < M3; ++i_itr; @inner)\
-{\
-    CODES;\
-}\
-for(int i_itr=M3; i_itr < E; ++i_itr; @inner)\
-{\
-    CODES;\
-}
-
-#define QQFOR(S, M1, M2, M3, M4, M5, M6, M7, E, CODES)\
-QFOR(S, M1, M2, M3, M4, CODES)\
-QFOR(M4, M5, M6, M7, E, CODES)
-
-#define QQQQFOR(S, M1, M2, M3, M4, M5, M6, M7, M8, M9, M10, M11, M12, M13, M14, M15, E, CODES)\
-QQFOR(S, M1, M2, M3, M4, M5, M6, M7, M8, CODES)\
-QQFOR(M8, M9, M10, M11, M12, M13, M14, M15, E, CODES)
-
 
 typedef struct complex_t{
     float real;
@@ -153,18 +114,21 @@ cmod(complex a){
     return (sqrt(a.real*a.real + a.imag*a.imag));
 }
 
+#define DaCAdd(i_itr, Half, windowAdded)\
+unsigned int inRange = i_itr < Half;\
+float Dpoint = windowAdded[i_itr];\
+float Apoint = windowAdded[i_itr + (Half * inRange)];\
+windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
 
-inline
-void
-DaCAdd( const int i_itr,
-        const unsigned int Half,
-        float windowAdded[])
-{
-    unsigned int inRange = i_itr < Half;
-    float Dpoint = windowAdded[i_itr];
-    float Apoint = windowAdded[i_itr + (Half * inRange)];
-    windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
-}
+
+
+// inline
+// void
+// DaCAdd( const int i_itr,
+//         const unsigned int Half,
+//         float windowAdded[])
+// {
+// }
 
 
 #define OpSthmSecondTF(SEG, SEGMO, SEGR, SEGRPO, HW, WINDOWSIZE)\
@@ -203,35 +167,6 @@ SIBank[i_itr] = storeL.imag;\
 SRBank[i_itr + HW] = storeR.real;\
 SIBank[i_itr + HW] = storeR.imag;
 
-
-@kernel void overlap_N_window(  float* in,
-                                complex* buffer,
-                                const unsigned int fullSize,
-                                const unsigned int OFullSize,
-                                const int windowSize,
-                                const unsigned int OMove)
-{
-    for(unsigned int w_num=0; w_num < OFullSize; w_num += 256; @outer)
-    {
-        for(int w_itr=0; w_itr < 256; ++w_itr; @inner)
-        {
-            unsigned int FID = w_num + w_itr;
-            unsigned int read_point = 
-                (unsigned int)((FID) / windowSize) * OMove + ((FID) % windowSize);
-            
-            // printf("%u buffer overlap\n", OMove);//buffer[FID].imag);
-            
-            buffer[FID].real = 
-            read_point >= fullSize ? 0.0
-            :
-            in[read_point];// * window_func((FID) % windowSize, windowSize);
-            buffer[FID].imag = 0.0;
-        }
-    }
-}
-
-
-
 @kernel void bitReverse_temp(
                         complex* buffer,
                         complex* result,
@@ -253,52 +188,20 @@ SIBank[i_itr + HW] = storeR.imag;
 }
 
 
-
-@kernel void Butterfly( complex* buffer,
-                        const int windowSize,
-                        const int powed_stage,
-                        const unsigned int OHalfSize,
-                        const int radixData)
-{
-    for(unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 256; @outer)
-    {
-        for(int i_itr = 0; i_itr < 256; ++i_itr; @inner)
-        {
-            unsigned int GID = o_itr + i_itr;
-            pairs butterfly_target = indexer(GID, powed_stage);
-            
-            int k = (GID % powed_stage) * (windowSize / (2 * powed_stage));//(GID%powed_stage) * (windowSize / powed_stage);
-           
-            complex this_twiddle = twiddle(k, windowSize);
-            
-            complex first = buffer[butterfly_target.first];
-            complex second = buffer[butterfly_target.second];
-            complex tempx = cadd(first, second);
-            complex tempy = csub(first, second);
-            tempy = cmult(tempy, this_twiddle);
-            buffer[butterfly_target.first] = tempx;
-            buffer[butterfly_target.second] = tempy;                
-        }
-    }
-}
-@kernel void toPower(   complex* buffer,
-                        float* out,
-                        const unsigned int OHalfSize,
+@kernel void toPower(   float* out,
+                        float* Real,
+                        float* Imag,
+                        const unsigned int OFullSize,
                         const int windowRadix)
 {
-    //toPower
-    for(unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 256; @outer)
+    for(unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256; @outer)
     {
         for(int i_itr = 0; i_itr < 256; ++i_itr; @inner)
         {
             const unsigned int GID = o_itr + i_itr;
-            unsigned int BID = 
-                (GID >> (windowRadix - 1)) * (1 << windowRadix)
-                +
-                (GID & ((1 << (windowRadix - 1)) - 1));
-            float powered = cmod(buffer[BID]);
-            //powered = log10(powered);
-            out[GID] = powered;
+            float R = Real[GID];
+            float I = Imag[GID];
+            out[GID] = sqrt(R * R + I * I);
         }
     }
     return;

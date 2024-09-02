@@ -9,6 +9,7 @@ struct RequestCapnp {
     windowsHandlePTR @5 :UInt64;
 
     windowRadix @6 :UInt32;
-    ovarlapRate @7 :Float32;
+    overlapRatio @7 :Float32;
     dataLength @8 :UInt64;
+    overlapdataLength @9 :UInt64;
 }

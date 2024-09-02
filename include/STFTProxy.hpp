@@ -19,11 +19,6 @@
 
 #endif
 
-
-
-
-// using COSTR             = const std::string;
-// using DATAF             = std::vector<float>;
 using STRVEC            = std::vector<std::string>;
 using ERR_FUNC          = std::function<void(const ix::WebSocketErrorInfo& )>;
 using FUTURE_DATA       = std::future<MAYBE_DATA>;
@@ -59,7 +54,7 @@ public:
     std::string STATUS = "OK";
 
     bool TryConnect(PATH& path);
-    bool KillRunner();
+    bool KillRunner(bool noFallbackAnyMore);
     MAYBE_FUTURE_DATA
     RequestSTFT(std::vector<float>& data, 
                 const int& windowRadix, 

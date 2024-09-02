@@ -14,13 +14,17 @@ FFTRequest::MakeSharedMemory(const SupportedRuntimes& Type, const ULL& dataSize)
     }
     auto wp = &mw.value();
     wp->setDataLength(dataSize);
+    ULL Olength = toOverlapLength(  wp->getDataLength(), 
+                                    wp->getOverlapRatio(), 
+                                    (1 << wp->getWindowRadix()));
+    wp->setOverlapdataLength(Olength);
     std::string mappedID = wp->getMappedID().cStr();
     std::string fullpath = "/STFT" + mappedID + "SHAREDMEM";
 
     if(Type != SERVER)
     {
         wp->setSharedMemory(fullpath);
-        ULL PageSize = adjustToPage<float>(dataSize);
+        ULL PageSize = adjustToPage<float>(Olength);
         auto
         __WINDOWS_HANDLEPtr = CreateFileMapping
         (
@@ -69,31 +73,6 @@ FFTRequest::MakeSharedMemory(const SupportedRuntimes& Type, const ULL& dataSize)
     return;
 }
 
-
-
-// MAYBE_DATA
-// FFTRequest::getData()
-// {
-//     if(sharedMemoryInfo.has_value())
-//     {
-//         std::vector<float> result(dataLength);
-//         memcpy(result.data(), __memPtr, dataLength * sizeof(float));
-
-//         UnmapViewOfFile(__memPtr);
-//         CloseHandle(__WINDOWS_HANDLEPtr);
-//         return std::move(result);
-//     }
-//     else if(data.has_value())
-//     {
-//         return std::move(data);
-//     }
-//     else
-//     {
-//         return std::nullopt;
-//     }
-// }
-
-
 MAYBE_DATA
 FFTRequest::FreeAndGetData()
 {
@@ -106,14 +85,12 @@ FFTRequest::FreeAndGetData()
 void
 FFTRequest::FreeData()
 {
-    ULL dataLength;
     void* __memPtr;
     void* WIN_HANDLE;
     std::string sharemem;
     if(mw.has_value())
     {
         auto pw = &mw.value();
-        dataLength = pw->getDataLength();
         __memPtr = reinterpret_cast<void*>(pw->getMemPTR());
         WIN_HANDLE = reinterpret_cast<void*>(pw->getWindowsHandlePTR());
         sharemem = pw->getSharedMemory().cStr();
@@ -121,7 +98,6 @@ FFTRequest::FreeData()
     else if(mr.has_value())
     {
         auto pw = &mr.value();
-        dataLength = pw->getDataLength();
         __memPtr = reinterpret_cast<void*>(pw->getMemPTR());
         WIN_HANDLE = reinterpret_cast<void*>(pw->getWindowsHandlePTR());
         sharemem = pw->getSharedMemory().cStr();
@@ -129,7 +105,6 @@ FFTRequest::FreeData()
     if(sharemem != "")
     {
         
-        ULL pageSize = adjustToPage<float>(dataLength);
         if(!UnmapViewOfFile(__memPtr))
         {
             std::cerr << "FW:135 unmapviewoffile failed" << std::endl;
@@ -152,12 +127,9 @@ FFTRequest::GetSHMPtr()
     auto mp = &mr.value();
     SHMOBJ sharedObj;
     std::string sharemem = mp->getSharedMemory().cStr();
-    ULL dataLength = mp->getDataLength();
-    std::cout<<"FW:156 dataLength: "<<dataLength<<std::endl;
-    std::cout<<"FW:157 sharemem: "<<sharemem<<std::endl;
+    ULL OdataLength = mp->getOverlapdataLength();
     if(sharemem == "")
     {
-        std::cout << "FW:153 no sharemem"<<std::endl;
         return std::nullopt;
     }
 
@@ -172,8 +144,7 @@ FFTRequest::GetSHMPtr()
         std::cerr << "FW:165 can't open file mapping for reading" << std::endl;
         return std::nullopt;
     }
-    auto pagedSize = adjustToPage<float>(dataLength);
-    std::cout<<"FW:176 pagedSize: "<<pagedSize<<std::endl;
+    auto pagedSize = adjustToPage<float>(OdataLength);
     sharedObj.first = MapViewOfFile
     (
         sharedObj.second,

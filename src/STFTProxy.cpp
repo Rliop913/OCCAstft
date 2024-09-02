@@ -7,6 +7,8 @@ STFTProxy::STFTProxy(ERR_FUNC errorCallback, const FallbackList& fbList)
     errorHandler = errorCallback;
     fallback = fbList;
     portNumber = GeneratePortNumber();
+    ix::WebSocketPerMessageDeflateOptions options(true, false, false, 15, 15);
+    proxyOBJ.setPerMessageDeflateOptions(options);
     proxyOBJ.setPingInterval(45);
     proxyOBJ.enableAutomaticReconnection();
     SetWebSocketCallback();
@@ -74,6 +76,7 @@ STFTProxy::SetWebSocketCallback()
 
 STFTProxy::~STFTProxy()
 {
+    KillRunner(true);
     ix::uninitNetSystem();
 }
 
@@ -82,7 +85,7 @@ STFTProxy::RuntimeFallback()
 {
     proxyOBJ.close(0);
     auto next = fallback.getNext();
-    while(true)
+    while(STATUS == "OK")
     {
         if(!next.has_value())
         {
@@ -154,8 +157,12 @@ STFTProxy::TryConnect(PATH& path)
 }
 
 bool 
-STFTProxy::KillRunner()
+STFTProxy::KillRunner(bool noFallbackAnyMore)
 {
+    if(noFallbackAnyMore)
+    {
+        STATUS = "NOFALLBACK";
+    }
     if(runnerkilled.has_value())
     {
         proxyOBJ.sendText("CLOSE_REQUEST");
@@ -198,134 +205,3 @@ STFTProxy::RequestSTFT(std::vector<float>& data, const int& windowRadix, const f
     proxyOBJ.sendBinary(loaded.Serialize().value());
     return workingPromises[loaded.getID()].get_future();
 }
-
-
-
-int main()
-{
-    // ULL coutn =0;
-    // FFTRequest originTemp(10, 0.5,coutn);
-    
-    // std::vector<float> testZeroData(100);
-    // for(int i=0; i<testZeroData.size(); ++i)
-    // {
-    //     testZeroData[i] = float(i)/testZeroData.size()+1.0f;
-    // }
-    // originTemp.MakeSharedMemory(SERVER, testZeroData.size());
-    // std::cout<< originTemp.GetSharedMemPath().value();
-    // originTemp.SetData(testZeroData);
-    // auto result = originTemp.Serialize();
-
-    // FFTRequest cloned(result.value());
-    // cloned.MakeSharedMemory(SERVER, testZeroData.size());
-    // auto overres = cloned.get_OverlapRate();
-    // std::cout << overres << std::endl;
-    // auto dat = cloned.FreeAndGetData();
-    // for(int i=0; i<100; ++i)
-    // {
-    //     std::cout << dat.value()[i]<<" , ";
-    // }
-
-
-    // int testData= 9758;
-    // int* Dptr = &testData;
-    // int handle = 5435;
-    // int* hanptr= &handle;
-
-
-    // capnp::MallocMessageBuilder memField;
-    // RequestCapnp::Builder reqObj = memField.initRoot<RequestCapnp>();
-    // reqObj.setSharedMemory("TempText");
-    // auto data = reqObj.initData(3);
-    // data.set(0, 0.5);
-    // data.set(1, 54.5);
-    // data.set(2, -95.34);
-    // reqObj.setMappedID("sample map id");
-    // reqObj.setMemPTR(reinterpret_cast<ULL>(Dptr));
-    // reqObj.setPosixFileDes(443);
-    // reqObj.setWindowsHandlePTR(reinterpret_cast<ULL>(hanptr));
-    // reqObj.setWindowRadix(32);
-    // reqObj.setOvarlapRate(0.5324);
-    // reqObj.setDataLength(42123);
-    // std::cout << reqObj.getSharedMemory().cStr()<<std::endl;
-    
-    // auto flatOut = capnp::messageToFlatArray(memField);
-    // auto bytoOut = flatOut.asBytes();
-    // std::string binary;
-    // binary.resize(bytoOut.size());
-    // memcpy(binary.data(), bytoOut.begin(), bytoOut.size());
-    // std::cout<< binary<<std::endl;
-    
-    // kj::ArrayPtr<const capnp::word> readedbyte
-    // (
-    //     reinterpret_cast<const capnp::word*>(binary.data()),
-    //     binary.size() / sizeof(capnp::word)
-    // );
-    // auto readed_Out = capnp::FlatArrayMessageReader(readedbyte);
-    
-    // RequestCapnp::Reader redobj = readed_Out.getRoot<RequestCapnp>();
-    // auto memptr = reinterpret_cast<int*>(redobj.getMemPTR());
-    // auto handleptr = reinterpret_cast<int*>( redobj.getWindowsHandlePTR());
-    // std::cout<<
-    // redobj.getSharedMemory().cStr() << std::endl<<
-    // redobj.getData()[0] << std::endl<<
-    // redobj.getMappedID().cStr()<< std::endl<<
-    // *memptr<< std::endl<<
-    // redobj.getPosixFileDes()<< std::endl<<
-    // *handleptr<< std::endl<<
-    // redobj.getWindowRadix()<< std::endl<<
-    // redobj.getOvarlapRate()<< std::endl<<
-    // redobj.getDataLength()<< std::endl;
-
-
-
-
-
-    FallbackList list;
-    list.ServerFallback.push_back("127.0.0.1:54500");
-    // list.CUDAFallback.push_back("./cross_gpgpu/CUDA");
-    //list.OpenMPFallback.push_back("./cross_gpgpu/OpenMP");
-    //list.SerialFallback.push_back("./cross_gpgpu/Serial");
-    //list.ServerFallback.push_back("192.168.35.90:54500");
-    auto temp = STFTProxy([](const ix::WebSocketErrorInfo& err)
-    {
-        std::cout<<err.reason << " custom messages"<<std::endl;
-        return;
-    },list);
-    std::vector<float> testZeroData(100000000);
-    for(ULL i=0; i<testZeroData.size(); ++i)
-    {
-        testZeroData[i] = float(i)/testZeroData.size()+1.0f;
-    }
-    auto promisedData = temp.RequestSTFT(testZeroData, 15, 0.0);
-
-    if(promisedData.has_value())
-    {
-        auto resOut = promisedData.value().get();
-        if(resOut.has_value())
-        {
-            std::cout<<"got Data!!!"<<std::endl;
-            std::cout<<resOut.value()[100]<<std::endl;
-        }
-    }
-    getchar();
-    
-    temp.proxyOBJ.sendText("CLOSE_REQUEST");
-    if(temp.KillRunner())
-    {
-        std::cout <<"safe closed" << std::endl;
-    }
-    else
-    {
-        std::cerr<<"not closed" <<std::endl;
-    }
-    
-    return 0;
-}
-//     ix::WebSocket webs;
-//     webs.setUrl("ws://127.0.0.1:52427/webSTFT");
-//     webs.connect(10);
-//     webs.sendText("hello");
-
-//     return 0;
-// }

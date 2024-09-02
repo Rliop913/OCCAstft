@@ -10,6 +10,11 @@ FFTRequest::MakeSharedMemory(const SupportedRuntimes& Type, const ULL& dataSize)
     }
     auto wp = &mw.value();
     wp->setDataLength(dataSize);
+    ULL Olength = toOverlapLength(  wp->getDataLength(), 
+                                    wp->getOverlapRatio(), 
+                                    (1 << wp->getWindowRadix()));
+    wp->setOverlapdataLength(Olength);
+    
     std::string mappedID = wp->getMappedID().cStr();
     std::string fullpath = "/STFT" + mappedID + "SHAREDMEM";
 
@@ -26,10 +31,10 @@ FFTRequest::MakeSharedMemory(const SupportedRuntimes& Type, const ULL& dataSize)
             return;
         }
 
-        ULL PageSize = adjustToPage<float>(dataSize);
+        ULL PageSize = adjustToPage<float>(Olength);
         if (ftruncate(__POSIX_FileDes, PageSize) == -1)
         {
-            std::cerr << "FD open err: " << errno << " pageSize:"<<dataSize << std::endl;
+            std::cerr << "FD open err: " << errno << " pageSize:"<<Olength << std::endl;
             shm_unlink(fullpath.c_str());
             wp->setSharedMemory("");
             return;
@@ -74,26 +79,19 @@ FFTRequest::FreeAndGetData()
     {
         sharemem =mp->getSharedMemory().cStr();
     }
-    auto dataLength = mp->getDataLength();
+    auto OdataLength = mp->getOverlapdataLength();
     auto __memPtr   = reinterpret_cast<void*>(mp->getMemPTR());
     auto __POSIX_FileDes = mp->getPosixFileDes();
     auto sourceSize = mp->getData().size();
     
     if(sharemem != "")
     {
-        std::vector<float> result(dataLength);
-        memcpy(result.data(), __memPtr, dataLength * sizeof(float));
-        ULL pageSize = adjustToPage<float>(dataLength);
+        std::vector<float> result(OdataLength);
+        memcpy(result.data(), __memPtr, OdataLength * sizeof(float));
+        ULL pageSize = adjustToPage<float>(OdataLength);
         int freemap = munmap(__memPtr, pageSize);
         int freefd  = close(__POSIX_FileDes);
         int freelink= shm_unlink(sharemem.c_str());
-
-        std::cout<<
-        "SharememFree>> isMapFree: "<< freemap << std::endl <<
-        "isFileDes Free: " << freefd << std::endl <<
-        "isShareMemLink Free: " << freelink << std::endl <<
-        "FS_Linux:96" << std::endl;
-
         return std::move(result);
     }
     else if(sourceSize != 0)
@@ -118,7 +116,7 @@ FFTRequest::GetSHMPtr()
     auto mp = &mr.value();
     SHMOBJ sharedObj;
     std::string sharemem = mp->getSharedMemory().cStr();
-    ULL dataLength = mp->getDataLength();
+    ULL OdataLength = mp->getOverlapdataLength();
 
     if(sharemem == "")
     {
@@ -130,7 +128,7 @@ FFTRequest::GetSHMPtr()
     {
         return std::nullopt;
     }
-    auto pagedSize = adjustToPage<float>(dataLength);
+    auto pagedSize = adjustToPage<float>(OdataLength);
     sharedObj.first = mmap( 0, 
                             pagedSize, 
                             PROT_READ | PROT_WRITE, 
@@ -150,49 +148,17 @@ FFTRequest::FreeSHMPtr(SHMOBJ& shobj)
 {
     if(mw.has_value())
     {
-        auto dataLength = mw.value().getDataLength();
-        munmap(shobj.first, adjustToPage<float>(dataLength));
+        auto OdataLength = mw.value().getOverlapdataLength();
+        munmap(shobj.first, adjustToPage<float>(OdataLength));
         close(shobj.second);
     }
     else if(mr.has_value())
     {
-        auto dataLength = mr.value().getDataLength();
-        munmap(shobj.first, adjustToPage<float>(dataLength));
+        auto OdataLength = mr.value().getOverlapdataLength();
+        munmap(shobj.first, adjustToPage<float>(OdataLength));
         close(shobj.second);
     }
 }
-
-
-// MAYBE_DATA
-// FFTRequest::GetData()
-// {
-//     if(!mr.has_value())
-//     {
-//         return std::nullopt;
-//     }
-//     auto mp = &mr.value();
-//     std::string sharemem = mp->getSharedMemory().cStr();
-//     auto dataLength = mp->getDataLength();
-//     auto __memPtr = reinterpret_cast<void*>(mp->getMemPTR());
-//     auto sourceSize = mp->getData().size();
-//     if(sharemem != "")
-//     {
-//         std::vector<float> result(dataLength);
-//         memcpy(result.data(), __memPtr, dataLength * sizeof(float));
-//         return std::move(result);
-//     }
-//     else if(sourceSize != 0)
-//     {
-//         std::vector<float> result(sourceSize);
-//         copyToVecParallel(result.data(), mp, sourceSize);
-//         std::cout << "got data FS_Linux:187 "<< result[150] <<std::endl;
-//         return std::move(result);
-//     }
-//     else
-//     {
-//         return std::nullopt;
-//     }
-// }
 
 void
 FFTRequest::FreeData()

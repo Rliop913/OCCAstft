@@ -1,4 +1,5 @@
 #include "RunnerInterface.hpp"
+#include "okl_embed.hpp"
 #include <cuda.h>
 
 
@@ -46,10 +47,8 @@ Runner::InitEnv()
     CheckCudaError(cuInit(0));
     CheckCudaError(cuDeviceGet(&(env->device), 0));
     CheckCudaError(cuCtxCreate(&(env->context), 0, env->device));
-
-    CheckCudaError(cuModuleLoad(&(env->RadixAll), "./radixALL.ptx"));
-    
-    std::cout<<"CU:52 end init"<<std::endl;
+    okl_embed okl;
+    CheckCudaError(cuModuleLoadData(&(env->RadixAll), okl.ptx_code));
     kens = new Gcodes;
 }
 
@@ -57,12 +56,8 @@ void
 Runner::UnInit()
 {
     cuCtxSynchronize();
-    std::cout << "CU:48 end uninit"<<std::endl;
-    
     CheckCudaError(cuModuleUnload(env->RadixAll));
-    std::cout << "CU:51 end uninit"<<std::endl;
     CheckCudaError(cuCtxDestroy(env->context));
-    std::cout << "CU:53 end uninit"<<std::endl;
 
 }
 
@@ -78,7 +73,6 @@ Runner::BuildKernel()
     CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonSTFT), env->RadixAll, "_occa_StockHamDITCommon_0"));
     CheckCudaError(cuModuleGetFunction(&(kens->toPower), env->RadixAll, "_occa_toPower_0"));
     
-    std::cout<<"CU:64 end build"<<std::endl;
 }
 
 MAYBE_DATA
@@ -97,9 +91,8 @@ Runner::ActivateSTFT(   VECF& inData,
     cuCtxSetCurrent(env->context);
     CUstream stream;
     CheckCudaError(cuStreamCreate(&stream, CU_STREAM_NON_BLOCKING));
-    std::cout<<"CU:81 end stream init"<<std::endl;
+
     CUdeviceptr DInput;
-    CUdeviceptr DoverlapBuffer;
     CUdeviceptr DOutput;
     CUdeviceptr DFR;
     CUdeviceptr DFI;
@@ -107,19 +100,15 @@ Runner::ActivateSTFT(   VECF& inData,
     CUdeviceptr DSI;
     
     CheckCudaError(cuMemAllocAsync(&DInput, sizeof(float) * FullSize, stream));
-    // CheckCudaError(cuMemAllocAsync(&DoverlapBuffer, sizeof(cplx_t) * OFullSize, stream));
-    
-    // CheckCudaError(cuMemAllocAsync(&DOutput, sizeof(float) * OHalfSize, stream));
+    CheckCudaError(cuMemAllocAsync(&DOutput, sizeof(float) * OFullSize, stream));
     
     CheckCudaError(cuMemAllocAsync(&DFR, sizeof(float) * OFullSize, stream));
     CheckCudaError(cuMemAllocAsync(&DFI, sizeof(float) * OFullSize, stream));
     CheckCudaError(cuMemAllocAsync(&DSR, sizeof(float) * OFullSize, stream));
     CheckCudaError(cuMemAllocAsync(&DSI, sizeof(float) * OFullSize, stream));
-    
+    CheckCudaError(cuMemsetD32Async(DFI, 0, OFullSize, stream));
     CheckCudaError(cuMemcpyHtoDAsync(DInput, inData.data(), sizeof(float) * FullSize, stream));
     
-    
-    std::cout << "CU:94 end overlap"<<std::endl;
     
     void *AllInOne[] =
     {
@@ -231,7 +220,6 @@ Runner::ActivateSTFT(   VECF& inData,
                 windowCommon,
                 NULL
             ));
-        std::cout<<"hit default"<<std::endl;
         for (stage = 0; stage < windowRadix; ++stage)
         {
             if (stage % 2 == 0)
@@ -261,35 +249,42 @@ Runner::ActivateSTFT(   VECF& inData,
         }
         break;
     }
-
-
-    std::cout << "CU:177 end butterfly"<<std::endl;
-    // void *toPow[] =
-    // {
-    //     &DoverlapBuffer,
-    //     &DOutput,
-    //     (void*)&OHalfSize,
-    //     (void*)&windowRadix
-    // };
-    // CheckCudaError(cuLaunchKernel(//no use for now
-    //     kens->toPower,
-    //     HalfGridSize, 1, 1,
-    //     LOCAL_SIZE, 1, 1,
-    //     0,
-    //     stream,
-    //     toPow,
-    //     NULL
-    // ));
-    std::cout << "CU:194 end pow"<<std::endl;
-    std::vector<float> outMem(OHalfSize);
+    std::vector<float> outMem(OFullSize);
+    void *powerArg[5];
+    powerArg[0] = &DOutput;
+    powerArg[3] = (void*)&OFullSize;
+    powerArg[4] = (void*)&windowRadix;
+    if (windowRadix % 2 == 0)
+    {
+        powerArg[1] = &DFR;
+        powerArg[2] = &DFI;       
+    }
+    else
+    {
+        powerArg[1] = &DSR;
+        powerArg[2] = &DSI;
+    }
     
-    CheckCudaError(cuMemcpyDtoHAsync(outMem.data(), DOutput, OHalfSize * sizeof(float), stream));
+    CheckCudaError(cuLaunchKernel(
+                    kens->toPower,
+                    OFullSize / 256, 1, 1,
+                    256, 1, 1,
+                    0,
+                    stream,
+                    powerArg,
+                    NULL
+                ));
+
+    
+    CheckCudaError(cuMemcpyDtoHAsync(outMem.data(), DOutput, OFullSize * sizeof(float), stream));
     CheckCudaError(cuStreamSynchronize(stream));
     CheckCudaError(cuMemFreeAsync(DInput, stream));
-    CheckCudaError(cuMemFreeAsync(DoverlapBuffer, stream));
-    CheckCudaError(cuMemFreeAsync(DOutput, stream));//need to add free mem
+    CheckCudaError(cuMemFreeAsync(DFR, stream));
+    CheckCudaError(cuMemFreeAsync(DFI, stream));
+    CheckCudaError(cuMemFreeAsync(DSR, stream));
+    CheckCudaError(cuMemFreeAsync(DSI, stream));
+    CheckCudaError(cuMemFreeAsync(DOutput, stream));
     CheckCudaError(cuStreamSynchronize(stream));
     CheckCudaError(cuStreamDestroy(stream));
-    std::cout << "CU:203 end destroy"<<std::endl;
     return std::move(outMem); // If any error occurs during STFT execution, the function returns std::nullopt.
 }

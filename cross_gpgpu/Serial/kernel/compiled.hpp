@@ -1,7 +1,5 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include <math.h>
-#include <cstdio>
 
 typedef struct complex_t {
   float real, imag;
@@ -94,33 +92,14 @@ inline float cmod(complex a) {
   ));
 }
 
-inline void DaCAdd(const int i_itr,
-                   const unsigned int Half,
-                   float windowAdded[]) {
-  unsigned int inRange = i_itr < Half;
-  float Dpoint = windowAdded[i_itr];
-  float Apoint = windowAdded[i_itr + (Half * inRange)];
-  windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
-}
 
-extern "C" void overlap_N_window(float * in,
-                                 complex * buffer,
-                                 const unsigned int & fullSize,
-                                 const unsigned int & OFullSize,
-                                 const int & windowSize,
-                                 const unsigned int & OMove) {
-  for (unsigned int w_num = 0; w_num < OFullSize; w_num += 256) {
-    for (int w_itr = 0; w_itr < 256; ++w_itr) {
-      unsigned int FID = w_num + w_itr;
-      unsigned int read_point = (unsigned int) ((FID) / windowSize) * OMove + ((FID) % windowSize);
-
-      // printf("%u buffer overlap\n", OMove);//buffer[FID].imag);
-      buffer[FID].real = read_point >= fullSize ? 0.0 : in[read_point];
-      // * window_func((FID) % windowSize, windowSize);
-      buffer[FID].imag = 0.0;
-    }
-  }
-}
+// inline
+// void
+// DaCAdd( const int i_itr,
+//         const unsigned int Half,
+//         float windowAdded[])
+// {
+// }
 
 extern "C" void bitReverse_temp(complex * buffer,
                                 complex * result,
@@ -138,41 +117,17 @@ extern "C" void bitReverse_temp(complex * buffer,
   }
 }
 
-extern "C" void Butterfly(complex * buffer,
-                          const int & windowSize,
-                          const int & powed_stage,
-                          const unsigned int & OHalfSize,
-                          const int & radixData) {
-  for (unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 256) {
-    for (int i_itr = 0; i_itr < 256; ++i_itr) {
-      unsigned int GID = o_itr + i_itr;
-      pairs butterfly_target = indexer(GID, powed_stage);
-      int k = (GID % powed_stage) * (windowSize / (2 * powed_stage));
-      //(GID%powed_stage) * (windowSize / powed_stage);
-      complex this_twiddle = twiddle(k, windowSize);
-      complex first = buffer[butterfly_target.first];
-      complex second = buffer[butterfly_target.second];
-      complex tempx = cadd(first, second);
-      complex tempy = csub(first, second);
-      tempy = cmult(tempy, this_twiddle);
-      buffer[butterfly_target.first] = tempx;
-      buffer[butterfly_target.second] = tempy;
-    }
-  }
-}
-
-extern "C" void toPower(complex * buffer,
-                        float * out,
-                        const unsigned int & OHalfSize,
+extern "C" void toPower(float * out,
+                        float * Real,
+                        float * Imag,
+                        const unsigned int & OFullSize,
                         const int & windowRadix) {
-  //toPower
-  for (unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 256) {
+  for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256) {
     for (int i_itr = 0; i_itr < 256; ++i_itr) {
       const unsigned int GID = o_itr + i_itr;
-      unsigned int BID = (GID >> (windowRadix - 1)) * (1 << windowRadix) + (GID & ((1 << (windowRadix - 1)) - 1));
-      float powered = cmod(buffer[BID]);
-      //powered = log10(powered);
-      out[GID] = powered;
+      float R = Real[GID];
+      float I = Imag[GID];
+      out[GID] = sqrt(R * R + I * I);
     }
   }
   return;
@@ -210,40 +165,74 @@ extern "C" void preprocessed_ODW10_STH_STFT(float * inData,
       windowAdded[i_itr] = (Dpoint + Apoint);
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      unsigned int inRange = i_itr < 256;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (256 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      unsigned int inRange = i_itr < 128;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (128 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      unsigned int inRange = i_itr < 64;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (64 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      unsigned int inRange = i_itr < 32;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (32 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      unsigned int inRange = i_itr < 16;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (16 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      unsigned int inRange = i_itr < 8;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (8 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      unsigned int inRange = i_itr < 4;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (4 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      unsigned int inRange = i_itr < 2;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (2 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      unsigned int inRange = i_itr < 1;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (1 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
-    // for(int i_itr=0; i_itr < 512; ++i_itr; @inner)
-    // {
-    //     FRBank[i_itr] -= (windowAdded[0] / 1024.0);
-    //     FRBank[i_itr] *= window_func(i_itr, 1024);
-    //     FRBank[i_itr + 512] -= (windowAdded[0] / 1024.0);
-    //     FRBank[i_itr + 512] *= window_func(i_itr + 512, 1024);
-    // }
-
+    for (int i_itr = 0; i_itr < 512; ++i_itr) {
+      FRBank[i_itr] -= (windowAdded[0] / 1024.0);
+      FRBank[i_itr] *= window_func(i_itr, 1024);
+      FRBank[i_itr + 512] -= (windowAdded[0] / 1024.0);
+      FRBank[i_itr + 512] *= window_func(i_itr + 512, 1024);
+    }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
       complex thisTwiddle = twiddle(segmentK(i_itr, 512, 512), 1024);
       complex LEFT;
@@ -432,31 +421,67 @@ extern "C" void preprocesses_ODW_10(float * inData,
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      unsigned int inRange = i_itr < 256;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (256 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      unsigned int inRange = i_itr < 128;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (128 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      unsigned int inRange = i_itr < 64;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (64 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      unsigned int inRange = i_itr < 32;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (32 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      unsigned int inRange = i_itr < 16;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (16 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      unsigned int inRange = i_itr < 8;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (8 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      unsigned int inRange = i_itr < 4;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (4 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      unsigned int inRange = i_itr < 2;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (2 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      unsigned int inRange = i_itr < 1;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (1 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 512; ++i_itr) {
       wr[i_itr] -= (windowAdded[0] / 1024.0);
@@ -668,34 +693,74 @@ extern "C" void preprocesses_ODW_11(float * inData,
       windowAdded[i_itr] = (Dpoint + Apoint);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      unsigned int inRange = i_itr < 512;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (512 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      unsigned int inRange = i_itr < 256;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (256 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      unsigned int inRange = i_itr < 128;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (128 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      unsigned int inRange = i_itr < 64;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (64 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      unsigned int inRange = i_itr < 32;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (32 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      unsigned int inRange = i_itr < 16;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (16 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      unsigned int inRange = i_itr < 8;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (8 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      unsigned int inRange = i_itr < 4;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (4 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      unsigned int inRange = i_itr < 2;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (2 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      unsigned int inRange = i_itr < 1;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (1 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
       wr[i_itr] -= (windowAdded[0] / 2048.0);
@@ -929,34 +994,74 @@ extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
       windowAdded[i_itr] = (Dpoint + Apoint);
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 512, windowAdded);
+      unsigned int inRange = i_itr < 512;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (512 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 256, windowAdded);
+      unsigned int inRange = i_itr < 256;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (256 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 128, windowAdded);
+      unsigned int inRange = i_itr < 128;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (128 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 64, windowAdded);
+      unsigned int inRange = i_itr < 64;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (64 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 32, windowAdded);
+      unsigned int inRange = i_itr < 32;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (32 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 16, windowAdded);
+      unsigned int inRange = i_itr < 16;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (16 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 8, windowAdded);
+      unsigned int inRange = i_itr < 8;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (8 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 4, windowAdded);
+      unsigned int inRange = i_itr < 4;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (4 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 2, windowAdded);
+      unsigned int inRange = i_itr < 2;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (2 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
-      DaCAdd(i_itr, 1, windowAdded);
+      unsigned int inRange = i_itr < 1;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (1 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     for (int i_itr = 0; i_itr < 1024; ++i_itr) {
       FRBank[i_itr] -= (windowAdded[0] / 2048.0);
@@ -1178,6 +1283,9 @@ extern "C" void DCRemove_Common(float * outReal,
   for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += windowSize) {
     float added[128];
     //for removing DC
+    for (unsigned int inititr = 0; inititr < 64; ++inititr) {
+      added[inititr] = 0;
+    }
     for (unsigned int windowItr = 0; windowItr < windowSize; windowItr += 64) {
       for (unsigned int i_itr = 0; i_itr < 64; ++i_itr) {
         added[i_itr + 64] = outReal[o_itr + windowItr + i_itr];

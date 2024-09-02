@@ -7,7 +7,6 @@
 #include <IXWebSocket.h>
 #include <IXWebSocketServer.h>
 #include "FFTStruct.hpp"
-#include "miniaudio.h"
 
 #define LOCAL_SIZE 256
 

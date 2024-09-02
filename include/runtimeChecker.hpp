@@ -23,10 +23,13 @@ namespace fs = std::filesystem;
 
 enum SupportedRuntimes {
     CUDA,
+    HIP,
+    METAL,
     OPENCL,
     OPENMP,
     SERVER,
-    SERIAL
+    SERIAL,
+    CUSTOM
 };
 
 using STRVEC    = std::vector<std::string>;
@@ -50,17 +53,22 @@ public:
     //checked first, reads from back. put excutable cudaRun's directory path here
     STRVEC CUDAFallback = {"./"};
 
-    //checked second, reads from back. put excutable openclRun's directory path here
+    STRVEC HIPFallback = {"./"};
+
+    STRVEC METALFallback = {"./"};
+    //reads from back. put excutable openclRun's directory path here
     STRVEC OpenCLFallback = {"./"};
 
-    //checked third, reads from back. put excutable openmpRun's directory path here
+    //reads from back. put excutable openmpRun's directory path here
     STRVEC OpenMPFallback = {"./"};
 
-    //checked last, reads from back. put excutable serialRun's directory path here
+    STRVEC ServerFallback;
+    //checked fourth, reads from back. put server IP or URL here, server should manually run STFT runtimes. 
+    
     STRVEC SerialFallback = {"./"};
 
-    //checked fourth, reads from back. put server IP or URL here, server should manually run STFT runtimes. 
-    STRVEC ServerFallback;
+    STRVEC CustomFallback = {"./"};
+    //checked last, reads from back. put excutable serialRun's directory path here
 
     MAYBE_PATH  getNext();
 private:

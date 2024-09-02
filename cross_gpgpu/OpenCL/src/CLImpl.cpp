@@ -8,17 +8,16 @@ struct Genv{
     std::vector<Platform> PF;
     Device DV;
     Context CT;
-    CommandQueue CQ;
 };
 
 
 struct Gcodes{
     Kernel R10STFT;
     Kernel R11STFT;
-    Kernel R12STFT;
-    Kernel R13STFT;
-    Kernel R14STFT;
-    Kernel R15STFT;
+    Kernel RadixCommon;
+    Kernel Overlap;
+    Kernel DCRemove;
+    Kernel Windowing;
     Kernel toPower;
 };
 
@@ -29,7 +28,6 @@ Runner::InitEnv()
     env->PF = clboost::get_platform();
     env->DV = clboost::get_gpu_device(env->PF);
     env->CT = clboost::get_context(env->DV);
-    env->CQ = clboost::make_cq(env->CT, env->DV);
 }
 
 void
@@ -43,17 +41,14 @@ Runner::BuildKernel()
 {
     kens = new Gcodes;
     okl_embed clCodes;
-    Program codeBase = clboost::make_prog(clCodes.compiled, env->CT, env->DV);
+    Program codeBase = clboost::make_prog(clCodes.radixALL, env->CT, env->DV);
     kens->R10STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW10_STH_STFT_0");
     kens->R11STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW11_STH_STFT_0");
-    kens->R12STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW12_STH_STFT_0");
-    kens->R13STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW13_STH_STFT_0");
-    kens->R14STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW14_STH_STFT_0");
-    kens->R15STFT = clboost::make_kernel(codeBase, "_occa_preprocessed_ODW15_STH_STFT_0");
-    
+    kens->RadixCommon = clboost::make_kernel(codeBase, "_occa_StockHamDITCommon_0");
+    kens->Overlap = clboost::make_kernel(codeBase, "_occa_Overlap_Common_0");
+    kens->DCRemove = clboost::make_kernel(codeBase, "_occa_DCRemove_Common_0");
+    kens->Windowing = clboost::make_kernel(codeBase, "_occa_Window_Common_0");
     kens->toPower = clboost::make_kernel(codeBase, "_occa_toPower_0");
-    
-
 }
 
 MAYBE_DATA
@@ -67,62 +62,115 @@ Runner::ActivateSTFT(   VECF& inData,
     const unsigned int OFullSize = qtConst * windowSize;
     const unsigned int OHalfSize = OFullSize / 2;
     const unsigned int OMove     = windowSize * (1.0f - overlapRatio);
+
+    CommandQueue CQ = clboost::make_cq(env->CT, env->DV);
     Buffer inMem = clboost::HTDCopy<float>(env->CT, FullSize, inData.data());
-    Buffer outMem = clboost::DMEM<float>(env->CT, OHalfSize);
-    Buffer tempMem = clboost::DMEM<cplx_t>(env->CT, OFullSize);
+    Buffer RealMem = clboost::DMEM<float>(env->CT, OFullSize);
+    Buffer ImagMem = clboost::DMEM<float>(env->CT, OFullSize);
+    Buffer outMem = Buffer(env->CT, CL_MEM_WRITE_ONLY, sizeof(float)* OFullSize);
     
-    std::vector<int> error_container(30 + windowRadix);
-    int error_itr = 0;
-    Kernel* RAIO;
-    int workGroupSize = 0;
+    std::vector<int> error_container;
+    
     switch (windowRadix)
     {
-    case 15:
-        RAIO = &(kens->R15STFT);
-        workGroupSize = 1024;
-        break;
-    case 14:
-        RAIO = &(kens->R14STFT);
-        workGroupSize = 1024;
-        break;
-    case 13:
-        RAIO = &(kens->R13STFT);
-        workGroupSize = 1024;
-        break;
-    case 12:
-        RAIO = &(kens->R12STFT);
-        workGroupSize = 1024;
-        break;
     case 11:
-        RAIO = &(kens->R11STFT);
-        workGroupSize = 1024;
+        error_container.push_back(kens->R11STFT.setArg(0, inMem));
+        error_container.push_back(kens->R11STFT.setArg(1, qtConst));
+        error_container.push_back(kens->R11STFT.setArg(2, FullSize));
+        error_container.push_back(kens->R11STFT.setArg(3, OMove));
+        error_container.push_back(kens->R11STFT.setArg(4, OHalfSize));
+        error_container.push_back(kens->R11STFT.setArg(5, RealMem));
+        error_container.push_back(kens->R11STFT.setArg(6, ImagMem));
+        error_container.push_back(clboost::enq_q(CQ, kens->R11STFT, OHalfSize, 1024));
+
+        error_container.push_back(kens->toPower.setArg(1, RealMem));
+        error_container.push_back(kens->toPower.setArg(2, ImagMem));
         break;
     case 10:
-        RAIO = &(kens->R10STFT);
-        workGroupSize = 512;
+        error_container.push_back(kens->R10STFT.setArg(0, inMem));
+        error_container.push_back(kens->R10STFT.setArg(1, qtConst));
+        error_container.push_back(kens->R10STFT.setArg(2, FullSize));
+        error_container.push_back(kens->R10STFT.setArg(3, OMove));
+        error_container.push_back(kens->R10STFT.setArg(4, OHalfSize));
+        error_container.push_back(kens->R10STFT.setArg(5, RealMem));
+        error_container.push_back(kens->R10STFT.setArg(6, ImagMem));
+        error_container.push_back(clboost::enq_q(CQ, kens->R10STFT, OHalfSize, 512));
+
+        error_container.push_back(kens->toPower.setArg(1, RealMem));
+        error_container.push_back(kens->toPower.setArg(2, ImagMem));
+        
         break;
     default:
+        error_container.push_back(kens->Overlap.setArg(0, inMem));
+        error_container.push_back(kens->Overlap.setArg(1, OFullSize));
+        error_container.push_back(kens->Overlap.setArg(2, FullSize));
+        error_container.push_back(kens->Overlap.setArg(3, windowRadix));
+        error_container.push_back(kens->Overlap.setArg(4, OMove));
+        error_container.push_back(kens->Overlap.setArg(5, RealMem));
+        
+        error_container.push_back(clboost::enq_q(CQ, kens->Overlap, OFullSize, 1024));
+
+        error_container.push_back(kens->DCRemove.setArg(0, RealMem));
+        error_container.push_back(kens->DCRemove.setArg(1, OFullSize));
+        error_container.push_back(kens->DCRemove.setArg(2, windowSize));
+          
+        error_container.push_back(clboost::enq_q(CQ, kens->DCRemove, qtConst * 64, 64));
+  
+        error_container.push_back(kens->Windowing.setArg(0, RealMem));
+        error_container.push_back(kens->Windowing.setArg(1, OFullSize));
+        error_container.push_back(kens->Windowing.setArg(2, windowRadix));
+          
+        error_container.push_back(clboost::enq_q(CQ, kens->Windowing, OFullSize, 1024));
+        Buffer ORealMem = clboost::DMEM<float>(env->CT, OFullSize);
+        Buffer OImagMem = clboost::DMEM<float>(env->CT, OFullSize);
+        unsigned int HwindowSize = windowSize >> 1;
+        error_container.push_back(kens->RadixCommon.setArg(4, HwindowSize));
+          
+        error_container.push_back(kens->RadixCommon.setArg(6, OHalfSize));
+        error_container.push_back(kens->RadixCommon.setArg(7, windowRadix));
+        
+        for(unsigned int stage = 0; stage < windowRadix; ++stage)
+        {
+            error_container.push_back(kens->RadixCommon.setArg(5, stage));
+            if(stage % 2 == 0)
+            {
+                error_container.push_back(kens->RadixCommon.setArg(0, RealMem));
+                error_container.push_back(kens->RadixCommon.setArg(1, ImagMem));
+                error_container.push_back(kens->RadixCommon.setArg(2, ORealMem));
+                error_container.push_back(kens->RadixCommon.setArg(3, OImagMem));
+            }
+            else
+            {
+                error_container.push_back(kens->RadixCommon.setArg(0, ORealMem));
+                error_container.push_back(kens->RadixCommon.setArg(1, OImagMem));
+                error_container.push_back(kens->RadixCommon.setArg(2, RealMem));
+                error_container.push_back(kens->RadixCommon.setArg(3, ImagMem));
+            }
+            error_container.push_back(clboost::enq_q(CQ, kens->RadixCommon, OHalfSize, 256));
+        }
+        if(windowRadix % 2 == 0)
+        {
+            error_container.push_back(kens->toPower.setArg(1, RealMem));
+            error_container.push_back(kens->toPower.setArg(2, ImagMem));
+        }
+        else
+        {
+            error_container.push_back(kens->toPower.setArg(1, ORealMem));
+            error_container.push_back(kens->toPower.setArg(2, OImagMem));
+        }
         break;
     }
-    
-    error_container[error_itr++] = RAIO->setArg(0, inMem);
-    error_container[error_itr++] = RAIO->setArg(1, qtConst);
-    error_container[error_itr++] = RAIO->setArg(2, FullSize);
-    error_container[error_itr++] = RAIO->setArg(3, OMove);
-    error_container[error_itr++] = RAIO->setArg(4, OHalfSize);
-    error_container[error_itr++] = RAIO->setArg(5, tempMem);
-    
-    error_container[error_itr++] = kens->toPower.setArg(0, tempMem);
-    error_container[error_itr++] = kens->toPower.setArg(1, outMem);
-    error_container[error_itr++] = kens->toPower.setArg(2, OHalfSize);
-    error_container[error_itr++] = kens->toPower.setArg(3, windowRadix);
-    
-    error_container[error_itr++] = clboost::enq_q(env->CQ, (*RAIO), OFullSize, workGroupSize);
-    
-    error_container[error_itr++] = clboost::enq_q(env->CQ, kens->toPower, OHalfSize, LOCAL_SIZE);
-    std::vector<float> outData(OHalfSize);
-    error_container[error_itr++] = clboost::q_read(env->CQ, outMem, true, OHalfSize, outData.data());
 
+    
+    error_container.push_back(kens->toPower.setArg(0, outMem));
+    error_container.push_back(kens->toPower.setArg(3, OFullSize));
+    error_container.push_back(kens->toPower.setArg(4, windowRadix));
+    
+    error_container.push_back(clboost::enq_q(CQ, kens->toPower, OFullSize, 256));
+    
+    std::vector<float> outData(OFullSize);
+    error_container.push_back(clboost::q_read(CQ, outMem, true, OFullSize, outData.data()));
+    
     for(auto Eitr : error_container){
         if(Eitr != CL_SUCCESS){
             return std::nullopt;

@@ -49,6 +49,10 @@
     for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += windowSize; @outer)
     {
         @shared float added[128];//for removing DC
+        for(unsigned int inititr=0; inititr < 64; ++inititr; @inner)
+        {
+            added[inititr] = 0;
+        }
         for(unsigned int windowItr=0; windowItr < windowSize; windowItr+= 64)
         {
             for(unsigned int i_itr=0; i_itr < 64; ++i_itr; @inner)//load to right
@@ -132,4 +136,3 @@
         }
     }
 }
-#undef CUSTOM_FOR

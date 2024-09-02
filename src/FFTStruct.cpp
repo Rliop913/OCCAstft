@@ -46,8 +46,6 @@ FFTRequest::Serialize()
         BIN binOut;
         binOut.resize(serialized.size() * sizeof(capnp::word));
         memcpy(binOut.data(), serialized.begin(), serialized.size() * sizeof(capnp::word));
-        std::cout<<"Size: "<< sizeof(capnp::word)<<std::endl;
-        
         return std::move(binOut);
     }
     return std::nullopt;
@@ -65,8 +63,6 @@ FFTRequest::Deserialize()
     );
     capnp::ReaderOptions options;
     options.traversalLimitInWords = std::numeric_limits<ULL>::max();
-    
-    std::cout<< BinData.size()<<", "<< binPtr.size()<<std::endl;
     rField = std::make_unique<capnp::FlatArrayMessageReader>(binPtr, options);
     mr = rField->getRoot<RequestCapnp>();
 }
@@ -85,7 +81,7 @@ FFTRequest::FFTRequest(const int& WR, const float& OLR, ULL& mapCounter)
     auto pw = &mw.value();
     
     pw->setWindowRadix(WR);
-    pw->setOvarlapRate(OLR);
+    pw->setOverlapRatio(OLR);
     pw->setMappedID(std::to_string(mapCounter));
     pw->setSharedMemory("");
     pw->setMemPTR(0);
@@ -102,13 +98,14 @@ FFTRequest::MakeWField()
     auto pw = &mw.value();
     auto pr = &mr.value();
     pw->setWindowRadix(pr->getWindowRadix());
-    pw->setOvarlapRate(pr->getOvarlapRate());
+    pw->setOverlapRatio(pr->getOverlapRatio());
     pw->setMappedID(pr->getMappedID().cStr());
     pw->setSharedMemory(pr->getSharedMemory().cStr());
     pw->setMemPTR(pr->getMemPTR());
     pw->setPosixFileDes(pr->getPosixFileDes());
     pw->setWindowsHandlePTR(pr->getWindowsHandlePTR());
     pw->setDataLength(pr->getDataLength());
+    pw->setOverlapdataLength(pr->getOverlapdataLength());
 }
 
 MAYBE_DATA
@@ -133,11 +130,25 @@ FFTRequest::GetData()
     {
         std::vector<float> result(sourceSize);
         copyToVecParallel(result.data(), mp, sourceSize);
-        std::cout << "got data FS_133 "<< result[150] <<std::endl;
         return std::move(result);
     }
     else
     {
         return std::nullopt;
     }
+}
+
+ULL
+FFTRequest::toOverlapLength(const ULL& dataLength, 
+                            const float& overlapRatio, 
+                            const ULL& windowSize)
+{
+    ULL quot = 0;
+    if(overlapRatio == 0.0f){
+        quot = dataLength / windowSize + 1;
+    }
+    else{
+        quot = ((dataLength ) / (windowSize * (1.0f - overlapRatio))) + 1;
+    }
+    return quot * windowSize;
 }

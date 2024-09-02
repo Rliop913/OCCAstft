@@ -5,11 +5,8 @@
 
 Runner::Runner(const int& portNumber)
 {
-    std::cout<<"RC:INIT"<<std::endl;
     InitEnv();
-    std::cout<<"RC:9"<<std::endl;
     BuildKernel();
-    std::cout<<"RC:11"<<std::endl;
     if(!ServerInit(portNumber))
     {
         std::cerr<<"ERR on server init"<<std::endl;
@@ -40,29 +37,23 @@ Runner::AccessData(FFTRequest& req)
     auto mempath = req.GetSharedMemPath();
     if(mempath.has_value())
     {
-        std::cout<<"got mempath RC:40"<< mempath.value() <<std::endl;
         dataInfo = req.GetSHMPtr();
-        std::cout << "RC:44 gotshmptr"<<std::endl;
         if(!dataInfo.has_value())
         {
-            std::cout << "RC:47 nullopt"<<std::endl;
             return std::nullopt;
         }
         else
         {
             VECF accResult(req.get_dataLength());
-            std::cout << "RC:52 memcpy"<<std::endl;
             memcpy( accResult.data(), 
                     dataInfo.value().first, 
                     req.get_dataLength() * sizeof(float));
-                    std::cout << "RC:55 memcpy"<<std::endl;
             return std::move(accResult);
         }
         
     }
     else
     {
-        std::cout<<"got data RC:58"<<std::endl;
         return std::move(req.GetData());
     }
 }
@@ -75,7 +66,6 @@ Runner::ServerInit(const int& pNum)
         delete server;
     }
     server = new ix::WebSocketServer(pNum, "0.0.0.0");//need to add random
-    
     server->setOnClientMessageCallback([&](
             std::shared_ptr<ix::ConnectionState> connectionState,
             ix::WebSocket &webSocket,
@@ -101,15 +91,12 @@ Runner::ServerInit(const int& pNum)
                                             received.get_OverlapRate());
                             if(dataInfo.has_value() && result.has_value())
                             {
-                                std::cout<<"RC:104 "<<result.value().size() * sizeof(float)<<std::endl;
                                 memcpy( dataInfo.value().first, 
                                         result.value().data(),
                                         result.value().size() * sizeof(float));
-                                std::cout<<"RC:108 "<<result.has_value()<<std::endl;
                             }
                             else if(result.has_value())
                             {
-                            std::cout<<"calced RC:90"<<std::endl;
                                 received.SetData(result.value());
                             }
                             else
@@ -118,9 +105,7 @@ Runner::ServerInit(const int& pNum)
                             }
                             if(dataInfo.has_value())
                             {
-                                std::cout << "RC:120 shm uninit"<<std::endl;
                                 received.FreeSHMPtr(dataInfo.value());
-                                std::cout << "RC:122 shm uninit"<<std::endl;
                             }
                         }
                         else//error message
@@ -171,12 +156,9 @@ int main(int argc, char *argv[])
             return 1;
         }
     }
-    std::cout<<"runner started" << portNumber <<std::endl;
     ix::initNetSystem();
     Runner mainOBJ = Runner(portNumber);
-    std::cout<<"RC:169"<<std::endl;
     mainOBJ.server->wait();
-    std::cout<<"end Runner"<<std::endl;
     ix::uninitNetSystem();
     return 0;
 }

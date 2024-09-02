@@ -1,7 +1,5 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include <math.h>
-#include <cstdio>
 
 typedef struct complex_t {
   float real, imag;
@@ -94,35 +92,14 @@ __device__ inline float cmod(complex a) {
   ));
 }
 
-__device__ inline void DaCAdd(const int i_itr,
-                              const unsigned int Half,
-                              float windowAdded[]) {
-  unsigned int inRange = i_itr < Half;
-  float Dpoint = windowAdded[i_itr];
-  float Apoint = windowAdded[i_itr + (Half * inRange)];
-  windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
-}
 
-extern "C" __global__ __launch_bounds__(256) void _occa_overlap_N_window_0(float * in,
-                                                                           complex * buffer,
-                                                                           const unsigned int fullSize,
-                                                                           const unsigned int OFullSize,
-                                                                           const int windowSize,
-                                                                           const unsigned int OMove) {
-  {
-    unsigned int w_num = 0 + (256 * blockIdx.x);
-    {
-      int w_itr = 0 + threadIdx.x;
-      unsigned int FID = w_num + w_itr;
-      unsigned int read_point = (unsigned int) ((FID) / windowSize) * OMove + ((FID) % windowSize);
-
-      // printf("%u buffer overlap\n", OMove);//buffer[FID].imag);
-      buffer[FID].real = read_point >= fullSize ? 0.0 : in[read_point];
-      // * window_func((FID) % windowSize, windowSize);
-      buffer[FID].imag = 0.0;
-    }
-  }
-}
+// inline
+// void
+// DaCAdd( const int i_itr,
+//         const unsigned int Half,
+//         float windowAdded[])
+// {
+// }
 
 extern "C" __global__ __launch_bounds__(256) void _occa_bitReverse_temp_0(complex * buffer,
                                                                           complex * result,
@@ -142,44 +119,19 @@ extern "C" __global__ __launch_bounds__(256) void _occa_bitReverse_temp_0(comple
   }
 }
 
-extern "C" __global__ __launch_bounds__(256) void _occa_Butterfly_0(complex * buffer,
-                                                                    const int windowSize,
-                                                                    const int powed_stage,
-                                                                    const unsigned int OHalfSize,
-                                                                    const int radixData) {
-  {
-    unsigned int o_itr = 0 + (256 * blockIdx.x);
-    {
-      int i_itr = 0 + threadIdx.x;
-      unsigned int GID = o_itr + i_itr;
-      pairs butterfly_target = indexer(GID, powed_stage);
-      int k = (GID % powed_stage) * (windowSize / (2 * powed_stage));
-      //(GID%powed_stage) * (windowSize / powed_stage);
-      complex this_twiddle = twiddle(k, windowSize);
-      complex first = buffer[butterfly_target.first];
-      complex second = buffer[butterfly_target.second];
-      complex tempx = cadd(first, second);
-      complex tempy = csub(first, second);
-      tempy = cmult(tempy, this_twiddle);
-      buffer[butterfly_target.first] = tempx;
-      buffer[butterfly_target.second] = tempy;
-    }
-  }
-}
-
-extern "C" __global__ __launch_bounds__(256) void _occa_toPower_0(complex * buffer,
-                                                                  float * out,
-                                                                  const unsigned int OHalfSize,
+extern "C" __global__ __launch_bounds__(256) void _occa_toPower_0(float * out,
+                                                                  float * Real,
+                                                                  float * Imag,
+                                                                  const unsigned int OFullSize,
                                                                   const int windowRadix) {
   {
     unsigned int o_itr = 0 + (256 * blockIdx.x);
     {
       int i_itr = 0 + threadIdx.x;
       const unsigned int GID = o_itr + i_itr;
-      unsigned int BID = (GID >> (windowRadix - 1)) * (1 << windowRadix) + (GID & ((1 << (windowRadix - 1)) - 1));
-      float powered = cmod(buffer[BID]);
-      //powered = log10(powered);
-      out[GID] = powered;
+      float R = Real[GID];
+      float I = Imag[GID];
+      out[GID] = sqrt(R * R + I * I);
     }
   }
 }
@@ -222,57 +174,93 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocessed_ODW10_STH_S
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 256, windowAdded);
+      unsigned int inRange = i_itr < 256;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (256 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 128, windowAdded);
+      unsigned int inRange = i_itr < 128;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (128 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 64, windowAdded);
+      unsigned int inRange = i_itr < 64;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (64 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 32, windowAdded);
+      unsigned int inRange = i_itr < 32;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (32 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 16, windowAdded);
+      unsigned int inRange = i_itr < 16;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (16 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 8, windowAdded);
+      unsigned int inRange = i_itr < 8;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (8 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 4, windowAdded);
+      unsigned int inRange = i_itr < 4;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (4 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 2, windowAdded);
+      unsigned int inRange = i_itr < 2;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (2 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 1, windowAdded);
+      unsigned int inRange = i_itr < 1;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (1 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
-    // for(int i_itr=0; i_itr < 512; ++i_itr; @inner)
-    // {
-    //     FRBank[i_itr] -= (windowAdded[0] / 1024.0);
-    //     FRBank[i_itr] *= window_func(i_itr, 1024);
-    //     FRBank[i_itr + 512] -= (windowAdded[0] / 1024.0);
-    //     FRBank[i_itr + 512] *= window_func(i_itr + 512, 1024);
-    // }
-
+    {
+      int i_itr = 0 + threadIdx.x;
+      FRBank[i_itr] -= (windowAdded[0] / 1024.0);
+      FRBank[i_itr] *= window_func(i_itr, 1024);
+      FRBank[i_itr + 512] -= (windowAdded[0] / 1024.0);
+      FRBank[i_itr + 512] *= window_func(i_itr + 512, 1024);
+    }
+    __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
       complex thisTwiddle = twiddle(segmentK(i_itr, 512, 512), 1024);
@@ -486,47 +474,83 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocesses_ODW_10_0(fl
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 256, windowAdded);
+      unsigned int inRange = i_itr < 256;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (256 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 128, windowAdded);
+      unsigned int inRange = i_itr < 128;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (128 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 64, windowAdded);
+      unsigned int inRange = i_itr < 64;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (64 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 32, windowAdded);
+      unsigned int inRange = i_itr < 32;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (32 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 16, windowAdded);
+      unsigned int inRange = i_itr < 16;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (16 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 8, windowAdded);
+      unsigned int inRange = i_itr < 8;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (8 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 4, windowAdded);
+      unsigned int inRange = i_itr < 4;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (4 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 2, windowAdded);
+      unsigned int inRange = i_itr < 2;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (2 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 1, windowAdded);
+      unsigned int inRange = i_itr < 1;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (1 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
@@ -768,52 +792,92 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocesses_ODW_11_0(f
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 512, windowAdded);
+      unsigned int inRange = i_itr < 512;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (512 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 256, windowAdded);
+      unsigned int inRange = i_itr < 256;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (256 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 128, windowAdded);
+      unsigned int inRange = i_itr < 128;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (128 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 64, windowAdded);
+      unsigned int inRange = i_itr < 64;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (64 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 32, windowAdded);
+      unsigned int inRange = i_itr < 32;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (32 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 16, windowAdded);
+      unsigned int inRange = i_itr < 16;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (16 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 8, windowAdded);
+      unsigned int inRange = i_itr < 8;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (8 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 4, windowAdded);
+      unsigned int inRange = i_itr < 4;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (4 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 2, windowAdded);
+      unsigned int inRange = i_itr < 2;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (2 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 1, windowAdded);
+      unsigned int inRange = i_itr < 1;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (1 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
@@ -1079,52 +1143,92 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 512, windowAdded);
+      unsigned int inRange = i_itr < 512;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (512 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 256, windowAdded);
+      unsigned int inRange = i_itr < 256;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (256 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 128, windowAdded);
+      unsigned int inRange = i_itr < 128;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (128 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 64, windowAdded);
+      unsigned int inRange = i_itr < 64;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (64 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 32, windowAdded);
+      unsigned int inRange = i_itr < 32;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (32 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 16, windowAdded);
+      unsigned int inRange = i_itr < 16;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (16 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 8, windowAdded);
+      unsigned int inRange = i_itr < 8;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (8 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 4, windowAdded);
+      unsigned int inRange = i_itr < 4;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (4 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 2, windowAdded);
+      unsigned int inRange = i_itr < 2;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (2 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
       int i_itr = 0 + threadIdx.x;
-      DaCAdd(i_itr, 1, windowAdded);
+      unsigned int inRange = i_itr < 1;
+      float Dpoint = windowAdded[i_itr];
+      float Apoint = windowAdded[i_itr + (1 * inRange)];
+      windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
+      ;
     }
     __syncthreads();
     {
@@ -1375,6 +1479,11 @@ extern "C" __global__ __launch_bounds__(64) void _occa_DCRemove_Common_0(float *
     unsigned int o_itr = 0 + (windowSize * blockIdx.x);
     __shared__ float added[128];
     //for removing DC
+    {
+      unsigned int inititr = 0 + threadIdx.x;
+      added[inititr] = 0;
+    }
+    __syncthreads();
     for (unsigned int windowItr = 0; windowItr < windowSize; windowItr += 64) {
       {
         unsigned int i_itr = 0 + threadIdx.x;

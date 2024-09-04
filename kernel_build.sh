@@ -1,8 +1,6 @@
 #!/bin/bash
 
 
-
-
 occa translate -D ROOTISBASH -m opencl ./include/RadixALL.okl \
 > ./cross_gpgpu/OpenCL/kernel/radixALL.cl
 
@@ -24,7 +22,7 @@ occa translate -D ROOTISBASH -m opencl ./include/RadixALL.okl \
 
 nvcc -ptx ./cross_gpgpu/CUDA/kernel/radixALL.cu -o ./cross_gpgpu/CUDA/kernel/radixALL.ptx
 
-# python CL_Embedder.py
+python CL_Embedder.py
 printf "#pragma once\nclass okl_embed {\n public:\n const char* ptx_code = \n R\"(" | cat - ./cross_gpgpu/CUDA/kernel/radixALL.ptx > ./cross_gpgpu/CUDA/kernel/temp.txt
 
 {

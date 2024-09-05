@@ -35,7 +35,7 @@ find_package(CUDA QUIET)
 find_package(OpenCL)
 find_package(OpenMP)
 find_package(CapnProto REQUIRED)
-
+find_package(clFFT)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -45,15 +45,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}
 )
-
-set(srcs
-    ${CMAKE_SOURCE_DIR}/src/occa.cpp
-)
-
-set(testSrcs
-    ${CMAKE_SOURCE_DIR}/test/test_fft_struct.cpp)
-
-
 
 if(CUDA_FOUND)
 add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/CUDA)
@@ -69,47 +60,64 @@ endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/Serial)
 
+if(clFFT_FOUND)
+add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/testRunner)
+endif()
+
+
 set(mainsrc 
     ${CMAKE_SOURCE_DIR}/src/runtimeChecker.cpp
     ${CMAKE_SOURCE_DIR}/src/STFTProxy.cpp
     ${CMAKE_SOURCE_DIR}/src/FFTStruct.cpp
     ${CMAKE_SOURCE_DIR}/src/FFTcapnp.capnp.c++
-    ${CMAKE_SOURCE_DIR}/src/FFTStruct_SetGet.cpp    
+    ${CMAKE_SOURCE_DIR}/src/FFTStruct_SetGet.cpp
     )
 
+set(
+    testersrc
+    ${CMAKE_SOURCE_DIR}/src/runtimeChecker.cpp
+    ${CMAKE_SOURCE_DIR}/src/STFTProxy.cpp
+    ${CMAKE_SOURCE_DIR}/src/FFTStruct.cpp
+    ${CMAKE_SOURCE_DIR}/src/FFTcapnp.capnp.c++
+    ${CMAKE_SOURCE_DIR}/src/FFTStruct_SetGet.cpp
+    ${CMAKE_SOURCE_DIR}/test/proxyTester.cpp
+    
+)
 
 add_library(STFTMain ${mainsrc})
+add_executable(TESTER ${testersrc})
 
 target_link_libraries(STFTMain PRIVATE CapnProto::capnp CapnProto::kj)
-# if(OCCA_FOUND)
-# add_executable(TEST_STFT ${test_dummy})
-# target_link_libraries(TEST_STFT PRIVATE CapnProto::capnp CapnProto::kj)
-# else()
-# add_library(TEST_STFT ${testSrcs})
-# endif()
+target_link_libraries(TESTER PRIVATE CapnProto::capnp CapnProto::kj)
 
 
 
 if(WIN32)
 target_link_libraries(STFTMain PRIVATE ws2_32)
+target_link_libraries(TESTER PRIVATE ws2_32)
+
     if(MSVC)
         target_link_libraries(STFTMain PRIVATE 
             $<$<CONFIG:Release>:${ixws_BINARY_DIR}/Release/ixwebsocket.lib>
             $<$<CONFIG:Debug>:${ixws_BINARY_DIR}/Debug/ixwebsocket.lib>
             )
+        target_link_libraries(TESTER PRIVATE 
+        $<$<CONFIG:Release>:${ixws_BINARY_DIR}/Release/ixwebsocket.lib>
+        $<$<CONFIG:Debug>:${ixws_BINARY_DIR}/Debug/ixwebsocket.lib>
+        )
     else()
         target_link_libraries(STFTMain PRIVATE ${ixws_BINARY_DIR}/ixwebsocket.lib)
+        target_link_libraries(TESTER PRIVATE ${ixws_BINARY_DIR}/ixwebsocket.lib)
     endif()
     target_link_libraries(STFTMain PRIVATE ws2_32)
+    target_link_libraries(TESTER PRIVATE ws2_32)
 else()
     target_link_libraries(STFTMain PRIVATE ${ixws_BINARY_DIR}/libixwebsocket.a)
+    target_link_libraries(TESTER PRIVATE ${ixws_BINARY_DIR}/libixwebsocket.a)
 endif()
 
 target_link_libraries(STFTMain PRIVATE ZLIB::ZLIB)
+target_link_libraries(TESTER PRIVATE ZLIB::ZLIB)
 
 target_include_directories(STFTMain PRIVATE ${ixws_SOURCE_DIR}/ixwebsocket)
-
-# if(OCCA_FOUND)
-# target_link_libraries(TEST_STFT PRIVATE ${CMAKE_SOURCE_DIR}/libocca.so)
-# target_include_directories(TEST_STFT PRIVATE ${OCCA_INCLUDE_DIR})
-# endif()
+target_include_directories(TESTER PRIVATE ${ixws_SOURCE_DIR}/ixwebsocket)

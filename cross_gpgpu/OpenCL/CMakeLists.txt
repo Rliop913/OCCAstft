@@ -32,7 +32,10 @@ FetchContent_MakeAvailable(opencl_hpp)
 
 find_package(OpenCL REQUIRED)
 find_package(ZLIB REQUIRED)
+if(CapnProto_FOUND)
+else()
 find_package(CapnProto REQUIRED)
+endif()
 set(openclsrc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CLImpl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CL_Wrapper/src/cl_FACADE.cpp

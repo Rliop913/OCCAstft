@@ -15,8 +15,11 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(ixws)
 
-find_package(ZLIB REQUIRED)
+if(CapnProto_FOUND)
+else()
 find_package(CapnProto REQUIRED)
+endif()
+find_package(ZLIB REQUIRED)
 find_package(CUDAToolkit REQUIRED)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 

@@ -30,7 +30,10 @@ FetchContent_MakeAvailable(json)
 
 find_package(clFFT REQUIRED)
 find_package(ZLIB REQUIRED)
+if(CapnProto_FOUND)
+else()
 find_package(CapnProto REQUIRED)
+endif()
 find_package(OpenCL REQUIRED)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -79,10 +82,10 @@ target_include_directories(testRunner PRIVATE ${ixws_SOURCE_DIR}/ixwebsocket)
 
 target_include_directories(testRunner PRIVATE ${json_SOURCE_DIR}/include)
 
-get_cmake_property(_variableNames VARIABLES)
-foreach (_variableName ${_variableNames})
-  message(STATUS "${_variableName} = ${${_variableName}}")
-endforeach()
+# get_cmake_property(_variableNames VARIABLES)
+# foreach (_variableName ${_variableNames})
+#   message(STATUS "${_variableName} = ${${_variableName}}")
+# endforeach()
 
 
 

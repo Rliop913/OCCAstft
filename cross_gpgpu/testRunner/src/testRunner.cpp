@@ -45,7 +45,7 @@ Runner::InitEnv()
     clGetPlatformIDs(1, &(env->platform), NULL);
     clGetDeviceIDs(env->platform, CL_DEVICE_TYPE_GPU, 1, &(env->device), NULL);
     env->context = clCreateContext(NULL, 1, &(env->device), NULL, NULL, NULL);
-    env->CQ = clCreateCommandQueue(env->context, env->device, 0, NULL);
+    env->CQ = clCreateCommandQueueWithProperties(env->context, env->device, 0, NULL);
 }
 
 // BuildKernel: Compiles or prepares the GPGPU kernel for execution.
@@ -112,7 +112,7 @@ Runner::ActivateSTFT(   VECF& inData,
     const unsigned int  OHalfSize   = OFullSize / 2;
     const unsigned int  OMove       = windowSize * (1.0f - overlapRatio);// window move distance
     //end default
-
+    std::cout<< "TR:115"<<std::endl;
     size_t clleng[1];
     clleng[0] = (1 << windowRadix);
     clfftSetupData clSetUp;
@@ -128,9 +128,9 @@ Runner::ActivateSTFT(   VECF& inData,
     clfftSetPlanPrecision(planhandle, CLFFT_SINGLE);
     clfftSetLayout(planhandle, CLFFT_REAL, CLFFT_HERMITIAN_INTERLEAVED);
     clfftSetResultLocation(planhandle, CLFFT_INPLACE);
-
-    clfftSetPlanBatchSize(planhandle, qtConst);
-
+std::cout<< "TR:131"<<std::endl;
+    std::cout<<clfftSetPlanBatchSize(planhandle, qtConst)<<std::endl;
+std::cout<< "TR:133"<<std::endl;
     cl_mem clinput = clCreateBuffer
     (
         env->context,
@@ -139,11 +139,11 @@ Runner::ActivateSTFT(   VECF& inData,
         inData.data(),
         NULL
     );
-    
-    clfftBakePlan(planhandle, 1, &(env->CQ), NULL, NULL);
+    std::cout<< "TR:142"<<std::endl;
+    std::cout<<clfftBakePlan(planhandle, 1, &(env->CQ), NULL, NULL)<<std::endl;
 
     cl_event clevent;
-
+std::cout<< "TR:146"<<std::endl;
     clfftEnqueueTransform(
         planhandle,
         CLFFT_FORWARD,
@@ -158,6 +158,7 @@ Runner::ActivateSTFT(   VECF& inData,
     );
 
     clFinish(env->CQ);
+    std::cout<< "TR:161"<<std::endl;
     cl_ulong clstart, clend;
     clGetEventProfilingInfo
     (
@@ -192,6 +193,7 @@ Runner::ActivateSTFT(   VECF& inData,
         NULL,
         NULL
     );
+    std::cout<< "TR:196"<<std::endl;
     clfftDestroyPlan(&planhandle);
     clReleaseMemObject(clinput);
 

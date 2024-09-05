@@ -17,7 +17,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(ixws)
 
 find_package(ZLIB REQUIRED)
+if(CapnPrpto_FOUND)
+else()
 find_package(CapnProto REQUIRED)
+endif()
 find_package(OpenMP REQUIRED)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 

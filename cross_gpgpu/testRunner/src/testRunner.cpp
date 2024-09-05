@@ -142,7 +142,7 @@ std::cout<< "TR:133"<<std::endl;
     std::cout<< "TR:142"<<std::endl;
     std::cout<<clfftBakePlan(planhandle, 1, &(env->CQ), NULL, NULL)<<std::endl;
 
-    cl_event clevent;
+    cl_event clevent = clCreateUserEvent(env->context, NULL);
 std::cout<< "TR:146"<<std::endl;
     clfftEnqueueTransform(
         planhandle,
@@ -168,7 +168,7 @@ std::cout<< "TR:146"<<std::endl;
         &clstart, 
         NULL
     );
-
+	std::cout << "TR:171" <<std::endl;
     clGetEventProfilingInfo
     (
         clevent, 
@@ -193,6 +193,7 @@ std::cout<< "TR:146"<<std::endl;
         NULL,
         NULL
     );
+    clReleaseEvent(clevent);
     std::cout<< "TR:196"<<std::endl;
     clfftDestroyPlan(&planhandle);
     clReleaseMemObject(clinput);

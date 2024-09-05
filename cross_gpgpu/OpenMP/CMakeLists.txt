@@ -17,7 +17,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(ixws)
 
 find_package(ZLIB REQUIRED)
-if(CapnPrpto_FOUND)
+if(CapnProto_FOUND)
 else()
 find_package(CapnProto REQUIRED)
 endif()

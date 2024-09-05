@@ -29,14 +29,16 @@ dataWait(std::vector<MAYBE_FUTURE_DATA>& data, const std::string& errmess)
 int main()
 {
     FallbackList fallbacks;
-    fallbacks.SerialFallback.push_back("./cross_gpgpu/Serial");
-    // fallbacks.OpenCLFallback.push_back("./cross_gpgpu/OpenCL");
-    // fallbacks.CUDAFallback.push_back("./cross_gpgpu/CUDA");
-    // fallbacks.CustomFallback.push_back("./cross_gpgpu/testRunner/testRunner");
+    // fallbacks.SerialFallback.push_back("./cross_gpgpu/Serial");
+//    fallbacks.OpenCLFallback.push_back("./cross_gpgpu/OpenCL");
+//     fallbacks.CUDAFallback.push_back("./cross_gpgpu/CUDA");
+     fallbacks.CustomFallback.push_back("./cross_gpgpu/testRunner/testRunner");
+//	fallbacks.ServerFallback.push_back("127.0.0.1:54500");
     STFTProxy proxy
     (
         [](const ix::WebSocketErrorInfo& e){
-            return;
+            std::cout << e.reason <<std::endl;
+	    return;
         },
         fallbacks
     );

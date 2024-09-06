@@ -31,9 +31,9 @@ int main()
     FallbackList fallbacks;
     // fallbacks.SerialFallback.push_back("./cross_gpgpu/Serial");
 //    fallbacks.OpenCLFallback.push_back("./cross_gpgpu/OpenCL");
-//     fallbacks.CUDAFallback.push_back("./cross_gpgpu/CUDA");
-     fallbacks.CustomFallback.push_back("./cross_gpgpu/testRunner/testRunner");
-//	fallbacks.ServerFallback.push_back("127.0.0.1:54500");
+    // fallbacks.CUDAFallback.push_back("./cross_gpgpu/CUDA");
+    //  fallbacks.CustomFallback.push_back("./cross_gpgpu/testRunner/testRunner.exe");
+	fallbacks.ServerFallback.push_back("127.0.0.1:54500");
     STFTProxy proxy
     (
         [](const ix::WebSocketErrorInfo& e){
@@ -131,7 +131,7 @@ int main()
     dataWait(D9Ret, "return Error on D9 DataSet!!!");
     
     std::cout << "D9 Complete" << std::endl;
-
+    proxy.KillRunner(true);
     
     return 0;
 }

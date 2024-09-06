@@ -41,6 +41,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(testsrc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/testRunner.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/clfftImpl.cpp
+    
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL/RunnerCommon.cpp #common implementation
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct_SetGet.cpp
@@ -61,6 +63,7 @@ target_include_directories(testRunner PRIVATE
 )
 
 if(WIN32)
+    target_link_libraries(testRunner PRIVATE ws2_32)
     if(MSVC)
         target_link_libraries(testRunner PRIVATE
             $<$<CONFIG:Release>:${ixws_BINARY_DIR}/Release/ixwebsocket.lib>

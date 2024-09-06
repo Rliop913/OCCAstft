@@ -50,8 +50,9 @@ RuntimeCheck::isAvailable(PATH& path)
 #ifdef OS_WINDOWS
     std::string dllName;
     fs::path executePath(path.second);
-    if(executePath.extension() == "exe")
+    if(executePath.extension() == ".exe")
     {
+        
         executePath.replace_extension("");
     }
     switch (path.first)
@@ -105,7 +106,9 @@ RuntimeCheck::isAvailable(PATH& path)
             }
             break;
         case SupportedRuntimes::CUSTOM:
+            dllName = "SKIP";
             executePath.replace_extension(".exe");
+            break;
         default:
             return false;
     }
@@ -135,7 +138,7 @@ RuntimeCheck::isAvailable(PATH& path)
 #else
     std::string soName;
     fs::path executePath(path.second);
-    if(executePath.extension() == "exe")
+    if(executePath.extension() == ".exe")
     {
         executePath.replace_extension("");
     }

@@ -13,14 +13,19 @@ clfftImpl::init()
     int cctxt;
     cctxt = clGetPlatformIDs(1, &platform, NULL);
     cctxt = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
-    context = clCreateContext(NULL, 1, &device, notify, NULL, &cctxt);
-    cl_queue_properties pp[1];
+    cl_context_properties props[3] = { CL_CONTEXT_PLATFORM, 0, 0 };
+    props[1] = (cl_context_properties)platform;
+
+    context = clCreateContext(props, 1, &device, notify, NULL, &cctxt);
+    cl_queue_properties pp[2];
+
     pp[0] = CL_QUEUE_PROFILING_ENABLE;
+    pp[1] = 0;
+
     CQ = clCreateCommandQueueWithProperties(context, device, pp, &cctxt);
-   
-    cctxt = clfftInitSetupData(&clSetUp);
-    cctxt = clfftSetup(&clSetUp);
-    std::cout<<"clfft init complete"<<std::endl;
+
+    clfftInitSetupData(&clSetUp);
+    clfftSetup(&clSetUp);
 }
 
 unsigned long long
@@ -29,18 +34,15 @@ clfftImpl::GetTime(VECF inData, const dataSet& sets)
     size_t clleng[1];
     clleng[0] = (1 << sets.windowRadix);
     cl_int err_ret;
-    float* dt = new float[sets.OFullSize];
-    memcpy(dt, inData.data(), sizeof(float) * inData.size());
-    std::cout<< "point 54" <<std::endl;
+    float* dt = new float[sets.OFullSize * 2];
     clinput = clCreateBuffer
     (
         context,
         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-        sizeof(float) * sets.OFullSize,
+        sizeof(float) * 2 * sets.OFullSize,
         dt,
         &err_ret
     );
-    std::cout<< "point 54" <<std::endl;
     int planerr[6];
     planerr[0] =
     clfftCreateDefaultPlan(
@@ -48,21 +50,14 @@ clfftImpl::GetTime(VECF inData, const dataSet& sets)
         context,
         CLFFT_1D,
         clleng);
-        std::cout<< "point 54" <<std::endl;
-    planerr[1] =
     clfftSetPlanPrecision(planhandle, CLFFT_SINGLE);
-    planerr[2] =
     clfftSetLayout(planhandle, CLFFT_REAL, CLFFT_HERMITIAN_INTERLEAVED);
-    planerr[3] =
     clfftSetResultLocation(planhandle, CLFFT_INPLACE);
-    planerr[4] =
     clfftSetPlanBatchSize(planhandle, sets.qtConst);
-    std::cout<< "point 54" <<std::endl;
-    planerr[5] =
+    
     clfftBakePlan(planhandle, 1, &CQ, NULL, NULL);
     
     cl_event clevent = clCreateUserEvent(context, NULL);
-    std::cout<< "point 54" <<std::endl;
     auto worked =   clfftEnqueueTransform(
                         planhandle,
                         CLFFT_FORWARD,
@@ -75,6 +70,8 @@ clfftImpl::GetTime(VECF inData, const dataSet& sets)
                         NULL,
                         NULL
                     );
+    
+    clFlush(CQ);
     clFinish(CQ);
     if(worked != CL_SUCCESS)
     {
@@ -103,7 +100,6 @@ clfftImpl::GetTime(VECF inData, const dataSet& sets)
         &clstart, 
         NULL
     );
-	std::cout << "TR:171" <<std::endl;
     clGetEventProfilingInfo
     (
         clevent, 
@@ -115,9 +111,9 @@ clfftImpl::GetTime(VECF inData, const dataSet& sets)
     cl_ulong clresult = clend - clstart;
 
 
-    std::cout << clfftDestroyPlan(&planhandle) << std::endl;
-    std::cout << clReleaseEvent(clevent) << std::endl;
-    std::cout << clReleaseMemObject(clinput) << std::endl;
+    clfftDestroyPlan(&planhandle);
+    clReleaseEvent(clevent);
+    clReleaseMemObject(clinput);
     delete[] dt;
     return clresult;
 }

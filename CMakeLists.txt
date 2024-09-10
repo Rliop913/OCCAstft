@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.5.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
+set(CMAKE_BUILD_TYPE Debug)
 project(occaSTFT VERSION 0.1.0 LANGUAGES C CXX)
 
 include(FetchContent)
@@ -34,8 +34,21 @@ find_package(ZLIB REQUIRED)
 find_package(CUDA QUIET)
 find_package(OpenCL)
 find_package(OpenMP)
-find_package(CapnProto REQUIRED)
+find_package(CapnProto)
+if(NOT CapnProto_FOUND)
+    message(STATUS "CapnProto not found, running capnpsetter.sh...")
+    execute_process(
+        COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/capnpsetter.sh)
+    find_package(CapnProto REQUIRED)
+endif()
+
 find_package(clFFT)
+if(NOT clFFT_FOUND)
+    execute_process(
+    COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/clfftsetter.sh)
+    
+    find_package(clFFT REQUIRED)
+endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

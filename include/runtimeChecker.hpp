@@ -68,7 +68,6 @@ public:
     STRVEC SerialFallback = {"./"};
 
     STRVEC CustomFallback = {"./"};
-    //checked last, reads from back. put excutable serialRun's directory path here
 
     MAYBE_PATH  getNext();
 private:
@@ -81,23 +80,17 @@ inline
 bool
 FallbackList::VectorITR(STRVEC& vec, PATH& result)
 {
-    for(;;)
+    if(vec.empty())
     {
-        if(vec.empty())
-        {
-            return false;
-        }
-        else
-        {
-            auto path = vec.back();
-            vec.pop_back();
-            if(fs::exists(path))
-            {
-                result.first = Type;
-                result.second = path;
-                return true;
-            }
-        }
+        return false;
+    }
+    else
+    {
+        auto path = vec.back();
+        vec.pop_back();
+        result.first = Type;
+        result.second = path;
+        return true;
     }
 }
 
@@ -107,28 +100,17 @@ inline
 bool
 FallbackList::VectorITR<SupportedRuntimes::SERVER>(STRVEC& vec, PATH& result)
 {
-    for(;;)
+    
+    if(vec.empty())
     {
-        if(vec.empty())
-        {
-            return false;
-        }
-        else
-        {
-            auto path = vec.back();
-            vec.pop_back();
-            result.first = SERVER;
-            result.second = path;
-            return true;
-        }
+        return false;
+    }
+    else
+    {
+        auto path = vec.back();
+        vec.pop_back();
+        result.first = SERVER;
+        result.second = path;
+        return true;
     }
 }
-
-
-
-// struct ExePath{
-//     std::string CUDAexe = "./cudaRun";
-//     std::string OpenCLExe = "./openclRun";
-//     std::string OpenMPExe = "./openmpRun";
-//     std::string SerialExe = "./serialRun";
-// };

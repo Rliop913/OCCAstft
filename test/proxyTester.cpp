@@ -32,8 +32,8 @@ int main()
     // fallbacks.SerialFallback.push_back("./cross_gpgpu/Serial");
 //    fallbacks.OpenCLFallback.push_back("./cross_gpgpu/OpenCL");
     // fallbacks.CUDAFallback.push_back("./cross_gpgpu/CUDA");
-    //  fallbacks.CustomFallback.push_back("./cross_gpgpu/testRunner/testRunner.exe");
-	fallbacks.ServerFallback.push_back("127.0.0.1:54500");
+     fallbacks.CustomFallback.push_back("./cross_gpgpu/testRunner/testRunner.exe");
+	// fallbacks.ServerFallback.push_back("127.0.0.1:54500");
     STFTProxy proxy
     (
         [](const ix::WebSocketErrorInfo& e){

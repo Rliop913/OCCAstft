@@ -114,6 +114,7 @@ Runner::ActivateSTFT(   VECF& inData,
     dsets.overlapRatio=overlapRatio;
     dsets.windowRadix=windowRadix;
     dsets.windowSize=windowSize;
+    std::cout<< "TR:117" << std::endl;
     clfftImpl clf;
     clf.init();
     auto clf_result = clf.GetTime(inData, dsets);

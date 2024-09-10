@@ -5,6 +5,7 @@
 #include "RunnerInterface.hpp"
 #include "okl_embed.hpp"
 #include "clfftImpl.hpp"
+#include "cufftImpl.hpp"
 //include your gpgpu kernel codes.
 
 
@@ -115,11 +116,14 @@ Runner::ActivateSTFT(   VECF& inData,
     dsets.windowRadix=windowRadix;
     dsets.windowSize=windowSize;
     std::cout<< "TR:117" << std::endl;
-    clfftImpl clf;
-    clf.init();
-    auto clf_result = clf.GetTime(inData, dsets);
-    clf.uninit();
-    std::cout<< "CLFFT RESULT: "<< clf_result <<"nanoseconds"<<std::endl;
+    // clfftImpl clf;
+    // clf.init();
+    // auto clf_result = clf.GetTime(inData, dsets);
+    // clf.uninit();
+    cufftImpl cuf;
+    auto cuf_result = cuf.GetTime(inData, dsets);
+
+    std::cout<< "CLFFT RESULT: "<< cuf_result <<"nanoseconds"<<std::endl;
 
 
     std::vector<float> clout(OFullSize);

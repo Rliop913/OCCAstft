@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-project(templateRunner VERSION 0.1.0 LANGUAGES C CXX)
+project(templateRunner VERSION 0.1.0 LANGUAGES C CXX CUDA)
 
 
 
@@ -30,6 +30,9 @@ FetchContent_MakeAvailable(json)
 
 find_package(clFFT REQUIRED)
 find_package(ZLIB REQUIRED)
+if(NOT CUDA_FOUND)
+find_package(CUDA REQUIRED)
+endif()
 if(CapnProto_FOUND)
 else()
 find_package(CapnProto REQUIRED)
@@ -37,11 +40,12 @@ endif()
 find_package(OpenCL REQUIRED)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-
+find_library(CUFFT_LIBRARY cufft HINTS ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
 
 set(testsrc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/testRunner.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/clfftImpl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/cufftImpl.cpp
     
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL/RunnerCommon.cpp #common implementation
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct.cpp
@@ -53,8 +57,10 @@ set(testsrc
 
 
 add_executable(testRunner ${testsrc})
-
+target_include_directories(testRunner PRIVATE ${CUDA_INCLUDE_DIRS})
 target_link_libraries(testRunner PRIVATE CapnProto::capnp CapnProto::kj)
+target_link_libraries(testRunner PRIVATE ${CUFFT_LIBRARY})
+target_link_libraries(testRunner PRIVATE ${CUDA_LIBRARIES})
 
 target_include_directories(testRunner PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL#reverseOOP
@@ -94,3 +100,5 @@ target_include_directories(testRunner PRIVATE ${json_SOURCE_DIR}/include)
 
 target_link_libraries(testRunner PRIVATE ${CLFFT_LIBRARIES})
 target_link_libraries(testRunner PRIVATE OpenCL::OpenCL)
+
+

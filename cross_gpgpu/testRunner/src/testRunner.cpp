@@ -5,7 +5,7 @@
 #include "RunnerInterface.hpp"
 #include "okl_embed.hpp"
 #include "clfftImpl.hpp"
-#include "cufftImpl.hpp"
+// #include "cufftImpl.hpp"
 //include your gpgpu kernel codes.
 
 
@@ -68,9 +68,8 @@ JsonStore
 (
     unsigned int windowSize,
     unsigned int DataSize,
-    unsigned int cufftNanoSecond,
-    unsigned int clfftNanoSecond,
-    unsigned int occafftNanoSecond
+    const std::string& vendor,
+    unsigned int NanoSecond
 )
 {
     using json = nlohmann::json;
@@ -78,12 +77,10 @@ JsonStore
     json data = json::parse(dataFile);
     std::string WS = std::to_string(windowSize);
     std::string DS = std::to_string(DataSize);
-    std::string CUK = WS + "CUFFT" + DS;
-    std::string CLK = WS + "CLFFT" + DS;
-    std::string OCK = WS + "OCCAFFT" + DS;
-    data[CUK] = cufftNanoSecond;
-    data[CLK] = clfftNanoSecond;
-    data[OCK] = occafftNanoSecond;
+    
+    std::string vend = WS + vendor + DS;
+    
+    data[vend] = NanoSecond;
     std::ofstream storeFile("./executeResult.json");
     storeFile << std::setw(4) << data <<std::endl;
 
@@ -116,14 +113,14 @@ Runner::ActivateSTFT(   VECF& inData,
     dsets.windowRadix=windowRadix;
     dsets.windowSize=windowSize;
     std::cout<< "TR:117" << std::endl;
-    // clfftImpl clf;
-    // clf.init();
-    // auto clf_result = clf.GetTime(inData, dsets);
-    // clf.uninit();
-    cufftImpl cuf;
-    auto cuf_result = cuf.GetTime(inData, dsets);
-
-    std::cout<< "CLFFT RESULT: "<< cuf_result <<"nanoseconds"<<std::endl;
+    clfftImpl clf;
+    clf.init();
+    auto clf_result = clf.GetTime(inData, dsets);
+    clf.uninit();
+    // cufftImpl cuf;
+    // auto cuf_result = cuf.GetTime(inData, dsets);
+    JsonStore(windowSize, inData.size(), "CLFFT", clf_result);
+    std::cout<< "CLFFT RESULT: "<< clf_result <<"nanoseconds"<<std::endl;
 
 
     std::vector<float> clout(OFullSize);

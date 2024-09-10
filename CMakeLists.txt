@@ -77,6 +77,7 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/Serial)
 
 if(clFFT_FOUND)
 add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/testRunner)
+add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/cudaprofileRunner)
 endif()
 
 

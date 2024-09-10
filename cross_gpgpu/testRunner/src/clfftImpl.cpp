@@ -17,10 +17,10 @@ clfftImpl::init()
     props[1] = (cl_context_properties)platform;
 
     context = clCreateContext(props, 1, &device, notify, NULL, &cctxt);
-    cl_queue_properties pp[2];
-
-    pp[0] = CL_QUEUE_PROFILING_ENABLE;
-    pp[1] = 0;
+    cl_queue_properties pp[3];
+    pp[0] = CL_QUEUE_PROPERTIES;
+    pp[1] = CL_QUEUE_PROFILING_ENABLE;
+    pp[2] = 0;
 
     CQ = clCreateCommandQueueWithProperties(context, device, pp, &cctxt);
 
@@ -56,8 +56,12 @@ clfftImpl::GetTime(VECF inData, const dataSet& sets)
     clfftSetPlanBatchSize(planhandle, sets.qtConst);
     
     clfftBakePlan(planhandle, 1, &CQ, NULL, NULL);
-    
-    cl_event clevent = clCreateUserEvent(context, NULL);
+    cl_int eventErrcode;
+    cl_event clevent = clCreateUserEvent(context, &eventErrcode);
+    if(eventErrcode != CL_SUCCESS)
+    {
+        std::cerr<<"create event ERR, code: " << eventErrcode<<std::endl;
+    }
     auto worked =   clfftEnqueueTransform(
                         planhandle,
                         CLFFT_FORWARD,
@@ -67,12 +71,12 @@ clfftImpl::GetTime(VECF inData, const dataSet& sets)
                         NULL,
                         &clevent,
                         &clinput,
-                        NULL,
+                        &clinput,
                         NULL
                     );
     
-    clFlush(CQ);
     clFinish(CQ);
+    clWaitForEvents(1, &clevent);
     if(worked != CL_SUCCESS)
     {
         std::cerr<< "it didn't worked. do not trust clfft timer" <<std::endl;
@@ -91,7 +95,8 @@ clfftImpl::GetTime(VECF inData, const dataSet& sets)
         NULL
     );
     
-    cl_ulong clstart, clend;
+    size_t clstart, clend;
+    std::cout<<"clprofile start err code: " <<
     clGetEventProfilingInfo
     (
         clevent, 
@@ -99,16 +104,17 @@ clfftImpl::GetTime(VECF inData, const dataSet& sets)
         sizeof(clstart), 
         &clstart, 
         NULL
-    );
+    ) << std::endl;
+    std::cout<<"clprofile end err code: " <<
     clGetEventProfilingInfo
     (
         clevent, 
-        CL_PROFILING_COMMAND_END, 
+        CL_PROFILING_COMMAND_COMPLETE, 
         sizeof(clend), 
         &clend, 
         NULL
-    );
-    cl_ulong clresult = clend - clstart;
+    )<<std::endl;
+    unsigned long long clresult = clend - clstart;
 
 
     clfftDestroyPlan(&planhandle);

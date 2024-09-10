@@ -36,6 +36,7 @@ find_package(OpenCL)
 find_package(OpenMP)
 find_package(CapnProto)
 if(NOT CapnProto_FOUND)
+    
     message(STATUS "CapnProto not found, running capnpsetter.sh...")
     execute_process(
         COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/capnpsetter.sh)
@@ -45,7 +46,8 @@ endif()
 find_package(clFFT)
 if(NOT clFFT_FOUND)
     execute_process(
-    COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/clfftsetter.sh)
+    COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/clfftsetter.sh
+    )
     
     find_package(clFFT REQUIRED)
 endif()

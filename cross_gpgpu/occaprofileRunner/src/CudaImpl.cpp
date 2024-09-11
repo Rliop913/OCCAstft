@@ -69,21 +69,21 @@ void
 JsonStore
 (
     unsigned int windowSize,
-    unsigned int DataSize,
+    unsigned int BatchSize,
     const std::string& vendor,
     unsigned int NanoSecond
 )
 {
     using json = nlohmann::json;
-    std::ifstream dataFile("./cudaprofileResult.json");
+    std::ifstream dataFile("./occaResult.json");
     json data = json::parse(dataFile);
     std::string WS = std::to_string(windowSize);
-    std::string DS = std::to_string(DataSize);
+    std::string DS = std::to_string(BatchSize);
     
     std::string vend = WS + vendor + DS;
     
     data[vend] = NanoSecond;
-    std::ofstream storeFile("./cudaprofileResult.json");
+    std::ofstream storeFile("./occaResult.json");
     storeFile << std::setw(4) << data <<std::endl;
 
 }
@@ -170,7 +170,7 @@ Runner::ActivateSTFT(   VECF& inData,
         float milli;
         cuEventElapsedTime(&milli, starts[0], ends[0]);
         unsigned long long nano = milli * 1000000;
-        JsonStore(windowSize, FullSize, "occa", nano);
+        JsonStore(windowSize, qtConst, "occa", nano);
         }
         break;
     case 11:
@@ -194,7 +194,7 @@ Runner::ActivateSTFT(   VECF& inData,
         float milli;
         cuEventElapsedTime(&milli, starts[0], ends[0]);
         unsigned long long nano = milli * 1000000;
-        JsonStore(windowSize, FullSize, "occa", nano);
+        JsonStore(windowSize, qtConst, "occa", nano);
         }
         break;
     default:
@@ -269,7 +269,7 @@ Runner::ActivateSTFT(   VECF& inData,
         }
 
         unsigned long long nano = milli * 1000000;
-        JsonStore(windowSize, FullSize, "occa", nano);
+        JsonStore(windowSize, qtConst, "occa", nano);
         }
         break;
     }

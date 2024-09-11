@@ -77,7 +77,7 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/Serial)
 
 if(clFFT_FOUND)
 add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/testRunner)
-add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/cudaprofileRunner)
+add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/occaprofileRunner)
 endif()
 
 
@@ -96,7 +96,7 @@ set(
     ${CMAKE_SOURCE_DIR}/src/FFTStruct.cpp
     ${CMAKE_SOURCE_DIR}/src/FFTcapnp.capnp.c++
     ${CMAKE_SOURCE_DIR}/src/FFTStruct_SetGet.cpp
-    ${CMAKE_SOURCE_DIR}/test/proxyTester.cpp
+    ${CMAKE_SOURCE_DIR}/Profile_Code/profileRunners.cpp
     
 )
 

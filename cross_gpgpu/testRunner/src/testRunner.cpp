@@ -23,7 +23,7 @@ IMPLEMENTATION LISTS
 
 // Genv: Structure to hold the GPGPU environment settings and resources.
 struct Genv{
-    // clfftImpl clf;
+    clfftImpl clf;
 };
 
 // Gcodes: Structure to manage and store GPGPU kernel codes.
@@ -36,10 +36,10 @@ struct Gcodes{
 void
 Runner::InitEnv()
 {
-    std::cout<<"why?" <<std::endl;
+    
     env = new Genv;
     kens = new Gcodes;
-    // env->clf.init();
+    env->clf.init();
 }
 
 // BuildKernel: Compiles or prepares the GPGPU kernel for execution.
@@ -52,7 +52,7 @@ Runner::BuildKernel()
 void
 Runner::UnInit()
 {
-    // env->clf.uninit();
+    env->clf.uninit();
 }
 
 /**
@@ -67,7 +67,7 @@ void
 JsonStore
 (
     unsigned int windowSize,
-    unsigned int DataSize,
+    unsigned int BatchSize,
     const std::string& vendor,
     unsigned int NanoSecond
 )
@@ -76,7 +76,7 @@ JsonStore
     std::ifstream dataFile("./executeResult.json");
     json data = json::parse(dataFile);
     std::string WS = std::to_string(windowSize);
-    std::string DS = std::to_string(DataSize);
+    std::string DS = std::to_string(BatchSize);
     
     std::string vend = WS + vendor + DS;
     
@@ -102,7 +102,7 @@ Runner::ActivateSTFT(   VECF& inData,
     const unsigned int  OMove       = windowSize * (1.0f - overlapRatio);// window move distance
     //end default
 
-    std::cout<< "init complete"<<std::endl;
+    // std::cout<< "init complete"<<std::endl;
     dataSet dsets;
     dsets.FullSize = FullSize;
     dsets.OFullSize = OFullSize;
@@ -112,15 +112,15 @@ Runner::ActivateSTFT(   VECF& inData,
     dsets.overlapRatio=overlapRatio;
     dsets.windowRadix=windowRadix;
     dsets.windowSize=windowSize;
-    std::cout<< "TR:117" << std::endl;
-    clfftImpl clf;
-    clf.init();
-    auto clf_result = clf.GetTime(inData, dsets);
-    clf.uninit();
+    // std::cout<< "TR:117" << std::endl;
+    // clfftImpl clf;
+    // clf.init();
+    auto clf_result = env->clf.GetTime(inData, dsets);
+    // clf.uninit();
     // cufftImpl cuf;
     // auto cuf_result = cuf.GetTime(inData, dsets);
-    JsonStore(windowSize, inData.size(), "CLFFT", clf_result);
-    std::cout<< "CLFFT RESULT: "<< clf_result <<"nanoseconds"<<std::endl;
+    JsonStore(windowSize, qtConst, "CLFFT", clf_result);
+    // std::cout<< "CLFFT RESULT: "<< clf_result <<"nanoseconds"<<std::endl;
 
 
     std::vector<float> clout(OFullSize);

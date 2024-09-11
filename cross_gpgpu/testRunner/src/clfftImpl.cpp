@@ -96,7 +96,7 @@ clfftImpl::GetTime(VECF inData, const dataSet& sets)
     );
     
     size_t clstart, clend;
-    std::cout<<"clprofile start err code: " <<
+    
     clGetEventProfilingInfo
     (
         clevent, 
@@ -104,8 +104,8 @@ clfftImpl::GetTime(VECF inData, const dataSet& sets)
         sizeof(clstart), 
         &clstart, 
         NULL
-    ) << std::endl;
-    std::cout<<"clprofile end err code: " <<
+    );
+    
     clGetEventProfilingInfo
     (
         clevent, 
@@ -113,7 +113,7 @@ clfftImpl::GetTime(VECF inData, const dataSet& sets)
         sizeof(clend), 
         &clend, 
         NULL
-    )<<std::endl;
+    );
     unsigned long long clresult = clend - clstart;
 
 
@@ -131,4 +131,5 @@ clfftImpl::uninit()
     clReleaseDevice(device);
     clReleaseCommandQueue(CQ);
     clReleaseContext(context);
+    
 }

@@ -26,6 +26,10 @@ struct Genv{
 
 // Gcodes: Structure to manage and store GPGPU kernel codes.
 struct Gcodes{
+    CUfunction R6STFT;
+    CUfunction R7STFT;
+    CUfunction R8STFT;
+    CUfunction R9STFT;
     CUfunction R10STFT;
     CUfunction R11STFT;
     CUfunction RadixCommonOverlap;
@@ -59,6 +63,10 @@ Runner::UnInit()
 void
 Runner::BuildKernel()
 {
+    CheckCudaError(cuModuleGetFunction(&(kens->R6STFT), env->RadixAll, "_occa_Stockhpotimized6_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->R7STFT), env->RadixAll, "_occa_Stockhpotimized7_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->R8STFT), env->RadixAll, "_occa_Stockhpotimized8_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->R9STFT), env->RadixAll, "_occa_Stockhpotimized9_0"));
     CheckCudaError(cuModuleGetFunction(&(kens->R10STFT), env->RadixAll, "_occa_Stockhpotimized10_0"));
     CheckCudaError(cuModuleGetFunction(&(kens->R11STFT), env->RadixAll, "_occa_Stockhpotimized11_0"));
     CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonOverlap), env->RadixAll, "_occa_Overlap_Common_0"));
@@ -132,8 +140,8 @@ Runner::ActivateSTFT(   VECF& inData,
         };
     CheckCudaError(cuLaunchKernel(
                 kens->RadixCommonOverlap,
-                OFullSize / 1024, 1, 1,
-                1024, 1, 1,
+                OFullSize / 64, 1, 1,
+                64, 1, 1,
                 0,
                 stream,
                 overlapCommon,
@@ -150,6 +158,98 @@ Runner::ActivateSTFT(   VECF& inData,
     
     switch (windowRadix)
     {
+    case 6:
+        cuEventCreate(&(starts[0]), CU_EVENT_DEFAULT);
+        cuEventCreate(&(ends[0]), CU_EVENT_DEFAULT);
+        cuEventRecord(starts[0], 0);
+        CheckCudaError(cuLaunchKernel(
+            kens->R6STFT,
+            qtConst, 1, 1,
+            32, 1, 1,
+            0,
+            stream,
+            AllInOne,
+            NULL
+        ));
+        cuEventRecord(ends[0], 0);
+        
+        cuEventSynchronize(ends[0]);
+        {
+        float milli;
+        cuEventElapsedTime(&milli, starts[0], ends[0]);
+        unsigned long long nano = milli * 1000000;
+        JsonStore(windowSize, qtConst, "occa", nano);
+        }
+        break;
+    case 7:
+        cuEventCreate(&(starts[0]), CU_EVENT_DEFAULT);
+        cuEventCreate(&(ends[0]), CU_EVENT_DEFAULT);
+        cuEventRecord(starts[0], 0);
+        CheckCudaError(cuLaunchKernel(
+            kens->R7STFT,
+            qtConst, 1, 1,
+            64, 1, 1,
+            0,
+            stream,
+            AllInOne,
+            NULL
+        ));
+        cuEventRecord(ends[0], 0);
+        
+        cuEventSynchronize(ends[0]);
+        {
+        float milli;
+        cuEventElapsedTime(&milli, starts[0], ends[0]);
+        unsigned long long nano = milli * 1000000;
+        JsonStore(windowSize, qtConst, "occa", nano);
+        }
+        break;
+    case 8:
+        cuEventCreate(&(starts[0]), CU_EVENT_DEFAULT);
+        cuEventCreate(&(ends[0]), CU_EVENT_DEFAULT);
+        cuEventRecord(starts[0], 0);
+        CheckCudaError(cuLaunchKernel(
+            kens->R8STFT,
+            qtConst, 1, 1,
+            128, 1, 1,
+            0,
+            stream,
+            AllInOne,
+            NULL
+        ));
+        cuEventRecord(ends[0], 0);
+        
+        cuEventSynchronize(ends[0]);
+        {
+        float milli;
+        cuEventElapsedTime(&milli, starts[0], ends[0]);
+        unsigned long long nano = milli * 1000000;
+        JsonStore(windowSize, qtConst, "occa", nano);
+        }
+        break;
+    case 9:
+        cuEventCreate(&(starts[0]), CU_EVENT_DEFAULT);
+        cuEventCreate(&(ends[0]), CU_EVENT_DEFAULT);
+        cuEventRecord(starts[0], 0);
+        CheckCudaError(cuLaunchKernel(
+            kens->R9STFT,
+            qtConst, 1, 1,
+            256, 1, 1,
+            0,
+            stream,
+            AllInOne,
+            NULL
+        ));
+        cuEventRecord(ends[0], 0);
+        
+        cuEventSynchronize(ends[0]);
+        {
+        float milli;
+        cuEventElapsedTime(&milli, starts[0], ends[0]);
+        unsigned long long nano = milli * 1000000;
+        JsonStore(windowSize, qtConst, "occa", nano);
+        }
+        break;
     case 10:
         cuEventCreate(&(starts[0]), CU_EVENT_DEFAULT);
         cuEventCreate(&(ends[0]), CU_EVENT_DEFAULT);

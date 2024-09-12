@@ -42,16 +42,16 @@ if(NOT CapnProto_FOUND)
         COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/capnpsetter.sh)
     find_package(CapnProto REQUIRED)
 endif()
-
-find_package(clFFT)
-if(NOT clFFT_FOUND)
-    execute_process(
-    COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/clfftsetter.sh
-    )
-    
-    find_package(clFFT REQUIRED)
+if(NOT WIN32)
+    find_package(clFFT)
+    if(NOT clFFT_FOUND)
+        execute_process(
+        COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/clfftsetter.sh
+        )
+        
+        find_package(clFFT REQUIRED)
+    endif()
 endif()
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 

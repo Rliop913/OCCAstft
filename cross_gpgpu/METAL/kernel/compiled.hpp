@@ -1,4 +1,9 @@
 #define _USE_MATH_DEFINES
+#include <metal_compute>
+
+#include <metal_stdlib>
+
+using namespace metal;
 #include <math.h>
 // #include <math.h>
 
@@ -10,16 +15,16 @@ typedef struct pairs_t {
   unsigned int first, second;
 } pairs;
 
-__device__ inline float window_func(const int index,
-                                    const int window_size) {
+inline float window_func(const int index,
+                         const int window_size) {
   float normalized_index = (float) index;
   normalized_index /= ((float) (window_size - 1));
   float angle = 2.0f * M_PI * normalized_index;
   return 0.5f * (1.0f - cos(angle));
 }
 
-__device__ inline int reverseBits(int num,
-                                  int radix_2_data) {
+inline int reverseBits(int num,
+                       int radix_2_data) {
   int reversed = 0;
   for (int i = 0; i < radix_2_data; ++i) {
     reversed = (reversed << 1) | (num & 1);
@@ -28,22 +33,22 @@ __device__ inline int reverseBits(int num,
   return reversed;
 }
 
-__device__ pairs indexer(const unsigned int firstMaximumID,
-                         const int powed_stage) {
+pairs indexer(const unsigned int firstMaximumID,
+              const int powed_stage) {
   pairs temp;
   temp.first = firstMaximumID + (firstMaximumID & (~(powed_stage - 1)));
   temp.second = temp.first + powed_stage;
   return temp;
 }
 
-__device__ inline int segmentK(const int lsave,
-                               const int segmentSize,
-                               const int HwindowSize) {
+inline int segmentK(const int lsave,
+                    const int segmentSize,
+                    const int HwindowSize) {
   return ((lsave % segmentSize) * HwindowSize) / segmentSize;
 }
 
-__device__ complex twiddle(int k,
-                           int windowSize) {
+complex twiddle(int k,
+                int windowSize) {
   complex temp;
   float angle = -2.0 * M_PI * ((float) k / (float) windowSize);
   temp.real = cos(angle);
@@ -51,57 +56,59 @@ __device__ complex twiddle(int k,
   return temp;
 }
 
-__device__ inline complex cmult(const complex a,
-                                const complex b) {
+inline complex cmult(const complex a,
+                     const complex b) {
   complex result;
   result.real = a.real * b.real - a.imag * b.imag;
   result.imag = a.real * b.imag + a.imag * b.real;
   return result;
 }
 
-__device__ inline float RMult(const float Ra,
-                              const float Rb,
-                              const float Ia,
-                              const float Ib) {
+inline float RMult(const float Ra,
+                   const float Rb,
+                   const float Ia,
+                   const float Ib) {
   return (Ra * Rb) - (Ia * Ib);
 }
 
-__device__ inline float IMult(const float Ra,
-                              const float Rb,
-                              const float Ia,
-                              const float Ib) {
+inline float IMult(const float Ra,
+                   const float Rb,
+                   const float Ia,
+                   const float Ib) {
   return (Ra * Ib) + (Ia * Rb);
 }
 
-__device__ inline complex cadd(complex a,
-                               const complex b) {
+inline complex cadd(complex a,
+                    const complex b) {
   a.real += b.real;
   a.imag += b.imag;
   return a;
 }
 
-__device__ inline complex csub(complex a,
-                               const complex b) {
+inline complex csub(complex a,
+                    const complex b) {
   a.real -= b.real;
   a.imag -= b.imag;
   return a;
 }
 
-__device__ inline float cmod(complex a) {
+inline float cmod(complex a) {
   return (sqrt(
     a.real * a.real + a.imag * a.imag
   ));
 }
 
-extern "C" __global__ __launch_bounds__(256) void _occa_bitReverse_temp_0(complex * buffer,
-                                                                          complex * result,
-                                                                          const unsigned int OFullSize,
-                                                                          const int windowSize,
-                                                                          const int radixData) {
+kernel void _occa_bitReverse_temp_0(device complex * buffer [[buffer(0)]],
+                                    device complex * result [[buffer(1)]],
+                                    constant unsigned int & OFullSize [[buffer(2)]],
+                                    constant int & windowSize [[buffer(3)]],
+                                    constant int & radixData [[buffer(4)]],
+                                    uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                    uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
   {
-    unsigned int o_itr = 0 + (256 * blockIdx.x);
+    unsigned int o_itr = 0 + (256 * _occa_group_position.x);
     {
-      int w_itr = 0 + threadIdx.x;
+      int w_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = (o_itr + w_itr);
       unsigned int Lidx = (Gidx % windowSize);
       unsigned int dst_idx = reverseBits(Lidx, radixData);
@@ -111,15 +118,17 @@ extern "C" __global__ __launch_bounds__(256) void _occa_bitReverse_temp_0(comple
   }
 }
 
-extern "C" __global__ __launch_bounds__(256) void _occa_toPower_0(float * out,
-                                                                  float * Real,
-                                                                  float * Imag,
-                                                                  const unsigned int OFullSize,
-                                                                  const int windowRadix) {
+kernel void _occa_toPower_0(device float * out [[buffer(0)]],
+                            device float * Real [[buffer(1)]],
+                            device float * Imag [[buffer(2)]],
+                            constant unsigned int & OFullSize [[buffer(3)]],
+                            constant int & windowRadix [[buffer(4)]],
+                            uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                            uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
   {
-    unsigned int o_itr = 0 + (256 * blockIdx.x);
+    unsigned int o_itr = 0 + (256 * _occa_group_position.x);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       const unsigned int GID = o_itr + i_itr;
       float R = Real[GID];
       float I = Imag[GID];
@@ -128,17 +137,19 @@ extern "C" __global__ __launch_bounds__(256) void _occa_toPower_0(float * out,
   }
 }
 
-extern "C" __global__ __launch_bounds__(32) void _occa_Stockhpotimized6_0(float * Rout,
-                                                                          float * Iout,
-                                                                          const unsigned int OHalfSize) {
+kernel void _occa_Stockhpotimized6_0(device float * Rout [[buffer(0)]],
+                                     device float * Iout [[buffer(1)]],
+                                     constant unsigned int & OHalfSize [[buffer(2)]],
+                                     uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                     uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  threadgroup float SIBank[64];
+  threadgroup float SRBank[64];
+  threadgroup float FIBank[64];
+  threadgroup float FRBank[64];
   {
-    unsigned int o_itr = 0 + (32 * blockIdx.x);
-    __shared__ float FRBank[64];
-    __shared__ float FIBank[64];
-    __shared__ float SRBank[64];
-    __shared__ float SIBank[64];
+    unsigned int o_itr = 0 + (32 * _occa_group_position.x);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 5;
       unsigned int GlobalIndex = (Gidx & (32 - 1));
@@ -159,9 +170,9 @@ extern "C" __global__ __launch_bounds__(32) void _occa_Stockhpotimized6_0(float 
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 32];
@@ -181,9 +192,9 @@ extern "C" __global__ __launch_bounds__(32) void _occa_Stockhpotimized6_0(float 
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 32];
@@ -203,9 +214,9 @@ extern "C" __global__ __launch_bounds__(32) void _occa_Stockhpotimized6_0(float 
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 32];
@@ -225,9 +236,9 @@ extern "C" __global__ __launch_bounds__(32) void _occa_Stockhpotimized6_0(float 
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 32];
@@ -247,9 +258,9 @@ extern "C" __global__ __launch_bounds__(32) void _occa_Stockhpotimized6_0(float 
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 5;
       float LeftReal = FRBank[i_itr];
@@ -272,17 +283,19 @@ extern "C" __global__ __launch_bounds__(32) void _occa_Stockhpotimized6_0(float 
   }
 }
 
-extern "C" __global__ __launch_bounds__(64) void _occa_Stockhpotimized7_0(float * Rout,
-                                                                          float * Iout,
-                                                                          const unsigned int OHalfSize) {
+kernel void _occa_Stockhpotimized7_0(device float * Rout [[buffer(0)]],
+                                     device float * Iout [[buffer(1)]],
+                                     constant unsigned int & OHalfSize [[buffer(2)]],
+                                     uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                     uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  threadgroup float SIBank[128];
+  threadgroup float SRBank[128];
+  threadgroup float FIBank[128];
+  threadgroup float FRBank[128];
   {
-    unsigned int o_itr = 0 + (64 * blockIdx.x);
-    __shared__ float FRBank[128];
-    __shared__ float FIBank[128];
-    __shared__ float SRBank[128];
-    __shared__ float SIBank[128];
+    unsigned int o_itr = 0 + (64 * _occa_group_position.x);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 6;
       unsigned int GlobalIndex = (Gidx & (64 - 1));
@@ -303,9 +316,9 @@ extern "C" __global__ __launch_bounds__(64) void _occa_Stockhpotimized7_0(float 
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 64];
@@ -325,9 +338,9 @@ extern "C" __global__ __launch_bounds__(64) void _occa_Stockhpotimized7_0(float 
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 64];
@@ -347,9 +360,9 @@ extern "C" __global__ __launch_bounds__(64) void _occa_Stockhpotimized7_0(float 
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 64];
@@ -369,9 +382,9 @@ extern "C" __global__ __launch_bounds__(64) void _occa_Stockhpotimized7_0(float 
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 64];
@@ -391,9 +404,9 @@ extern "C" __global__ __launch_bounds__(64) void _occa_Stockhpotimized7_0(float 
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 64];
@@ -413,9 +426,9 @@ extern "C" __global__ __launch_bounds__(64) void _occa_Stockhpotimized7_0(float 
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 6;
       float LeftReal = SRBank[i_itr];
@@ -438,17 +451,19 @@ extern "C" __global__ __launch_bounds__(64) void _occa_Stockhpotimized7_0(float 
   }
 }
 
-extern "C" __global__ __launch_bounds__(128) void _occa_Stockhpotimized8_0(float * Rout,
-                                                                           float * Iout,
-                                                                           const unsigned int OHalfSize) {
+kernel void _occa_Stockhpotimized8_0(device float * Rout [[buffer(0)]],
+                                     device float * Iout [[buffer(1)]],
+                                     constant unsigned int & OHalfSize [[buffer(2)]],
+                                     uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                     uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  threadgroup float SIBank[256];
+  threadgroup float SRBank[256];
+  threadgroup float FIBank[256];
+  threadgroup float FRBank[256];
   {
-    unsigned int o_itr = 0 + (128 * blockIdx.x);
-    __shared__ float FRBank[256];
-    __shared__ float FIBank[256];
-    __shared__ float SRBank[256];
-    __shared__ float SIBank[256];
+    unsigned int o_itr = 0 + (128 * _occa_group_position.x);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 7;
       unsigned int GlobalIndex = (Gidx & (128 - 1));
@@ -469,9 +484,9 @@ extern "C" __global__ __launch_bounds__(128) void _occa_Stockhpotimized8_0(float
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 128];
@@ -491,9 +506,9 @@ extern "C" __global__ __launch_bounds__(128) void _occa_Stockhpotimized8_0(float
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 128];
@@ -513,9 +528,9 @@ extern "C" __global__ __launch_bounds__(128) void _occa_Stockhpotimized8_0(float
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 128];
@@ -535,9 +550,9 @@ extern "C" __global__ __launch_bounds__(128) void _occa_Stockhpotimized8_0(float
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 128];
@@ -557,9 +572,9 @@ extern "C" __global__ __launch_bounds__(128) void _occa_Stockhpotimized8_0(float
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 128];
@@ -579,9 +594,9 @@ extern "C" __global__ __launch_bounds__(128) void _occa_Stockhpotimized8_0(float
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 128];
@@ -601,9 +616,9 @@ extern "C" __global__ __launch_bounds__(128) void _occa_Stockhpotimized8_0(float
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 7;
       float LeftReal = FRBank[i_itr];
@@ -626,17 +641,19 @@ extern "C" __global__ __launch_bounds__(128) void _occa_Stockhpotimized8_0(float
   }
 }
 
-extern "C" __global__ __launch_bounds__(256) void _occa_Stockhpotimized9_0(float * Rout,
-                                                                           float * Iout,
-                                                                           const unsigned int OHalfSize) {
+kernel void _occa_Stockhpotimized9_0(device float * Rout [[buffer(0)]],
+                                     device float * Iout [[buffer(1)]],
+                                     constant unsigned int & OHalfSize [[buffer(2)]],
+                                     uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                     uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  threadgroup float SIBank[512];
+  threadgroup float SRBank[512];
+  threadgroup float FIBank[512];
+  threadgroup float FRBank[512];
   {
-    unsigned int o_itr = 0 + (256 * blockIdx.x);
-    __shared__ float FRBank[512];
-    __shared__ float FIBank[512];
-    __shared__ float SRBank[512];
-    __shared__ float SIBank[512];
+    unsigned int o_itr = 0 + (256 * _occa_group_position.x);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 8;
       unsigned int GlobalIndex = (Gidx & (256 - 1));
@@ -657,9 +674,9 @@ extern "C" __global__ __launch_bounds__(256) void _occa_Stockhpotimized9_0(float
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 256];
@@ -679,9 +696,9 @@ extern "C" __global__ __launch_bounds__(256) void _occa_Stockhpotimized9_0(float
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 256];
@@ -701,9 +718,9 @@ extern "C" __global__ __launch_bounds__(256) void _occa_Stockhpotimized9_0(float
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 256];
@@ -723,9 +740,9 @@ extern "C" __global__ __launch_bounds__(256) void _occa_Stockhpotimized9_0(float
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 256];
@@ -745,9 +762,9 @@ extern "C" __global__ __launch_bounds__(256) void _occa_Stockhpotimized9_0(float
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 256];
@@ -767,9 +784,9 @@ extern "C" __global__ __launch_bounds__(256) void _occa_Stockhpotimized9_0(float
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 256];
@@ -789,9 +806,9 @@ extern "C" __global__ __launch_bounds__(256) void _occa_Stockhpotimized9_0(float
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 256];
@@ -811,9 +828,9 @@ extern "C" __global__ __launch_bounds__(256) void _occa_Stockhpotimized9_0(float
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 8;
       float LeftReal = SRBank[i_itr];
@@ -836,22 +853,24 @@ extern "C" __global__ __launch_bounds__(256) void _occa_Stockhpotimized9_0(float
   }
 }
 
-extern "C" __global__ __launch_bounds__(512) void _occa_preprocessed_ODW10_STH_STFT_0(float * inData,
-                                                                                      const unsigned int qtConst,
-                                                                                      const unsigned int fullSize,
-                                                                                      const unsigned int OMove,
-                                                                                      const unsigned int OHalfSize,
-                                                                                      float * Rout,
-                                                                                      float * Iout) {
+kernel void _occa_preprocessed_ODW10_STH_STFT_0(device float * inData [[buffer(0)]],
+                                                constant unsigned int & qtConst [[buffer(1)]],
+                                                constant unsigned int & fullSize [[buffer(2)]],
+                                                constant unsigned int & OMove [[buffer(3)]],
+                                                constant unsigned int & OHalfSize [[buffer(4)]],
+                                                device float * Rout [[buffer(5)]],
+                                                device float * Iout [[buffer(6)]],
+                                                uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                                uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  threadgroup float windowAdded[512];
+  threadgroup float SIBank[1024];
+  threadgroup float SRBank[1024];
+  threadgroup float FIBank[1024];
+  threadgroup float FRBank[1024];
   {
-    unsigned int o_itr = 0 + (512 * blockIdx.x);
-    __shared__ float FRBank[1024];
-    __shared__ float FIBank[1024];
-    __shared__ float SRBank[1024];
-    __shared__ float SIBank[1024];
-    __shared__ float windowAdded[512];
+    unsigned int o_itr = 0 + (512 * _occa_group_position.x);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int q_itr = o_itr >> 9;
       unsigned int idx = q_itr * OMove + i_itr;
       unsigned int Ridx = q_itr * OMove + i_itr + 512;
@@ -864,105 +883,105 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocessed_ODW10_STH_S
       FRBank[i_itr + 512] = inData[Ridx] * RisOverflowed;
       FIBank[i_itr + 512] = 0;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float Dpoint = FRBank[i_itr];
       float Apoint = FRBank[i_itr + (512)];
       windowAdded[i_itr] = (Dpoint + Apoint);
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 256;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (256 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 128;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (128 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 64;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (64 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 32;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (32 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 16;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (16 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 8;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (8 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 4;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (4 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 2;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (2 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 1;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (1 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       FRBank[i_itr] -= (windowAdded[0] / 1024.0);
       FRBank[i_itr] *= window_func(i_itr, 1024);
       FRBank[i_itr + 512] -= (windowAdded[0] / 1024.0);
       FRBank[i_itr + 512] *= window_func(i_itr + 512, 1024);
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 512];
@@ -982,9 +1001,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocessed_ODW10_STH_S
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 512];
@@ -1004,9 +1023,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocessed_ODW10_STH_S
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 512];
@@ -1026,9 +1045,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocessed_ODW10_STH_S
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 512];
@@ -1048,9 +1067,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocessed_ODW10_STH_S
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 512];
@@ -1070,9 +1089,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocessed_ODW10_STH_S
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 512];
@@ -1092,9 +1111,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocessed_ODW10_STH_S
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 512];
@@ -1114,9 +1133,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocessed_ODW10_STH_S
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 512];
@@ -1136,9 +1155,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocessed_ODW10_STH_S
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 512];
@@ -1158,9 +1177,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocessed_ODW10_STH_S
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 9;
       float LeftReal = SRBank[i_itr];
@@ -1183,17 +1202,19 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocessed_ODW10_STH_S
   }
 }
 
-extern "C" __global__ __launch_bounds__(512) void _occa_preprocesses_ODW_10_0(float * inData,
-                                                                              const unsigned int qtConst,
-                                                                              const unsigned int fullSize,
-                                                                              const unsigned int OMove,
-                                                                              float * Rout) {
+kernel void _occa_preprocesses_ODW_10_0(device float * inData [[buffer(0)]],
+                                        constant unsigned int & qtConst [[buffer(1)]],
+                                        constant unsigned int & fullSize [[buffer(2)]],
+                                        constant unsigned int & OMove [[buffer(3)]],
+                                        device float * Rout [[buffer(4)]],
+                                        uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                        uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  threadgroup float windowAdded[512];
+  threadgroup float wr[1024];
   {
-    unsigned int o_itr = 0 + blockIdx.x;
-    __shared__ float wr[1024];
-    __shared__ float windowAdded[512];
+    unsigned int o_itr = 0 + _occa_group_position.x;
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int idx = o_itr * OMove + i_itr;
       unsigned int Ridx = o_itr * OMove + i_itr + 512;
       int isOverflowed = (idx < fullSize);
@@ -1203,123 +1224,125 @@ extern "C" __global__ __launch_bounds__(512) void _occa_preprocesses_ODW_10_0(fl
       wr[i_itr] = inData[idx] * isOverflowed;
       wr[i_itr + 512] = inData[Ridx] * RisOverflowed;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 512;
       float Dpoint = wr[i_itr];
       float Apoint = wr[i_itr + (512 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 256;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (256 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 128;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (128 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 64;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (64 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 32;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (32 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 16;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (16 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 8;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (8 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 4;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (4 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 2;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (2 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 1;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (1 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       wr[i_itr] -= (windowAdded[0] / 1024.0);
       wr[i_itr + 512] -= (windowAdded[0] / 1024.0);
       wr[i_itr] *= window_func(i_itr, 1024);
       wr[i_itr + 512] *= window_func(i_itr + 512, 1024);
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       Rout[o_itr * 1024 + i_itr] = wr[i_itr];
       Rout[o_itr * 1024 + i_itr + 512] = wr[i_itr + 512];
     }
   }
 }
 
-extern "C" __global__ __launch_bounds__(512) void _occa_Stockhpotimized10_0(float * Rout,
-                                                                            float * Iout,
-                                                                            const unsigned int OHalfSize) {
+kernel void _occa_Stockhpotimized10_0(device float * Rout [[buffer(0)]],
+                                      device float * Iout [[buffer(1)]],
+                                      constant unsigned int & OHalfSize [[buffer(2)]],
+                                      uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                      uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  threadgroup float SIBank[1024];
+  threadgroup float SRBank[1024];
+  threadgroup float FIBank[1024];
+  threadgroup float FRBank[1024];
   {
-    unsigned int o_itr = 0 + (512 * blockIdx.x);
-    __shared__ float FRBank[1024];
-    __shared__ float FIBank[1024];
-    __shared__ float SRBank[1024];
-    __shared__ float SIBank[1024];
+    unsigned int o_itr = 0 + (512 * _occa_group_position.x);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 9;
       unsigned int GlobalIndex = (Gidx & (512 - 1));
@@ -1340,9 +1363,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_Stockhpotimized10_0(floa
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 512];
@@ -1362,9 +1385,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_Stockhpotimized10_0(floa
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 512];
@@ -1384,9 +1407,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_Stockhpotimized10_0(floa
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 512];
@@ -1406,9 +1429,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_Stockhpotimized10_0(floa
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 512];
@@ -1428,9 +1451,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_Stockhpotimized10_0(floa
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 512];
@@ -1450,9 +1473,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_Stockhpotimized10_0(floa
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 512];
@@ -1472,9 +1495,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_Stockhpotimized10_0(floa
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 512];
@@ -1494,9 +1517,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_Stockhpotimized10_0(floa
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 512];
@@ -1516,9 +1539,9 @@ extern "C" __global__ __launch_bounds__(512) void _occa_Stockhpotimized10_0(floa
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 9;
       float LeftReal = FRBank[i_itr];
@@ -1625,17 +1648,19 @@ extern "C" __global__ __launch_bounds__(512) void _occa_Stockhpotimized10_0(floa
 //     }
 // }
 
-extern "C" __global__ __launch_bounds__(1024) void _occa_preprocesses_ODW_11_0(float * inData,
-                                                                               const unsigned int qtConst,
-                                                                               const unsigned int fullSize,
-                                                                               const unsigned int OMove,
-                                                                               float * Rout) {
+kernel void _occa_preprocesses_ODW_11_0(device float * inData [[buffer(0)]],
+                                        constant unsigned int & qtConst [[buffer(1)]],
+                                        constant unsigned int & fullSize [[buffer(2)]],
+                                        constant unsigned int & OMove [[buffer(3)]],
+                                        device float * Rout [[buffer(4)]],
+                                        uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                        uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  threadgroup float windowAdded[1024];
+  threadgroup float wr[2048];
   {
-    unsigned int o_itr = 0 + blockIdx.x;
-    __shared__ float wr[2048];
-    __shared__ float windowAdded[1024];
+    unsigned int o_itr = 0 + _occa_group_position.x;
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int idx = o_itr * OMove + i_itr;
       unsigned int Ridx = o_itr * OMove + i_itr + 1024;
       int isOverflowed = (idx < fullSize);
@@ -1647,131 +1672,133 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocesses_ODW_11_0(f
       wr[i_itr + 1024] = inData[Ridx] * RisOverflowed;
       wr[i_itr + 1024] = 0;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float Dpoint = wr[i_itr];
       float Apoint = wr[i_itr + (1024)];
       windowAdded[i_itr] = (Dpoint + Apoint);
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 512;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (512 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 256;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (256 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 128;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (128 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 64;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (64 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 32;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (32 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 16;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (16 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 8;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (8 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 4;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (4 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 2;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (2 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 1;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (1 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       wr[i_itr] -= (windowAdded[0] / 2048.0);
       wr[i_itr + 1024] -= (windowAdded[0] / 2048.0);
       wr[i_itr] *= window_func(i_itr, 2048);
       wr[i_itr + 1024] *= window_func(i_itr + 1024, 2048);
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       Rout[o_itr * 2048 + i_itr] = wr[i_itr];
       Rout[o_itr * 2048 + i_itr + 1024] = wr[i_itr + 1024];
     }
   }
 }
 
-extern "C" __global__ __launch_bounds__(1024) void _occa_Stockhpotimized11_0(float * Rout,
-                                                                             float * Iout,
-                                                                             const unsigned int OHalfSize) {
+kernel void _occa_Stockhpotimized11_0(device float * Rout [[buffer(0)]],
+                                      device float * Iout [[buffer(1)]],
+                                      constant unsigned int & OHalfSize [[buffer(2)]],
+                                      uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                      uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  threadgroup float SIBank[2048];
+  threadgroup float SRBank[2048];
+  threadgroup float FIBank[2048];
+  threadgroup float FRBank[2048];
   {
-    unsigned int o_itr = 0 + (1024 * blockIdx.x);
-    __shared__ float FRBank[2048];
-    __shared__ float FIBank[2048];
-    __shared__ float SRBank[2048];
-    __shared__ float SIBank[2048];
+    unsigned int o_itr = 0 + (1024 * _occa_group_position.x);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 10;
       unsigned int GlobalIndex = (Gidx & (1024 - 1));
@@ -1792,9 +1819,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_Stockhpotimized11_0(flo
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 1024];
@@ -1814,9 +1841,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_Stockhpotimized11_0(flo
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 1024];
@@ -1836,9 +1863,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_Stockhpotimized11_0(flo
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 1024];
@@ -1858,9 +1885,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_Stockhpotimized11_0(flo
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 1024];
@@ -1880,9 +1907,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_Stockhpotimized11_0(flo
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 1024];
@@ -1902,9 +1929,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_Stockhpotimized11_0(flo
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 1024];
@@ -1924,9 +1951,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_Stockhpotimized11_0(flo
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 1024];
@@ -1946,9 +1973,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_Stockhpotimized11_0(flo
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 1024];
@@ -1968,9 +1995,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_Stockhpotimized11_0(flo
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 1024];
@@ -1990,9 +2017,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_Stockhpotimized11_0(flo
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 10;
       float LeftReal = SRBank[i_itr];
@@ -2015,22 +2042,24 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_Stockhpotimized11_0(flo
   }
 }
 
-extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_STFT_0(float * inData,
-                                                                                       const unsigned int qtConst,
-                                                                                       const unsigned int fullSize,
-                                                                                       const unsigned int OMove,
-                                                                                       const unsigned int OHalfSize,
-                                                                                       float * Rout,
-                                                                                       float * Iout) {
+kernel void _occa_preprocessed_ODW11_STH_STFT_0(device float * inData [[buffer(0)]],
+                                                constant unsigned int & qtConst [[buffer(1)]],
+                                                constant unsigned int & fullSize [[buffer(2)]],
+                                                constant unsigned int & OMove [[buffer(3)]],
+                                                constant unsigned int & OHalfSize [[buffer(4)]],
+                                                device float * Rout [[buffer(5)]],
+                                                device float * Iout [[buffer(6)]],
+                                                uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                                uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  threadgroup float windowAdded[1024];
+  threadgroup float SIBank[2048];
+  threadgroup float SRBank[2048];
+  threadgroup float FIBank[2048];
+  threadgroup float FRBank[2048];
   {
-    unsigned int o_itr = 0 + (1024 * blockIdx.x);
-    __shared__ float FRBank[2048];
-    __shared__ float FIBank[2048];
-    __shared__ float SRBank[2048];
-    __shared__ float SIBank[2048];
-    __shared__ float windowAdded[1024];
+    unsigned int o_itr = 0 + (1024 * _occa_group_position.x);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int q_itr = o_itr >> 10;
       unsigned int idx = q_itr * OMove + i_itr;
       unsigned int Ridx = q_itr * OMove + i_itr + 1024;
@@ -2043,114 +2072,114 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_
       FRBank[i_itr + 1024] = inData[Ridx] * RisOverflowed;
       FIBank[i_itr + 1024] = 0;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float Dpoint = FRBank[i_itr];
       float Apoint = FRBank[i_itr + (1024)];
       windowAdded[i_itr] = (Dpoint + Apoint);
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 512;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (512 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 256;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (256 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 128;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (128 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 64;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (64 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 32;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (32 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 16;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (16 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 8;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (8 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 4;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (4 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 2;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (2 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int inRange = i_itr < 1;
       float Dpoint = windowAdded[i_itr];
       float Apoint = windowAdded[i_itr + (1 * inRange)];
       windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       FRBank[i_itr] -= (windowAdded[0] / 2048.0);
       FRBank[i_itr] *= window_func(i_itr, 2048);
       FRBank[i_itr + 1024] -= (windowAdded[0] / 2048.0);
       FRBank[i_itr + 1024] *= window_func(i_itr + 1024, 2048);
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 1024];
@@ -2170,9 +2199,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 1024];
@@ -2192,9 +2221,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 1024];
@@ -2214,9 +2243,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 1024];
@@ -2236,9 +2265,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 1024];
@@ -2258,9 +2287,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 1024];
@@ -2280,9 +2309,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 1024];
@@ -2302,9 +2331,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 1024];
@@ -2324,9 +2353,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = FRBank[i_itr];
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 1024];
@@ -2346,9 +2375,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_
       SIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       float LeftReal = SRBank[i_itr];
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 1024];
@@ -2368,9 +2397,9 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_
       FIBank[RightStoreIdx] = LeftImag - ITwid;
       ;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     {
-      int i_itr = 0 + threadIdx.x;
+      int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       unsigned int GlobalItr = Gidx >> 10;
       float LeftReal = FRBank[i_itr];
@@ -2393,16 +2422,18 @@ extern "C" __global__ __launch_bounds__(1024) void _occa_preprocessed_ODW11_STH_
   }
 }
 
-extern "C" __global__ __launch_bounds__(64) void _occa_Overlap_Common_0(float * inData,
-                                                                        const unsigned int OFullSize,
-                                                                        const unsigned int fullSize,
-                                                                        const unsigned int windowRadix,
-                                                                        const unsigned int OMove,
-                                                                        float * outReal) {
+kernel void _occa_Overlap_Common_0(device float * inData [[buffer(0)]],
+                                   constant unsigned int & OFullSize [[buffer(1)]],
+                                   constant unsigned int & fullSize [[buffer(2)]],
+                                   constant unsigned int & windowRadix [[buffer(3)]],
+                                   constant unsigned int & OMove [[buffer(4)]],
+                                   device float * outReal [[buffer(5)]],
+                                   uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                   uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
   {
-    unsigned int o_itr = 0 + (64 * blockIdx.x);
+    unsigned int o_itr = 0 + (64 * _occa_group_position.x);
     {
-      unsigned int i_itr = 0 + threadIdx.x;
+      unsigned int i_itr = 0 + _occa_thread_position.x;
       const unsigned int overlapIdx = o_itr + i_itr;
       const unsigned int windowIdx = (overlapIdx >> windowRadix);
       const unsigned int windowLocalIdx = overlapIdx & ((1 << windowRadix) - 1);
@@ -2413,75 +2444,81 @@ extern "C" __global__ __launch_bounds__(64) void _occa_Overlap_Common_0(float * 
   }
 }
 
-extern "C" __global__ __launch_bounds__(64) void _occa_Window_Common_0(float * outReal,
-                                                                       const unsigned int OFullSize,
-                                                                       const unsigned int windowRadix) {
+kernel void _occa_Window_Common_0(device float * outReal [[buffer(0)]],
+                                  constant unsigned int & OFullSize [[buffer(1)]],
+                                  constant unsigned int & windowRadix [[buffer(2)]],
+                                  uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                  uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
   {
-    unsigned int o_itr = 0 + (64 * blockIdx.x);
+    unsigned int o_itr = 0 + (64 * _occa_group_position.x);
     {
-      unsigned int i_itr = 0 + threadIdx.x;
+      unsigned int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
       outReal[Gidx] *= window_func((Gidx & (windowRadix - 1)), 1 << windowRadix);
     }
   }
 }
 
-extern "C" __global__ __launch_bounds__(64) void _occa_DCRemove_Common_0(float * outReal,
-                                                                         const unsigned int OFullSize,
-                                                                         const unsigned int windowSize) {
+kernel void _occa_DCRemove_Common_0(device float * outReal [[buffer(0)]],
+                                    constant unsigned int & OFullSize [[buffer(1)]],
+                                    constant unsigned int & windowSize [[buffer(2)]],
+                                    uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                    uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  threadgroup float added[128];
   {
-    unsigned int o_itr = 0 + (windowSize * blockIdx.x);
-    __shared__ float added[128];
+    unsigned int o_itr = 0 + (windowSize * _occa_group_position.x);
     //for removing DC
     {
-      unsigned int inititr = 0 + threadIdx.x;
+      unsigned int inititr = 0 + _occa_thread_position.x;
       added[inititr] = 0;
     }
-    __syncthreads();
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     for (unsigned int windowItr = 0; windowItr < windowSize; windowItr += 64) {
       {
-        unsigned int i_itr = 0 + threadIdx.x;
+        unsigned int i_itr = 0 + _occa_thread_position.x;
         added[i_itr + 64] = outReal[o_itr + windowItr + i_itr];
       }
-      __syncthreads();
+      threadgroup_barrier(mem_flags::mem_threadgroup);
       {
-        unsigned int i_itr = 0 + threadIdx.x;
+        unsigned int i_itr = 0 + _occa_thread_position.x;
         added[i_itr] += added[i_itr + 64];
       }
-      __syncthreads();
+      threadgroup_barrier(mem_flags::mem_threadgroup);
     }
     for (unsigned int segment = 32; segment > 0; segment >>= 1) {
       {
-        unsigned int i_itr = 0 + threadIdx.x;
+        unsigned int i_itr = 0 + _occa_thread_position.x;
         unsigned int inSegment = i_itr < segment;
         float left = added[i_itr];
         float right = added[i_itr + segment];
         added[i_itr] = (left + right) * inSegment;
       }
-      __syncthreads();
+      threadgroup_barrier(mem_flags::mem_threadgroup);
     }
     for (unsigned int windowItr = 0; windowItr < windowSize; windowItr += 64) {
       {
-        unsigned int i_itr = 0 + threadIdx.x;
+        unsigned int i_itr = 0 + _occa_thread_position.x;
         outReal[o_itr + windowItr + i_itr] -= (added[0] / (float) windowSize);
       }
-      __syncthreads();
+      threadgroup_barrier(mem_flags::mem_threadgroup);
     }
   }
 }
 
-extern "C" __global__ __launch_bounds__(256) void _occa_StockHamDITCommon_0(float * inReal,
-                                                                            float * inImag,
-                                                                            float * outReal,
-                                                                            float * outImag,
-                                                                            const unsigned int HwindowSize,
-                                                                            const unsigned int stageRadix,
-                                                                            const unsigned int OHalfSize,
-                                                                            const unsigned int radixData) {
+kernel void _occa_StockHamDITCommon_0(device float * inReal [[buffer(0)]],
+                                      device float * inImag [[buffer(1)]],
+                                      device float * outReal [[buffer(2)]],
+                                      device float * outImag [[buffer(3)]],
+                                      constant unsigned int & HwindowSize [[buffer(4)]],
+                                      constant unsigned int & stageRadix [[buffer(5)]],
+                                      constant unsigned int & OHalfSize [[buffer(6)]],
+                                      constant unsigned int & radixData [[buffer(7)]],
+                                      uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                      uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
   {
-    unsigned int o_itr = 0 + (256 * blockIdx.x);
+    unsigned int o_itr = 0 + (256 * _occa_group_position.x);
     {
-      unsigned int i_itr = 0 + threadIdx.x;
+      unsigned int i_itr = 0 + _occa_thread_position.x;
       unsigned int OIdx = o_itr + i_itr;
       unsigned int FwindowSize = HwindowSize << 1;
       unsigned int GlobalItr = OIdx >> (radixData - 1);

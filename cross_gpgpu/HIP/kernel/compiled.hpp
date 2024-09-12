@@ -1,4 +1,5 @@
 #define _USE_MATH_DEFINES
+#include <hip/hip_runtime.h>
 #include <math.h>
 // #include <math.h>
 

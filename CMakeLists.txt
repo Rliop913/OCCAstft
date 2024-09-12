@@ -75,7 +75,7 @@ endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/Serial)
 
-if(clFFT_FOUND)
+if(clFFT_FOUND AND CUDA_FOUND)
 add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/testRunner)
 add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/occaprofileRunner)
 endif()
@@ -137,3 +137,13 @@ target_link_libraries(TESTER PRIVATE ZLIB::ZLIB)
 
 target_include_directories(STFTMain PRIVATE ${ixws_SOURCE_DIR}/ixwebsocket)
 target_include_directories(TESTER PRIVATE ${ixws_SOURCE_DIR}/ixwebsocket)
+
+# find_package(OCCA REQUIRED)
+# add_executable(OCCATEST 
+# ${CMAKE_SOURCE_DIR}/src/occa.cpp
+# ${CMAKE_SOURCE_DIR}/miniaudio/miniaudio.c
+# )
+# target_include_directories(OCCATEST PRIVATE ${CMAKE_SOURCE_DIR}/include)
+# target_include_directories(OCCATEST PRIVATE ${CMAKE_SOURCE_DIR}/miniaudio)
+
+# target_link_libraries(OCCATEST PRIVATE OCCA::libocca)

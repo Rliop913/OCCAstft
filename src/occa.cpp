@@ -51,8 +51,6 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
 
         }
     }
-    // ma_decoder *ddec = (ma_decoder*)pDevice->pUserData;
-    // ma_decoder_read_pcm_frames(ddec, pOutput, frameCount, NULL);
 }
 
 int main(int, char**){
@@ -77,17 +75,13 @@ int main(int, char**){
     std::cout<<ma_decoder_read_pcm_frames(&dec, hostBuffer, readFrame, NULL) <<std::endl;
     
     
-    occa::dtype_t complex;
-    complex.registerType();
-    complex.addField("real", occa::dtype::float_);
-    complex.addField("imag", occa::dtype::float_);
     
     constexpr int qt = toQuot(readFrame, overlap, windowSize);
     constexpr unsigned int OFullSize = qt * windowSize;
     constexpr unsigned int OHalfSize = OFullSize / 2;
-    occa::memory dev_in = dev.malloc<float>(readFrame);
-    occa::memory dev_out = dev.malloc<float>(OHalfSize);
-    occa::memory stkout = dev.malloc<float>(OHalfSize);
+    occa::memory dataIn = dev.malloc<float>(readFrame);
+    occa::memory dataOut = dev.malloc<float>(OHalfSize);
+    
     
     occa::memory FReal = dev.malloc<float>(OFullSize);
     occa::memory FImag = dev.malloc<float>(OFullSize);
@@ -96,171 +90,157 @@ int main(int, char**){
     
     occa::memory Rout = dev.malloc<float>(OFullSize);
     occa::memory Iout = dev.malloc<float>(OFullSize);
-
-    occa::memory compareBuffer = dev.malloc(OFullSize, complex);
-    occa::memory compareOut = dev.malloc(OFullSize, complex);
-
-    occa::memory compareAwindowOut = dev.malloc<float>(OFullSize);    
-    std::vector<float> ftempf(OFullSize);
     
-    dev_in.copyFrom(hostBuffer);
-    FImag.copyFrom(ftempf.data());
-    Iout.copyFrom(ftempf.data());
+    dataIn.copyFrom(hostBuffer);
     
     occa::kernel overlap_common = dev.buildKernel("../include/RadixCommon.okl", "Overlap_Common", prop);
     
-    occa::kernel overlap_N_window = dev.buildKernel("../include/kernel.okl", "overlap_N_window", prop);
-    
     occa::kernel Butterfly_Common = dev.buildKernel("../include/RadixCommon.okl", "StockHamDITCommon", prop);
-    occa::kernel Butterfly = dev.buildKernel("../include/kernel.okl", "Butterfly", prop);
     occa::kernel bitReverseTemp = dev.buildKernel("../include/kernel.okl", "bitReverse_temp", prop);
     
-    occa::kernel toPower = dev.buildKernel("../include/kernel.okl", "toPower", prop);
     
-    occa::kernel AIO = dev.buildKernel("../include/Radix11.okl", "preprocessed_ODW11_STH_STFT", prop);
-    occa::kernel APP = dev.buildKernel("../include/Radix10.okl", "preprocesses_ODW_10", prop);
-    
-    overlap_common( dev_in, 
+    occa::kernel R6 = dev.buildKernel("../include/Radix6.okl", "Stockhpotimized6", prop);
+    occa::kernel R7 = dev.buildKernel("../include/Radix7.okl", "Stockhpotimized7", prop);
+    occa::kernel R8 = dev.buildKernel("../include/Radix8.okl", "Stockhpotimized8", prop);
+    occa::kernel R9 = dev.buildKernel("../include/Radix9.okl", "Stockhpotimized9", prop);
+    occa::kernel R10 = dev.buildKernel("../include/Radix10.okl", "Stockhpotimized10", prop);
+    occa::kernel R11 = dev.buildKernel("../include/Radix11.okl", "Stockhpotimized11", prop);
+    occa::kernel R10AIO=dev.buildKernel("../include/Radix10.okl", "preprocessed_ODW10_STH_STFT", prop);
+    occa::kernel R11AIO=dev.buildKernel("../include/Radix11.okl", "preprocessed_ODW11_STH_STFT", prop);
+    overlap_common( dataIn, 
                     OFullSize, 
                     readFrame, 
                     windowRadix, 
                     (unsigned int)(windowSize * (1.0f - overlap)), 
                     FReal
                     );
-    APP
+    overlap_common( dataIn, 
+                    OFullSize, 
+                    readFrame, 
+                    windowRadix, 
+                    (unsigned int)(windowSize * (1.0f - overlap)), 
+                    Rout
+                    );
+                    
+    R11
     (
-        dev_in,
-        qt,
-        readFrame,
-        (unsigned int)(windowSize * (1.0f - overlap)),
-        compareAwindowOut
+        Rout,
+        Iout,
+        OHalfSize
     );
-    std::vector<float> Aout(OFullSize);
-    std::vector<float> Bout(OFullSize);
-    FReal.copyTo(Aout.data());
-    compareAwindowOut.copyTo(Bout.data());
+    // R11AIO
+    // (
+    //     dataIn,
+    //     qt,
+    //     readFrame,
+    //     (unsigned int)(windowSize * (1.0f - overlap)),
+    //     OHalfSize,
+    //     Rout,
+    //     Iout
+    // );
+    R10
+    (
+        FReal,
+        FImag,
+        OHalfSize
+    );
+    Butterfly_Common
+    (
+        FReal,
+        FImag,
+        SReal,
+        SImag,
+        (windowSize / 2),
+        10,
+        OHalfSize,
+        windowRadix
+    );
+    // for(unsigned int stage = 0; stage < windowRadix; ++stage)
+    // {
+    //     if(stage % 2 == 0)
+    //     {
+    //         Butterfly_Common
+    //         (
+    //             FReal,
+    //             FImag,
+    //             SReal,
+    //             SImag,
+    //             (windowSize / 2),
+    //             stage,
+    //             OHalfSize,
+    //             windowRadix
+    //         );
+    //         std::cout<<"touched"<<std::endl;
+    //         getchar();
+    //     }
+    //     else
+    //     {
+    //         Butterfly_Common
+    //         (
+    //             SReal,
+    //             SImag,
+    //             FReal,
+    //             FImag,
+    //             (windowSize / 2),
+    //             stage,
+    //             OHalfSize,
+    //             windowRadix
+    //         );
+    //     }
+
+    // }
+    std::vector<float> fixedOut(OFullSize);
+    std::vector<float> commonOut(OFullSize);
+    
+    Rout.copyTo(fixedOut.data());
+    if(windowRadix % 2 == 0)
+    {
+        FReal.copyTo(commonOut.data());
+    }
+    else
+    {
+        SReal.copyTo(commonOut.data());
+    }
     for(unsigned int i =0; i< OFullSize; ++i)
         {
-            if(Aout[i] != Bout[i])
+            if(fixedOut[i] != commonOut[i])
             {
-                std::cout << "overlapDiff: " << Aout[i] - Bout[i] <<std::endl;
+                std::cout << "DIFF: " << fixedOut[i] - commonOut[i] <<std::endl;
             }
         }
-    // for(int stageRadix = 0; stageRadix < windowRadix; stageRadix+=2)
-    // {
-    //     Butterfly_Common
-    //     (   
-    //         FReal,
-    //         FImag,
-    //         SReal,
-    //         SImag,
-    //         windowSize / 2,
-    //         stageRadix,
-    //         OHalfSize,
-    //         windowRadix
-    //     );
-    //     Butterfly_Common
-    //     (   
-    //         SReal,
-    //         SImag,
-    //         FReal,
-    //         FImag,
-    //         windowSize / 2,
-    //         (stageRadix + 1),
-    //         OHalfSize,
-    //         windowRadix
-    //     );
-    // }
     
     
-    float * Ropti = new float[OFullSize];
-    float * Iopti = new float[OFullSize];
+    float * Rfixed = new float[OFullSize];
+    float * Ifixed = new float[OFullSize];
 
-    float * ARopti = new float[OFullSize];
-    float * AIopti = new float[OFullSize];
+    float * Rcommon = new float[OFullSize];
+    float * Icommon = new float[OFullSize];
     
     auto compareHBuf = new occacplx[OFullSize];
-
-    AIO
-    (
-        dev_in,
-        qt,
-        readFrame,
-        (unsigned int)(windowSize * (1.0f - overlap)),
-        OHalfSize,
-        Rout,
-        Iout
-    );
-
-    // sthm11(stkbuf, OHalfSize);
-    overlap_N_window
-    (
-        dev_in, 
-        compareBuffer,
-        readFrame,
-        OFullSize,
-        windowSize,
-        (unsigned int)(windowSize * (1.0f - overlap))
-    );
-    // AIO(dev_in, qt, readFrame, (unsigned int)(windowSize * (1.0f - overlap)), OHalfSize, stkbuf);
-    
-    // Stockopt(stkbuf, OHalfSize);
-    // StockHam(stkbuf, OHalfSize);
-    // optimizedDIFBUTTERFLY(stkbuf, OHalfSize);
-    // bitReverseTemp(dev_buffer, stkbufout, OFullSize, windowSize, windowRadix);
-    // Butterfly(stkbufout, windowSize, 1, OHalfSize, windowRadix);
-    // Butterfly(stkbufout, windowSize, 2, OHalfSize, windowRadix);
-    // Butterfly(stkbufout, windowSize, 4, OHalfSize, windowRadix);
-    // Butterfly(stkbufout, windowSize, 8, OHalfSize, windowRadix);
-    // Butterfly(stkbufout, windowSize, 16, OHalfSize, windowRadix);
-    // Butterfly(stkbufout, windowSize, 32, OHalfSize, windowRadix);
-    // Butterfly(stkbufout, windowSize, 64, OHalfSize, windowRadix);
-    // Butterfly(stkbufout, windowSize, 128, OHalfSize, windowRadix);
-    // Butterfly(stkbufout, windowSize, 256, OHalfSize, windowRadix);
-    // Butterfly(stkbufout, windowSize, 512, OHalfSize, windowRadix);
-    // Butterfly(dev_buffer, windowSize, 16384, OHalfSize, windowRadix);
-    // Butterfly(dev_buffer, windowSize, 8192, OHalfSize, windowRadix);
-    // Butterfly(dev_buffer, windowSize, 4096, OHalfSize, windowRadix);
-    // Butterfly(dev_buffer, windowSize, 2048, OHalfSize, windowRadix);
-    // Butterfly(dev_buffer, windowSize, 1024, OHalfSize, windowRadix);
-    Butterfly(compareBuffer, windowSize, 512, OHalfSize, windowRadix);
-    Butterfly(compareBuffer, windowSize, 256, OHalfSize, windowRadix);
-    Butterfly(compareBuffer, windowSize, 128, OHalfSize, windowRadix);
-    Butterfly(compareBuffer, windowSize, 64, OHalfSize, windowRadix);
-    Butterfly(compareBuffer, windowSize, 32, OHalfSize, windowRadix);
-    Butterfly(compareBuffer, windowSize, 16, OHalfSize, windowRadix);
-    Butterfly(compareBuffer, windowSize, 8, OHalfSize, windowRadix);
-    Butterfly(compareBuffer, windowSize, 4, OHalfSize, windowRadix);
-    Butterfly(compareBuffer, windowSize, 2, OHalfSize, windowRadix);
-    Butterfly(compareBuffer, windowSize, 1, OHalfSize, windowRadix);
-    bitReverseTemp(compareBuffer, compareOut, OFullSize, windowSize, windowRadix);
-    // bitReverseTemp(stkbuf, stkbufout, OFullSize, windowSize, windowRadix);
     dev.finish();
-    // stkbufout.copyTo(opti);
-    FReal.copyTo(Ropti);
-    FImag.copyTo(Iopti);
-    Rout.copyTo(ARopti);
-    Iout.copyTo(AIopti);
     
-    compareOut.copyTo(compareHBuf);
-    
-    for(unsigned int i =0; i< OFullSize; ++i)
+    Rout.copyTo(Rfixed);
+    Iout.copyTo(Ifixed);
+    if(windowRadix % 2 == 0)
     {
-        if(ARopti[i] != compareHBuf[i].real || AIopti[i] != compareHBuf[i].imag)
-        {
-            std::cout <<i << " DIFF: " << compareHBuf[i].real << " AND " << ARopti[i] <<std::endl;
-        }
+        FReal.copyTo(Rcommon);
+        FImag.copyTo(Icommon);
+    }
+    else
+    {
+        SReal.copyTo(Rcommon);
+        SImag.copyTo(Icommon);
     }
     
-    // stkbufout.copyTo(Butterout);
+    
     std::vector<float> mus_data;
     for(int i = 0;i<qt;++i)
     {
         ComplexVector cv(windowSize);
         for(int j=0;j<windowSize;++j)
         {
-            cv[j].real(ARopti[i*windowSize + j]);
-            cv[j].imag(AIopti[i*windowSize + j]);
+            cv[j].real(Rcommon[i*windowSize + j]);
+            cv[j].imag(Icommon[i*windowSize + j]);
         }
         auto result = ifft(cv);
         
@@ -271,11 +251,6 @@ int main(int, char**){
         }
         
     }
-    for(int i = 0;i<OFullSize;++i)
-    {
-        // mus_data[i] = result[i].real();
-        //std::cout<<"IDX: "<<i<<" DATA: "<<mus_data[i]<<std::endl;
-    }
 
     ma_device_config devconf = ma_device_config_init(ma_device_type_playback);
     ma_device mdevice;
@@ -283,35 +258,10 @@ int main(int, char**){
     devconf.sampleRate = 48000;
     devconf.playback.format=ma_format_f32;
     devconf.dataCallback = data_callback;
-    //devconf.pUserData = &dec;
+    
     devconf.pUserData = mus_data.data();
     ma_device_init(NULL, &devconf, &mdevice);
     ma_device_start(&mdevice);
 
     getchar();
-
-
-    // return 0;
-    // toPower(dev_buffer, dev_out, OHalfSize, windowRadix);
-    // ken(    dev_in, 
-    //         dev_out,
-    //         dev_buffer,
-    //         readFrame,
-    //         1024,
-    // //         qt,
-    // //         512,
-    // //         10);
-    // delete[] hostBuffer;
-    // float* output = new float[OHalfSize];
-    // dev_out.copyTo(output);
-    
-    // for(int i=0;i<10;++i)//csv out
-    // {
-    //     for(int j=0;j<windowSize/2;++j)
-    //     {
-    //         std::cout<<output[i*windowSize/2+j]<<",";
-    //     }
-    //     std::cout<<"0"<<std::endl;
-    // }
-    // delete[] output;
 }

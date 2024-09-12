@@ -19,10 +19,22 @@ occa translate -D ROOTISBASH -m opencl ./include/RadixALL.okl \
     occa translate -D __NEED_PI -D ROOTISBASH -m serial ./include/RadixALL.okl 
 }> ./cross_gpgpu/Serial/kernel/compiled.hpp
 
+{
+    echo "#define _USE_MATH_DEFINES";
+    occa translate -D __NEED_PI -D ROOTISBASH -m hip ./include/RadixALL.okl 
+}> ./cross_gpgpu/HIP/kernel/compiled.hpp
+
+{
+    echo "#define _USE_MATH_DEFINES";
+    occa translate -D __NEED_PI -D ROOTISBASH -m metal ./include/RadixALL.okl 
+}> ./cross_gpgpu/METAL/kernel/compiled.hpp
+
 
 nvcc -ptx ./cross_gpgpu/CUDA/kernel/radixALL.cu -o ./cross_gpgpu/CUDA/kernel/radixALL.ptx
 
 python CL_Embedder.py
+
+
 printf "#pragma once\nclass okl_embed {\n public:\n const char* ptx_code = \n R\"(" | cat - ./cross_gpgpu/CUDA/kernel/radixALL.ptx > ./cross_gpgpu/CUDA/kernel/temp.txt
 
 {

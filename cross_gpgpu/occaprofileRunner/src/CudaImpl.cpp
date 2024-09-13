@@ -1,14 +1,42 @@
 #include "RunnerInterface.hpp"
-#include "okl_embed_52.hpp"
-#include "okl_embed_61.hpp"
-#include "okl_embed_70.hpp"
-#include "okl_embed_75.hpp"
-#include "okl_embed_80.hpp"
-#include "okl_embed_90.hpp"
+
+#include "okl_embed_52_11_6.hpp"
+#include "okl_embed_52_12_1.hpp"
+#include "okl_embed_52_12_3.hpp"
+
+#include "okl_embed_61_11_6.hpp"
+#include "okl_embed_61_12_1.hpp"
+#include "okl_embed_61_12_3.hpp"
+
+#include "okl_embed_70_11_6.hpp"
+#include "okl_embed_70_12_1.hpp"
+#include "okl_embed_70_12_3.hpp"
+
+#include "okl_embed_75_11_6.hpp"
+#include "okl_embed_75_12_1.hpp"
+#include "okl_embed_75_12_3.hpp"
+
+#include "okl_embed_80_11_6.hpp"
+#include "okl_embed_80_12_1.hpp"
+#include "okl_embed_80_12_3.hpp"
+
+
+#include "okl_embed_90_12_1.hpp"
+#include "okl_embed_90_12_3.hpp"
 
 #include <cuda.h>
 #include "nlohmann/json.hpp"
 #include <fstream>
+
+#define LOAD_PTX(buildName, IF_Fail_DO)\
+    buildName k123;\
+    if(cuModuleLoadData(&(env->RadixAll), k123.ptx_code) != CUDA_SUCCESS)\
+    {\
+        IF_Fail_DO;\
+    }
+
+
+
 int counter = 0;
 void CheckCudaError(CUresult err) {
     ++counter;
@@ -55,51 +83,44 @@ Runner::InitEnv()
     cuDeviceGetAttribute(&major, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, env->device);
     cuDeviceGetAttribute(&minor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, env->device);
     std::cout << "major: " << major << "minor: " << minor << std::endl;
-    const char* ptx;
+    
     switch (major)
     {
     case 5:
         {
-            okl_embed52 k52;
-            ptx = k52.ptx_code;
+            LOAD_PTX(okl_embed52_12_3, LOAD_PTX(okl_embed52_12_1, LOAD_PTX(okl_embed52_11_6, ;)));
         }
         break;
     case 6:
         {
-            okl_embed61 k61;
-            ptx = k61.ptx_code;
+            LOAD_PTX(okl_embed61_12_3, LOAD_PTX(okl_embed61_12_1, LOAD_PTX(okl_embed61_11_6, ;)));
         }
         break;
     case 7:
         if(minor >= 5)
         {
-            okl_embed75 k75;
-            ptx = k75.ptx_code;
+            LOAD_PTX(okl_embed75_12_3, LOAD_PTX(okl_embed75_12_1, LOAD_PTX(okl_embed75_11_6, ;)));
         }
         else
         {
-            okl_embed70 k70;
-            ptx = k70.ptx_code;
+            LOAD_PTX(okl_embed70_12_3, LOAD_PTX(okl_embed70_12_1, LOAD_PTX(okl_embed70_11_6, ;)));
         }
         break;
     case 8:
         {
-            okl_embed80 k80;
-            ptx = k80.ptx_code;
+            LOAD_PTX(okl_embed80_12_3, LOAD_PTX(okl_embed80_12_1, LOAD_PTX(okl_embed80_11_6, ;)));
         }
         break;
 
     case 9:
         {
-            okl_embed90 k90;
-            ptx = k90.ptx_code;
+            LOAD_PTX(okl_embed90_12_3, LOAD_PTX(okl_embed90_12_1, ;));
         }
         break;
     default:
         break;
     }
     
-    CheckCudaError(cuModuleLoadData(&(env->RadixAll), ptx));
     kens = new Gcodes;
 }
 

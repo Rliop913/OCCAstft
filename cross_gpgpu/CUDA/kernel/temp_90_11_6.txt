@@ -1,5 +1,5 @@
 #pragma once
-class okl_embed80 {
+class okl_embed90 {
  public:
  const char* ptx_code = 
- R"(    )";};
+ R"(

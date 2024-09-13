@@ -1,5 +1,5 @@
 #pragma once
-class okl_embed90 {
+class okl_embed70_12_3 {
  public:
  const char* ptx_code = 
  R"(//
@@ -11,7 +11,7 @@ class okl_embed90 {
 //
 
 .version 8.3
-.target sm_90
+.target sm_70
 .address_size 64
 
 	// .globl	_occa_bitReverse_temp_0

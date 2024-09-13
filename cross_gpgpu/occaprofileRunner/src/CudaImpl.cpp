@@ -28,9 +28,9 @@
 #include "nlohmann/json.hpp"
 #include <fstream>
 
-#define LOAD_PTX(buildName, IF_Fail_DO)\
-    buildName k123;\
-    if(cuModuleLoadData(&(env->RadixAll), k123.ptx_code) != CUDA_SUCCESS)\
+#define LOAD_PTX(buildName, ValueName, IF_Fail_DO)\
+    buildName ValueName;\
+    if(cuModuleLoadData(&(env->RadixAll), ValueName.ptx_code) != CUDA_SUCCESS)\
     {\
         IF_Fail_DO;\
     }
@@ -88,33 +88,33 @@ Runner::InitEnv()
     {
     case 5:
         {
-            LOAD_PTX(okl_embed52_12_3, LOAD_PTX(okl_embed52_12_1, LOAD_PTX(okl_embed52_11_6, ;)));
+            LOAD_PTX(okl_embed52_12_3, k123, LOAD_PTX(okl_embed52_12_1, k121, LOAD_PTX(okl_embed52_11_6, k116, ;)));
         }
         break;
     case 6:
         {
-            LOAD_PTX(okl_embed61_12_3, LOAD_PTX(okl_embed61_12_1, LOAD_PTX(okl_embed61_11_6, ;)));
+            LOAD_PTX(okl_embed61_12_3, k123, LOAD_PTX(okl_embed61_12_1, k121, LOAD_PTX(okl_embed61_11_6, k116, ;)));
         }
         break;
     case 7:
         if(minor >= 5)
         {
-            LOAD_PTX(okl_embed75_12_3, LOAD_PTX(okl_embed75_12_1, LOAD_PTX(okl_embed75_11_6, ;)));
+            LOAD_PTX(okl_embed75_12_3, k123, LOAD_PTX(okl_embed75_12_1, k121, LOAD_PTX(okl_embed75_11_6, k116, ;)));
         }
         else
         {
-            LOAD_PTX(okl_embed70_12_3, LOAD_PTX(okl_embed70_12_1, LOAD_PTX(okl_embed70_11_6, ;)));
+            LOAD_PTX(okl_embed70_12_3, k123, LOAD_PTX(okl_embed70_12_1, k121, LOAD_PTX(okl_embed70_11_6, k116, ;)));
         }
         break;
     case 8:
         {
-            LOAD_PTX(okl_embed80_12_3, LOAD_PTX(okl_embed80_12_1, LOAD_PTX(okl_embed80_11_6, ;)));
+            LOAD_PTX(okl_embed80_12_3, k123, LOAD_PTX(okl_embed80_12_1, k121, LOAD_PTX(okl_embed80_11_6, k116, ;)));
         }
         break;
 
     case 9:
         {
-            LOAD_PTX(okl_embed90_12_3, LOAD_PTX(okl_embed90_12_1, ;));
+            LOAD_PTX(okl_embed90_12_3, k123, LOAD_PTX(okl_embed90_12_1, k121, ;));
         }
         break;
     default:

@@ -1,5 +1,11 @@
 #include "RunnerInterface.hpp"
-#include "okl_embed.hpp"
+#include "okl_embed_52.hpp"
+#include "okl_embed_61.hpp"
+#include "okl_embed_70.hpp"
+#include "okl_embed_75.hpp"
+#include "okl_embed_80.hpp"
+#include "okl_embed_90.hpp"
+
 #include <cuda.h>
 #include "nlohmann/json.hpp"
 #include <fstream>
@@ -45,8 +51,55 @@ Runner::InitEnv()
     CheckCudaError(cuInit(0));
     CheckCudaError(cuDeviceGet(&(env->device), 0));
     CheckCudaError(cuCtxCreate(&(env->context), 0, env->device));
-    okl_embed okl;
-    CheckCudaError(cuModuleLoadData(&(env->RadixAll), okl.ptx_code));
+    int major, minor;
+    cuDeviceGetAttribute(&major, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, env->device);
+    cuDeviceGetAttribute(&minor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, env->device);
+    std::cout << "major: " << major << "minor: " << minor << std::endl;
+    const char* ptx;
+    switch (major)
+    {
+    case 5:
+        {
+            okl_embed52 k52;
+            ptx = k52.ptx_code;
+        }
+        break;
+    case 6:
+        {
+            okl_embed61 k61;
+            ptx = k61.ptx_code;
+        }
+        break;
+    case 7:
+        if(minor >= 5)
+        {
+            okl_embed75 k75;
+            ptx = k75.ptx_code;
+        }
+        else
+        {
+            okl_embed70 k70;
+            ptx = k70.ptx_code;
+        }
+        break;
+    case 8:
+        {
+            okl_embed80 k80;
+            ptx = k80.ptx_code;
+        }
+        break;
+
+    case 9:
+        {
+            okl_embed90 k90;
+            ptx = k90.ptx_code;
+        }
+        break;
+    default:
+        break;
+    }
+    
+    CheckCudaError(cuModuleLoadData(&(env->RadixAll), ptx));
     kens = new Gcodes;
 }
 

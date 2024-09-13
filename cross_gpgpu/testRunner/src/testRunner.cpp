@@ -5,7 +5,7 @@
 #include "RunnerInterface.hpp"
 #include "okl_embed.hpp"
 #include "clfftImpl.hpp"
-// #include "cufftImpl.hpp"
+#include "cufftImpl.hpp"
 //include your gpgpu kernel codes.
 
 
@@ -23,7 +23,8 @@ IMPLEMENTATION LISTS
 
 // Genv: Structure to hold the GPGPU environment settings and resources.
 struct Genv{
-    clfftImpl clf;
+    // clfftImpl clf;
+    cufftImpl cuf;
 };
 
 // Gcodes: Structure to manage and store GPGPU kernel codes.
@@ -39,7 +40,7 @@ Runner::InitEnv()
     
     env = new Genv;
     kens = new Gcodes;
-    env->clf.init();
+    // env->clf.init();
 }
 
 // BuildKernel: Compiles or prepares the GPGPU kernel for execution.
@@ -52,7 +53,7 @@ Runner::BuildKernel()
 void
 Runner::UnInit()
 {
-    env->clf.uninit();
+    // env->clf.uninit();
 }
 
 /**
@@ -115,11 +116,11 @@ Runner::ActivateSTFT(   VECF& inData,
     // std::cout<< "TR:117" << std::endl;
     // clfftImpl clf;
     // clf.init();
-    auto clf_result = env->clf.GetTime(inData, dsets);
+    auto cuf_result = env->cuf.GetTime(inData, dsets);
     // clf.uninit();
     // cufftImpl cuf;
     // auto cuf_result = cuf.GetTime(inData, dsets);
-    JsonStore(windowSize, qtConst, "CLFFT", clf_result);
+    JsonStore(windowSize, qtConst, "CUFFT", cuf_result);
     // std::cout<< "CLFFT RESULT: "<< clf_result <<"nanoseconds"<<std::endl;
 
 

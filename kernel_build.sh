@@ -40,8 +40,6 @@ nvcc -arch=compute_90 -code=compute_90 -ptx ./cross_gpgpu/CUDA/kernel/radixALL.c
 python CL_Embedder.py
 
 
-printf "#pragma once\nclass okl_embed {\n public:\n const char* ptx_code = \n R\"(" | cat - ./cross_gpgpu/CUDA/kernel/radixALL.ptx > ./cross_gpgpu/CUDA/kernel/temp.txt
-
 printf "#pragma once\nclass okl_embed {\n public:\n const char* ptx_code = \n R\"(" | cat - ./cross_gpgpu/CUDA/kernel/radixALL_52.ptx > ./cross_gpgpu/CUDA/kernel/temp_52.txt
 printf "#pragma once\nclass okl_embed {\n public:\n const char* ptx_code = \n R\"(" | cat - ./cross_gpgpu/CUDA/kernel/radixALL_61.ptx > ./cross_gpgpu/CUDA/kernel/temp_61.txt
 printf "#pragma once\nclass okl_embed {\n public:\n const char* ptx_code = \n R\"(" | cat - ./cross_gpgpu/CUDA/kernel/radixALL_70.ptx > ./cross_gpgpu/CUDA/kernel/temp_70.txt
@@ -51,13 +49,6 @@ printf "#pragma once\nclass okl_embed {\n public:\n const char* ptx_code = \n R\
 
 
 
-
-
-{
-    cat ./cross_gpgpu/CUDA/kernel/temp.txt - <<EOF
-    )";};
-EOF
-}> ./cross_gpgpu/CUDA/kernel/okl_embed.hpp
 
 {
     cat ./cross_gpgpu/CUDA/kernel/temp_52.txt - <<EOF

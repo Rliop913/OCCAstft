@@ -8,6 +8,9 @@ This project is a multi-platform (GPGPU) supported implementation of the Short-T
 Additionally, the project allows users to request calculations from a server via WebSocket connections, providing flexibility in deployment and usage scenarios.
 
 ## Performance
+
+Tested on NVIDIA H100, Ubuntu, CUDA 12.3
+
 ![windowSize 64](ProfileResults/Figure/64.png)
 ![windowSize 128](ProfileResults/Figure/128.png)
 ![windowSize 256](ProfileResults/Figure/256.png)

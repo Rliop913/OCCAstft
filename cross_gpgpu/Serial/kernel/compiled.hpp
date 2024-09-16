@@ -179,8 +179,7 @@ extern "C" void Stockhpotimized6(float * Rout,
       float RightImag = 0;
       unsigned int LeftStoreIdx = i_itr * 2;
       unsigned int RightStoreIdx = LeftStoreIdx + 1;
-      complex tw\
- = twiddle(segmentK(i_itr, 1, 32), 64);
+      complex tw = twiddle(segmentK(i_itr, 1, 32), 64);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -196,11 +195,9 @@ extern "C" void Stockhpotimized6(float * Rout,
       float RightImag = FIBank[i_itr + 32];
       unsigned int segmentItr = i_itr >> 1;
       unsigned int segmentIndex = (i_itr & (2 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 4 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 4 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 2;
-      complex tw\
- = twiddle(segmentK(i_itr, 2, 32), 64);
+      complex tw = twiddle(segmentK(i_itr, 2, 32), 64);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -216,11 +213,9 @@ extern "C" void Stockhpotimized6(float * Rout,
       float RightImag = SIBank[i_itr + 32];
       unsigned int segmentItr = i_itr >> 2;
       unsigned int segmentIndex = (i_itr & (4 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 8 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 8 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 4;
-      complex tw\
- = twiddle(segmentK(i_itr, 4, 32), 64);
+      complex tw = twiddle(segmentK(i_itr, 4, 32), 64);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -236,11 +231,9 @@ extern "C" void Stockhpotimized6(float * Rout,
       float RightImag = FIBank[i_itr + 32];
       unsigned int segmentItr = i_itr >> 3;
       unsigned int segmentIndex = (i_itr & (8 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 16 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 16 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 8;
-      complex tw\
- = twiddle(segmentK(i_itr, 8, 32), 64);
+      complex tw = twiddle(segmentK(i_itr, 8, 32), 64);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -256,11 +249,9 @@ extern "C" void Stockhpotimized6(float * Rout,
       float RightImag = SIBank[i_itr + 32];
       unsigned int segmentItr = i_itr >> 4;
       unsigned int segmentIndex = (i_itr & (16 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 32 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 32 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 16;
-      complex tw\
- = twiddle(segmentK(i_itr, 16, 32), 64);
+      complex tw = twiddle(segmentK(i_itr, 16, 32), 64);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -276,11 +267,9 @@ extern "C" void Stockhpotimized6(float * Rout,
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 32];
       float RightImag = FIBank[i_itr + 32];
-      unsigned int LeftStoreIdx\
- = i_itr + GlobalItr * 64;
+      unsigned int LeftStoreIdx = i_itr + GlobalItr * 64;
       unsigned int RightStoreIdx = LeftStoreIdx + 32;
-      complex tw\
- = twiddle(segmentK(i_itr, 32, 32), 64);
+      complex tw = twiddle(segmentK(i_itr, 32, 32), 64);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       Rout[LeftStoreIdx] = LeftReal + RTwid;
@@ -311,8 +300,7 @@ extern "C" void Stockhpotimized7(float * Rout,
       float RightImag = 0;
       unsigned int LeftStoreIdx = i_itr * 2;
       unsigned int RightStoreIdx = LeftStoreIdx + 1;
-      complex tw\
- = twiddle(segmentK(i_itr, 1, 64), 128);
+      complex tw = twiddle(segmentK(i_itr, 1, 64), 128);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -328,11 +316,9 @@ extern "C" void Stockhpotimized7(float * Rout,
       float RightImag = FIBank[i_itr + 64];
       unsigned int segmentItr = i_itr >> 1;
       unsigned int segmentIndex = (i_itr & (2 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 4 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 4 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 2;
-      complex tw\
- = twiddle(segmentK(i_itr, 2, 64), 128);
+      complex tw = twiddle(segmentK(i_itr, 2, 64), 128);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -348,11 +334,9 @@ extern "C" void Stockhpotimized7(float * Rout,
       float RightImag = SIBank[i_itr + 64];
       unsigned int segmentItr = i_itr >> 2;
       unsigned int segmentIndex = (i_itr & (4 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 8 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 8 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 4;
-      complex tw\
- = twiddle(segmentK(i_itr, 4, 64), 128);
+      complex tw = twiddle(segmentK(i_itr, 4, 64), 128);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -368,11 +352,9 @@ extern "C" void Stockhpotimized7(float * Rout,
       float RightImag = FIBank[i_itr + 64];
       unsigned int segmentItr = i_itr >> 3;
       unsigned int segmentIndex = (i_itr & (8 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 16 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 16 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 8;
-      complex tw\
- = twiddle(segmentK(i_itr, 8, 64), 128);
+      complex tw = twiddle(segmentK(i_itr, 8, 64), 128);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -388,11 +370,9 @@ extern "C" void Stockhpotimized7(float * Rout,
       float RightImag = SIBank[i_itr + 64];
       unsigned int segmentItr = i_itr >> 4;
       unsigned int segmentIndex = (i_itr & (16 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 32 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 32 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 16;
-      complex tw\
- = twiddle(segmentK(i_itr, 16, 64), 128);
+      complex tw = twiddle(segmentK(i_itr, 16, 64), 128);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -408,11 +388,9 @@ extern "C" void Stockhpotimized7(float * Rout,
       float RightImag = FIBank[i_itr + 64];
       unsigned int segmentItr = i_itr >> 5;
       unsigned int segmentIndex = (i_itr & (32 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 64 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 64 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 32;
-      complex tw\
- = twiddle(segmentK(i_itr, 32, 64), 128);
+      complex tw = twiddle(segmentK(i_itr, 32, 64), 128);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -428,11 +406,9 @@ extern "C" void Stockhpotimized7(float * Rout,
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 64];
       float RightImag = SIBank[i_itr + 64];
-      unsigned int LeftStoreIdx\
- = i_itr + GlobalItr * 128;
+      unsigned int LeftStoreIdx = i_itr + GlobalItr * 128;
       unsigned int RightStoreIdx = LeftStoreIdx + 64;
-      complex tw\
- = twiddle(segmentK(i_itr, 64, 64), 128);
+      complex tw = twiddle(segmentK(i_itr, 64, 64), 128);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       Rout[LeftStoreIdx] = LeftReal + RTwid;
@@ -463,8 +439,7 @@ extern "C" void Stockhpotimized8(float * Rout,
       float RightImag = 0;
       unsigned int LeftStoreIdx = i_itr * 2;
       unsigned int RightStoreIdx = LeftStoreIdx + 1;
-      complex tw\
- = twiddle(segmentK(i_itr, 1, 128), 256);
+      complex tw = twiddle(segmentK(i_itr, 1, 128), 256);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -480,11 +455,9 @@ extern "C" void Stockhpotimized8(float * Rout,
       float RightImag = FIBank[i_itr + 128];
       unsigned int segmentItr = i_itr >> 1;
       unsigned int segmentIndex = (i_itr & (2 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 4 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 4 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 2;
-      complex tw\
- = twiddle(segmentK(i_itr, 2, 128), 256);
+      complex tw = twiddle(segmentK(i_itr, 2, 128), 256);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -500,11 +473,9 @@ extern "C" void Stockhpotimized8(float * Rout,
       float RightImag = SIBank[i_itr + 128];
       unsigned int segmentItr = i_itr >> 2;
       unsigned int segmentIndex = (i_itr & (4 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 8 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 8 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 4;
-      complex tw\
- = twiddle(segmentK(i_itr, 4, 128), 256);
+      complex tw = twiddle(segmentK(i_itr, 4, 128), 256);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -520,11 +491,9 @@ extern "C" void Stockhpotimized8(float * Rout,
       float RightImag = FIBank[i_itr + 128];
       unsigned int segmentItr = i_itr >> 3;
       unsigned int segmentIndex = (i_itr & (8 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 16 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 16 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 8;
-      complex tw\
- = twiddle(segmentK(i_itr, 8, 128), 256);
+      complex tw = twiddle(segmentK(i_itr, 8, 128), 256);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -540,11 +509,9 @@ extern "C" void Stockhpotimized8(float * Rout,
       float RightImag = SIBank[i_itr + 128];
       unsigned int segmentItr = i_itr >> 4;
       unsigned int segmentIndex = (i_itr & (16 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 32 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 32 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 16;
-      complex tw\
- = twiddle(segmentK(i_itr, 16, 128), 256);
+      complex tw = twiddle(segmentK(i_itr, 16, 128), 256);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -560,11 +527,9 @@ extern "C" void Stockhpotimized8(float * Rout,
       float RightImag = FIBank[i_itr + 128];
       unsigned int segmentItr = i_itr >> 5;
       unsigned int segmentIndex = (i_itr & (32 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 64 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 64 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 32;
-      complex tw\
- = twiddle(segmentK(i_itr, 32, 128), 256);
+      complex tw = twiddle(segmentK(i_itr, 32, 128), 256);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -580,11 +545,9 @@ extern "C" void Stockhpotimized8(float * Rout,
       float RightImag = SIBank[i_itr + 128];
       unsigned int segmentItr = i_itr >> 6;
       unsigned int segmentIndex = (i_itr & (64 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 128 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 128 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 64;
-      complex tw\
- = twiddle(segmentK(i_itr, 64, 128), 256);
+      complex tw = twiddle(segmentK(i_itr, 64, 128), 256);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -600,11 +563,9 @@ extern "C" void Stockhpotimized8(float * Rout,
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 128];
       float RightImag = FIBank[i_itr + 128];
-      unsigned int LeftStoreIdx\
- = i_itr + GlobalItr * 256;
+      unsigned int LeftStoreIdx = i_itr + GlobalItr * 256;
       unsigned int RightStoreIdx = LeftStoreIdx + 128;
-      complex tw\
- = twiddle(segmentK(i_itr, 128, 128), 256);
+      complex tw = twiddle(segmentK(i_itr, 128, 128), 256);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       Rout[LeftStoreIdx] = LeftReal + RTwid;
@@ -635,8 +596,7 @@ extern "C" void Stockhpotimized9(float * Rout,
       float RightImag = 0;
       unsigned int LeftStoreIdx = i_itr * 2;
       unsigned int RightStoreIdx = LeftStoreIdx + 1;
-      complex tw\
- = twiddle(segmentK(i_itr, 1, 256), 512);
+      complex tw = twiddle(segmentK(i_itr, 1, 256), 512);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -652,11 +612,9 @@ extern "C" void Stockhpotimized9(float * Rout,
       float RightImag = FIBank[i_itr + 256];
       unsigned int segmentItr = i_itr >> 1;
       unsigned int segmentIndex = (i_itr & (2 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 4 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 4 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 2;
-      complex tw\
- = twiddle(segmentK(i_itr, 2, 256), 512);
+      complex tw = twiddle(segmentK(i_itr, 2, 256), 512);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -672,11 +630,9 @@ extern "C" void Stockhpotimized9(float * Rout,
       float RightImag = SIBank[i_itr + 256];
       unsigned int segmentItr = i_itr >> 2;
       unsigned int segmentIndex = (i_itr & (4 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 8 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 8 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 4;
-      complex tw\
- = twiddle(segmentK(i_itr, 4, 256), 512);
+      complex tw = twiddle(segmentK(i_itr, 4, 256), 512);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -692,11 +648,9 @@ extern "C" void Stockhpotimized9(float * Rout,
       float RightImag = FIBank[i_itr + 256];
       unsigned int segmentItr = i_itr >> 3;
       unsigned int segmentIndex = (i_itr & (8 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 16 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 16 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 8;
-      complex tw\
- = twiddle(segmentK(i_itr, 8, 256), 512);
+      complex tw = twiddle(segmentK(i_itr, 8, 256), 512);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -712,11 +666,9 @@ extern "C" void Stockhpotimized9(float * Rout,
       float RightImag = SIBank[i_itr + 256];
       unsigned int segmentItr = i_itr >> 4;
       unsigned int segmentIndex = (i_itr & (16 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 32 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 32 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 16;
-      complex tw\
- = twiddle(segmentK(i_itr, 16, 256), 512);
+      complex tw = twiddle(segmentK(i_itr, 16, 256), 512);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -732,11 +684,9 @@ extern "C" void Stockhpotimized9(float * Rout,
       float RightImag = FIBank[i_itr + 256];
       unsigned int segmentItr = i_itr >> 5;
       unsigned int segmentIndex = (i_itr & (32 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 64 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 64 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 32;
-      complex tw\
- = twiddle(segmentK(i_itr, 32, 256), 512);
+      complex tw = twiddle(segmentK(i_itr, 32, 256), 512);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -752,11 +702,9 @@ extern "C" void Stockhpotimized9(float * Rout,
       float RightImag = SIBank[i_itr + 256];
       unsigned int segmentItr = i_itr >> 6;
       unsigned int segmentIndex = (i_itr & (64 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 128 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 128 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 64;
-      complex tw\
- = twiddle(segmentK(i_itr, 64, 256), 512);
+      complex tw = twiddle(segmentK(i_itr, 64, 256), 512);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -772,11 +720,9 @@ extern "C" void Stockhpotimized9(float * Rout,
       float RightImag = FIBank[i_itr + 256];
       unsigned int segmentItr = i_itr >> 7;
       unsigned int segmentIndex = (i_itr & (128 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 256 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 256 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 128;
-      complex tw\
- = twiddle(segmentK(i_itr, 128, 256), 512);
+      complex tw = twiddle(segmentK(i_itr, 128, 256), 512);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -792,11 +738,9 @@ extern "C" void Stockhpotimized9(float * Rout,
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 256];
       float RightImag = SIBank[i_itr + 256];
-      unsigned int LeftStoreIdx\
- = i_itr + GlobalItr * 512;
+      unsigned int LeftStoreIdx = i_itr + GlobalItr * 512;
       unsigned int RightStoreIdx = LeftStoreIdx + 256;
-      complex tw\
- = twiddle(segmentK(i_itr, 256, 256), 512);
+      complex tw = twiddle(segmentK(i_itr, 256, 256), 512);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       Rout[LeftStoreIdx] = LeftReal + RTwid;
@@ -915,11 +859,9 @@ extern "C" void preprocessed_ODW10_STH_STFT(float * inData,
       float RightImag = FIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 0;
       unsigned int segmentIndex = (i_itr & (1 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 2 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 2 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 1;
-      complex tw\
- = twiddle(segmentK(i_itr, 1, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 1, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -935,11 +877,9 @@ extern "C" void preprocessed_ODW10_STH_STFT(float * inData,
       float RightImag = SIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 1;
       unsigned int segmentIndex = (i_itr & (2 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 4 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 4 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 2;
-      complex tw\
- = twiddle(segmentK(i_itr, 2, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 2, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -955,11 +895,9 @@ extern "C" void preprocessed_ODW10_STH_STFT(float * inData,
       float RightImag = FIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 2;
       unsigned int segmentIndex = (i_itr & (4 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 8 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 8 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 4;
-      complex tw\
- = twiddle(segmentK(i_itr, 4, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 4, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -975,11 +913,9 @@ extern "C" void preprocessed_ODW10_STH_STFT(float * inData,
       float RightImag = SIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 3;
       unsigned int segmentIndex = (i_itr & (8 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 16 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 16 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 8;
-      complex tw\
- = twiddle(segmentK(i_itr, 8, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 8, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -995,11 +931,9 @@ extern "C" void preprocessed_ODW10_STH_STFT(float * inData,
       float RightImag = FIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 4;
       unsigned int segmentIndex = (i_itr & (16 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 32 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 32 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 16;
-      complex tw\
- = twiddle(segmentK(i_itr, 16, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 16, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1015,11 +949,9 @@ extern "C" void preprocessed_ODW10_STH_STFT(float * inData,
       float RightImag = SIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 5;
       unsigned int segmentIndex = (i_itr & (32 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 64 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 64 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 32;
-      complex tw\
- = twiddle(segmentK(i_itr, 32, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 32, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1035,11 +967,9 @@ extern "C" void preprocessed_ODW10_STH_STFT(float * inData,
       float RightImag = FIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 6;
       unsigned int segmentIndex = (i_itr & (64 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 128 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 128 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 64;
-      complex tw\
- = twiddle(segmentK(i_itr, 64, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 64, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1055,11 +985,9 @@ extern "C" void preprocessed_ODW10_STH_STFT(float * inData,
       float RightImag = SIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 7;
       unsigned int segmentIndex = (i_itr & (128 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 256 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 256 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 128;
-      complex tw\
- = twiddle(segmentK(i_itr, 128, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 128, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1075,11 +1003,9 @@ extern "C" void preprocessed_ODW10_STH_STFT(float * inData,
       float RightImag = FIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 8;
       unsigned int segmentIndex = (i_itr & (256 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 512 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 512 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 256;
-      complex tw\
- = twiddle(segmentK(i_itr, 256, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 256, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1095,11 +1021,9 @@ extern "C" void preprocessed_ODW10_STH_STFT(float * inData,
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 512];
       float RightImag = SIBank[i_itr + 512];
-      unsigned int LeftStoreIdx\
- = i_itr + GlobalItr * 1024;
+      unsigned int LeftStoreIdx = i_itr + GlobalItr * 1024;
       unsigned int RightStoreIdx = LeftStoreIdx + 512;
-      complex tw\
- = twiddle(segmentK(i_itr, 512, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 512, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       Rout[LeftStoreIdx] = LeftReal + RTwid;
@@ -1230,8 +1154,7 @@ extern "C" void Stockhpotimized10(float * Rout,
       float RightImag = 0;
       unsigned int LeftStoreIdx = i_itr * 2;
       unsigned int RightStoreIdx = LeftStoreIdx + 1;
-      complex tw\
- = twiddle(segmentK(i_itr, 1, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 1, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1247,11 +1170,9 @@ extern "C" void Stockhpotimized10(float * Rout,
       float RightImag = FIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 1;
       unsigned int segmentIndex = (i_itr & (2 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 4 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 4 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 2;
-      complex tw\
- = twiddle(segmentK(i_itr, 2, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 2, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1267,11 +1188,9 @@ extern "C" void Stockhpotimized10(float * Rout,
       float RightImag = SIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 2;
       unsigned int segmentIndex = (i_itr & (4 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 8 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 8 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 4;
-      complex tw\
- = twiddle(segmentK(i_itr, 4, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 4, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1287,11 +1206,9 @@ extern "C" void Stockhpotimized10(float * Rout,
       float RightImag = FIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 3;
       unsigned int segmentIndex = (i_itr & (8 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 16 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 16 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 8;
-      complex tw\
- = twiddle(segmentK(i_itr, 8, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 8, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1307,11 +1224,9 @@ extern "C" void Stockhpotimized10(float * Rout,
       float RightImag = SIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 4;
       unsigned int segmentIndex = (i_itr & (16 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 32 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 32 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 16;
-      complex tw\
- = twiddle(segmentK(i_itr, 16, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 16, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1327,11 +1242,9 @@ extern "C" void Stockhpotimized10(float * Rout,
       float RightImag = FIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 5;
       unsigned int segmentIndex = (i_itr & (32 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 64 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 64 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 32;
-      complex tw\
- = twiddle(segmentK(i_itr, 32, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 32, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1347,11 +1260,9 @@ extern "C" void Stockhpotimized10(float * Rout,
       float RightImag = SIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 6;
       unsigned int segmentIndex = (i_itr & (64 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 128 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 128 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 64;
-      complex tw\
- = twiddle(segmentK(i_itr, 64, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 64, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1367,11 +1278,9 @@ extern "C" void Stockhpotimized10(float * Rout,
       float RightImag = FIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 7;
       unsigned int segmentIndex = (i_itr & (128 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 256 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 256 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 128;
-      complex tw\
- = twiddle(segmentK(i_itr, 128, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 128, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1387,11 +1296,9 @@ extern "C" void Stockhpotimized10(float * Rout,
       float RightImag = SIBank[i_itr + 512];
       unsigned int segmentItr = i_itr >> 8;
       unsigned int segmentIndex = (i_itr & (256 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 512 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 512 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 256;
-      complex tw\
- = twiddle(segmentK(i_itr, 256, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 256, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1407,11 +1314,9 @@ extern "C" void Stockhpotimized10(float * Rout,
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 512];
       float RightImag = FIBank[i_itr + 512];
-      unsigned int LeftStoreIdx\
- = i_itr + GlobalItr * 1024;
+      unsigned int LeftStoreIdx = i_itr + GlobalItr * 1024;
       unsigned int RightStoreIdx = LeftStoreIdx + 512;
-      complex tw\
- = twiddle(segmentK(i_itr, 512, 512), 1024);
+      complex tw = twiddle(segmentK(i_itr, 512, 512), 1024);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       Rout[LeftStoreIdx] = LeftReal + RTwid;
@@ -1634,8 +1539,7 @@ extern "C" void Stockhpotimized11(float * Rout,
       float RightImag = 0;
       unsigned int LeftStoreIdx = i_itr * 2;
       unsigned int RightStoreIdx = LeftStoreIdx + 1;
-      complex tw\
- = twiddle(segmentK(i_itr, 1, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 1, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1651,11 +1555,9 @@ extern "C" void Stockhpotimized11(float * Rout,
       float RightImag = FIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 1;
       unsigned int segmentIndex = (i_itr & (2 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 4 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 4 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 2;
-      complex tw\
- = twiddle(segmentK(i_itr, 2, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 2, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1671,11 +1573,9 @@ extern "C" void Stockhpotimized11(float * Rout,
       float RightImag = SIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 2;
       unsigned int segmentIndex = (i_itr & (4 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 8 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 8 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 4;
-      complex tw\
- = twiddle(segmentK(i_itr, 4, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 4, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1691,11 +1591,9 @@ extern "C" void Stockhpotimized11(float * Rout,
       float RightImag = FIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 3;
       unsigned int segmentIndex = (i_itr & (8 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 16 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 16 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 8;
-      complex tw\
- = twiddle(segmentK(i_itr, 8, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 8, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1711,11 +1609,9 @@ extern "C" void Stockhpotimized11(float * Rout,
       float RightImag = SIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 4;
       unsigned int segmentIndex = (i_itr & (16 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 32 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 32 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 16;
-      complex tw\
- = twiddle(segmentK(i_itr, 16, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 16, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1731,11 +1627,9 @@ extern "C" void Stockhpotimized11(float * Rout,
       float RightImag = FIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 5;
       unsigned int segmentIndex = (i_itr & (32 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 64 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 64 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 32;
-      complex tw\
- = twiddle(segmentK(i_itr, 32, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 32, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1751,11 +1645,9 @@ extern "C" void Stockhpotimized11(float * Rout,
       float RightImag = SIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 6;
       unsigned int segmentIndex = (i_itr & (64 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 128 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 128 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 64;
-      complex tw\
- = twiddle(segmentK(i_itr, 64, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 64, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1771,11 +1663,9 @@ extern "C" void Stockhpotimized11(float * Rout,
       float RightImag = FIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 7;
       unsigned int segmentIndex = (i_itr & (128 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 256 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 256 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 128;
-      complex tw\
- = twiddle(segmentK(i_itr, 128, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 128, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1791,11 +1681,9 @@ extern "C" void Stockhpotimized11(float * Rout,
       float RightImag = SIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 8;
       unsigned int segmentIndex = (i_itr & (256 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 512 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 512 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 256;
-      complex tw\
- = twiddle(segmentK(i_itr, 256, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 256, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1811,11 +1699,9 @@ extern "C" void Stockhpotimized11(float * Rout,
       float RightImag = FIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 9;
       unsigned int segmentIndex = (i_itr & (512 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 1024 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 1024 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 512;
-      complex tw\
- = twiddle(segmentK(i_itr, 512, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 512, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1831,11 +1717,9 @@ extern "C" void Stockhpotimized11(float * Rout,
       float LeftImag = SIBank[i_itr];
       float RightReal = SRBank[i_itr + 1024];
       float RightImag = SIBank[i_itr + 1024];
-      unsigned int LeftStoreIdx\
- = i_itr + GlobalItr * 2048;
+      unsigned int LeftStoreIdx = i_itr + GlobalItr * 2048;
       unsigned int RightStoreIdx = LeftStoreIdx + 1024;
-      complex tw\
- = twiddle(segmentK(i_itr, 1024, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 1024, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       Rout[LeftStoreIdx] = LeftReal + RTwid;
@@ -1961,11 +1845,9 @@ extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
       float RightImag = FIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 0;
       unsigned int segmentIndex = (i_itr & (1 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 2 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 2 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 1;
-      complex tw\
- = twiddle(segmentK(i_itr, 1, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 1, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -1981,11 +1863,9 @@ extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
       float RightImag = SIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 1;
       unsigned int segmentIndex = (i_itr & (2 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 4 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 4 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 2;
-      complex tw\
- = twiddle(segmentK(i_itr, 2, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 2, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -2001,11 +1881,9 @@ extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
       float RightImag = FIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 2;
       unsigned int segmentIndex = (i_itr & (4 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 8 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 8 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 4;
-      complex tw\
- = twiddle(segmentK(i_itr, 4, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 4, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -2021,11 +1899,9 @@ extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
       float RightImag = SIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 3;
       unsigned int segmentIndex = (i_itr & (8 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 16 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 16 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 8;
-      complex tw\
- = twiddle(segmentK(i_itr, 8, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 8, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -2041,11 +1917,9 @@ extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
       float RightImag = FIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 4;
       unsigned int segmentIndex = (i_itr & (16 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 32 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 32 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 16;
-      complex tw\
- = twiddle(segmentK(i_itr, 16, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 16, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -2061,11 +1935,9 @@ extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
       float RightImag = SIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 5;
       unsigned int segmentIndex = (i_itr & (32 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 64 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 64 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 32;
-      complex tw\
- = twiddle(segmentK(i_itr, 32, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 32, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -2081,11 +1953,9 @@ extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
       float RightImag = FIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 6;
       unsigned int segmentIndex = (i_itr & (64 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 128 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 128 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 64;
-      complex tw\
- = twiddle(segmentK(i_itr, 64, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 64, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -2101,11 +1971,9 @@ extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
       float RightImag = SIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 7;
       unsigned int segmentIndex = (i_itr & (128 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 256 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 256 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 128;
-      complex tw\
- = twiddle(segmentK(i_itr, 128, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 128, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -2121,11 +1989,9 @@ extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
       float RightImag = FIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 8;
       unsigned int segmentIndex = (i_itr & (256 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 512 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 512 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 256;
-      complex tw\
- = twiddle(segmentK(i_itr, 256, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 256, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       SRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -2141,11 +2007,9 @@ extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
       float RightImag = SIBank[i_itr + 1024];
       unsigned int segmentItr = i_itr >> 9;
       unsigned int segmentIndex = (i_itr & (512 - 1));
-      unsigned int LeftStoreIdx\
- = segmentItr * 1024 + segmentIndex;
+      unsigned int LeftStoreIdx = segmentItr * 1024 + segmentIndex;
       unsigned int RightStoreIdx = LeftStoreIdx + 512;
-      complex tw\
- = twiddle(segmentK(i_itr, 512, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 512, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       FRBank[LeftStoreIdx] = LeftReal + RTwid;
@@ -2161,11 +2025,9 @@ extern "C" void preprocessed_ODW11_STH_STFT(float * inData,
       float LeftImag = FIBank[i_itr];
       float RightReal = FRBank[i_itr + 1024];
       float RightImag = FIBank[i_itr + 1024];
-      unsigned int LeftStoreIdx\
- = i_itr + GlobalItr * 2048;
+      unsigned int LeftStoreIdx = i_itr + GlobalItr * 2048;
       unsigned int RightStoreIdx = LeftStoreIdx + 1024;
-      complex tw\
- = twiddle(segmentK(i_itr, 1024, 1024), 2048);
+      complex tw = twiddle(segmentK(i_itr, 1024, 1024), 2048);
       float RTwid = RMult(RightReal, tw.real, RightImag, tw.imag);
       float ITwid = IMult(RightReal, tw.real, RightImag, tw.imag);
       Rout[LeftStoreIdx] = LeftReal + RTwid;

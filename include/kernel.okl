@@ -232,8 +232,7 @@ windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
             unsigned int LeftStoreIdx = i_itr * 2;\
             unsigned int RightStoreIdx = LeftStoreIdx + 1;\
 \
-            complex tw\
-            = twiddle(\
+            complex tw = twiddle(\
                 segmentK(\
                     i_itr,\
                     1,\
@@ -256,13 +255,11 @@ windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
 \
     unsigned int segmentItr = BDIV(i_itr, segmentRadix);\
     unsigned int segmentIndex = BREMAIN(i_itr, segmentSize);\
-    unsigned int LeftStoreIdx\
-    = segmentItr * DsegmentSize + segmentIndex;\
+    unsigned int LeftStoreIdx = segmentItr * DsegmentSize + segmentIndex;\
 \
     unsigned int RightStoreIdx = LeftStoreIdx + segmentSize;\
 \
-    complex tw\
-    = twiddle(\
+    complex tw = twiddle(\
         segmentK(\
             i_itr,\
             segmentSize,\
@@ -285,13 +282,11 @@ windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
 \
     unsigned int segmentItr = BDIV(i_itr, segmentRadix);\
     unsigned int segmentIndex = BREMAIN(i_itr, segmentSize);\
-    unsigned int LeftStoreIdx\
-    = segmentItr * DsegmentSize + segmentIndex;\
+    unsigned int LeftStoreIdx = segmentItr * DsegmentSize + segmentIndex;\
 \
     unsigned int RightStoreIdx = LeftStoreIdx + segmentSize;\
 \
-    complex tw\
-    = twiddle(\
+    complex tw = twiddle(\
         segmentK(\
             i_itr,\
             segmentSize,\
@@ -313,13 +308,11 @@ windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
             float LeftImag = FIBank[i_itr];\
             float RightReal= FRBank[i_itr + HWindowSize];\
             float RightImag= FIBank[i_itr + HWindowSize];\
-            unsigned int LeftStoreIdx\
-            = i_itr + GlobalItr * FWindowSize;\
+            unsigned int LeftStoreIdx = i_itr + GlobalItr * FWindowSize;\
 \
             unsigned int RightStoreIdx = LeftStoreIdx + HWindowSize;\
 \
-            complex tw\
-            = twiddle(\
+            complex tw = twiddle(\
                 segmentK(\
                     i_itr,\
                     HWindowSize,\
@@ -340,13 +333,11 @@ windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
             float LeftImag = SIBank[i_itr];\
             float RightReal= SRBank[i_itr + HWindowSize];\
             float RightImag= SIBank[i_itr + HWindowSize];\
-            unsigned int LeftStoreIdx\
-            = i_itr + GlobalItr * FWindowSize;\
+            unsigned int LeftStoreIdx = i_itr + GlobalItr * FWindowSize;\
 \
             unsigned int RightStoreIdx = LeftStoreIdx + HWindowSize;\
 \
-            complex tw\
-            = twiddle(\
+            complex tw = twiddle(\
                 segmentK(\
                     i_itr,\
                     HWindowSize,\

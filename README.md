@@ -134,11 +134,13 @@ The program processes input signal data through STFT and returns the results. Yo
 
        // Request STFT operation
        auto promisedData = temp.RequestSTFT(testZeroData, 10, 0.5 , "--hanning_window --half_complex_return");
+   
        // RequestSTFT( FloatVector, WindowRadix, OverlapRate, Options)
        // FloatVector: float vector
        // WindowRadix: Radix data of WindowSize. 2 ^ WindowRadix
        // OverlapRate: overlap rate. 0.6 means 60% overlap
        // Options: options for preprocess, returned shape.
+   
        if (promisedData.has_value()) // checks promise
        {
            auto resOut = promisedData.value().get(); // get data from promise
@@ -183,7 +185,8 @@ The program processes input signal data through STFT and returns the results. Yo
 
     **--flattop_window** : As written
 
-    **--gaussian_window=(sigmaSize)<<sigma**: gaussian window. Enter the sigma value to use it. 
+    **--gaussian_window=(sigmaSize)<<sigma**: gaussian window. Enter the sigma value to use it.
+  
     e.g. --gaussian_window=4.312345<<sigma
 
     **--remove_dc**: removes the DC component within the window.

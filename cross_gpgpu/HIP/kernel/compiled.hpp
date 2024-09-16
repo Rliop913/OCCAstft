@@ -1,7 +1,7 @@
 #define _USE_MATH_DEFINES
 #include <hip/hip_runtime.h>
 #include <math.h>
-#include <math.h>
+// #include <math.h>
 
 typedef struct complex_t {
   float real, imag;

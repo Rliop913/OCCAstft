@@ -7,7 +7,7 @@ class okl_embed {
     std::string radixALL = 
 	"#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n"
 	"\n"
-	"#include <math.h>\n"
+	"// #include <math.h>\n"
 	"\n"
 	"typedef struct complex_t {\n"
 	"  float real, imag;\n"

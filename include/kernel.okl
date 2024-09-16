@@ -4,7 +4,7 @@
 #ifdef __NEED_PI
 #include <math.h>
 #endif
-#include <math.h>
+// #include <math.h>
 
 #define BPOW(DATA, N) DATA << N
 #define BDIV(DATA, N) DATA >> N

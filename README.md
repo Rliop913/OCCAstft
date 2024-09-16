@@ -133,8 +133,12 @@ The program processes input signal data through STFT and returns the results. Yo
        }
 
        // Request STFT operation
-       auto promisedData = temp.RequestSTFT(testZeroData, 10, 0.5);// windowSize's Radix: 2 ^ 10, overlap Rate, 0.0 == no overlap
-
+       auto promisedData = temp.RequestSTFT(testZeroData, 10, 0.5 , "--hanning_window --half_complex_return");
+       // RequestSTFT( FloatVector, WindowRadix, OverlapRate, Options)
+       // FloatVector: float vector
+       // WindowRadix: Radix data of WindowSize. 2 ^ WindowRadix
+       // OverlapRate: overlap rate. 0.6 means 60% overlap
+       // Options: options for preprocess, returned shape.
        if (promisedData.has_value()) // checks promise
        {
            auto resOut = promisedData.value().get(); // get data from promise
@@ -162,6 +166,24 @@ The program processes input signal data through STFT and returns the results. Yo
    ```
 
    This code demonstrates how to manage executables and set up WebSocket communication for STFT processing. The `KillRunner` function works **only if the proxy object directly started the Runner** and requests a safe shutdown. Additionally, if the proxy starts the Runner directly, the proxy and Runner can use shared memory between processes, enabling faster execution.
+## Available Options
+- **PreProcess**
+-- **--hanning_window**
+-- **--hamming_window**
+-- **--blackman_window**
+-- **--nuttall_window**
+-- **--blackman_nuttall_window**
+-- **--blackman_harris_window**
+-- **--flattop_window**
+-- **--gaussian_window=(sigmaSize)<<sigma**: gaussian window. Enter the sigma value to use it. e.g. --gaussian_window=4.312345<<sigma
+
+-- **--remove_dc**: removes the DC component within the window.
+
+- **PostProcess**
+
+-- **--half_complex_return**:  leverages the symmetry of the FFT output to remove the redundant second half of the complex result. Since memory and communication primarily use float arrays, this option packs the real and imaginary components alternately (real, imaginary, real, imaginary) in the available space, thereby reducing memory usage and ensuring compatibility."
+
+-- **no postprocess option mentioned(default)**: returns the squared (power) value.
 
 ## Customizing
 

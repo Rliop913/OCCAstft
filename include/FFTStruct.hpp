@@ -129,6 +129,8 @@ public:
     //Load vector data to shared memory or capnp Field(Binary send)
     void SetData(std::vector<float>& data);
 
+    void SetOption(const std::string& options);
+    std::string GetOption();
 };
 
 #ifdef OS_POSIX

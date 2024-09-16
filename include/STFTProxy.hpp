@@ -58,7 +58,8 @@ public:
     MAYBE_FUTURE_DATA
     RequestSTFT(std::vector<float>& data, 
                 const int& windowRadix, 
-                const float& overlapRate = 0.5);
+                const float& overlapRate = 0.5,
+                const std::string& options = "--hanning_window --remove_dc --half_complex_return");
     STFTProxy(ERR_FUNC errorCallback, const FallbackList& fbList);
     ~STFTProxy();
     

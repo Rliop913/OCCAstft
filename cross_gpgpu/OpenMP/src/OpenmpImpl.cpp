@@ -25,13 +25,22 @@ Runner::UnInit()
 void
 Runner::BuildKernel()
 {
-    //no need
+    pps.Hanning         = Window_Hanning;
+    pps.Hamming         = Window_Hamming;
+    pps.Blackman        = Window_Blackman;
+    pps.Blackman_Nuttall= Window_Blackman_Nuttall;
+    pps.Blackman_Harris = Window_Blackman_harris;
+    pps.Nuttall         = Window_Nuttall;
+    pps.FlatTop         = Window_Nuttall;
+    pps.Gaussian        = Window_Gaussian;
+    pps.Remove_DC       = DCRemove_Common;
 }
 
 MAYBE_DATA
 Runner::ActivateSTFT(   VECF& inData, 
                         const int& windowRadix, 
-                        const float& overlapRatio)
+                        const float& overlapRatio,
+                        const std::string& options)
 {
     //default code blocks
     const unsigned int  FullSize    = inData.size();
@@ -42,62 +51,81 @@ Runner::ActivateSTFT(   VECF& inData,
     const unsigned int  OMove       = windowSize * (1.0f - overlapRatio);
     //end default
 
-    auto Real = new float  [OFullSize]();
-    auto Imag = new float  [OFullSize]();
-    
 
+
+    std::vector<float> Real(OFullSize); 
+    std::vector<float> Imag(OFullSize); 
     std::vector<float> outMem(OFullSize);
+    
+    auto PReal = &Real;
+    auto PImag = &Imag;
+    
+    Overlap_Common
+    (
+        inData.data(),
+        OFullSize,
+        FullSize,
+        windowRadix,
+        OMove,
+        Real.data()
+    );
+
+    pps.UseOption(options, Real.data(), OFullSize, windowSize);
     
     switch (windowRadix)
     {
-    case 10:
-        preprocessed_ODW10_STH_STFT
+    case 6:
+        Stockhpotimized6
         (
-            inData.data(), 
-            qtConst, 
-            FullSize, 
-            OMove,
-            OHalfSize,
-            Real,
-            Imag
+            Real.data(),
+            Imag.data(),
+            OHalfSize
+        );
+        break;
+    case 7:
+        Stockhpotimized7
+        (
+            Real.data(),
+            Imag.data(),
+            OHalfSize
+        );
+        break;
+    case 8:
+        Stockhpotimized8
+        (
+            Real.data(),
+            Imag.data(),
+            OHalfSize
+        );
+        break;
+    case 9:
+        Stockhpotimized9
+        (
+            Real.data(),
+            Imag.data(),
+            OHalfSize
+        );
+        break;
+    case 10:
+        Stockhpotimized10
+        (
+            Real.data(),
+            Imag.data(),
+            OHalfSize
         );
         break;
     case 11:
-        preprocessed_ODW11_STH_STFT
+        Stockhpotimized11
         (
-            inData.data(), 
-            qtConst, 
-            FullSize, 
-            OMove,
-            OHalfSize,
-            Real,
-            Imag
+            Real.data(),
+            Imag.data(),
+            OHalfSize
         );
         break;
     default:
-        auto OReal = new float  [OFullSize]();
-        auto OImag = new float  [OFullSize]();
-        Overlap_Common
-        (
-            inData.data(),
-            OFullSize,
-            FullSize,
-            windowRadix,
-            OMove,
-            Real
-        );
-        DCRemove_Common
-        (
-            Real,
-            OFullSize,
-            windowSize
-        );
-        Window_Common
-        (
-            Real,
-            OFullSize,
-            windowRadix
-        );
+        std::vector<float> OReal(OFullSize);
+        std::vector<float> OImag(OFullSize);
+        
         unsigned int HWindowSize = windowSize >> 1;
         for(unsigned int stage = 0; stage < windowRadix; ++stage)
         {
@@ -105,10 +133,10 @@ Runner::ActivateSTFT(   VECF& inData,
             {
                 StockHamDITCommon
                 (
-                    Real,
-                    Imag,
-                    OReal,
-                    OImag,
+                    Real.data(),
+                    Imag.data(),
+                    OReal.data(),
+                    OImag.data(),
                     HWindowSize,
                     stage,
                     OHalfSize,
@@ -119,10 +147,10 @@ Runner::ActivateSTFT(   VECF& inData,
             {
                 StockHamDITCommon
                 (
-                    OReal,
-                    OImag,
-                    Real,
-                    Imag,
+                    OReal.data(),
+                    OImag.data(),
+                    Real.data(),
+                    Imag.data(),
                     HWindowSize,
                     stage,
                     OHalfSize,
@@ -130,34 +158,37 @@ Runner::ActivateSTFT(   VECF& inData,
                 );
             }
         }
-        if(windowRadix % 2 == 0)
+        if(windowRadix % 2 != 0)
         {
-            toPower
-            (
-                outMem.data(),
-                Real,
-                Imag,
-                OFullSize,
-                windowRadix
-            );
+            PReal = &OReal;
+            PImag = &OImag;
+            
         }
-        else
-        {
-            toPower
-            (
-                outMem.data(),
-                OReal,
-                OImag,
-                OFullSize,
-                windowRadix
-            );
-        }
-        delete[] OReal;
-        delete[] OImag;
+        
         break;
+    
     }
-    delete[] Real;
-    delete[] Imag;
 
+    if(options.find("--half_complex_return") != std::string::npos)
+    {
+        toHalfComplexFormat
+        (
+            (complex *)(outMem.data()),
+            (*PReal).data(),
+            (*PImag).data(),
+            OHalfSize,
+            windowRadix
+        );
+    }
+    else
+    {
+        toPower
+        (
+            outMem.data(),
+            (*PReal).data(),
+            (*PImag).data(),
+            OFullSize
+        );
+    }
     return std::move(outMem);
 }

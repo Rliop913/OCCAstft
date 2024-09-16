@@ -1,6 +1,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
-// #include <math.h>
+#include <math.h>
 
 typedef struct complex_t {
   float real, imag;
@@ -18,14 +18,74 @@ inline float window_func(const int index,
   return 0.5f * (1.0f - cos(angle));
 }
 
-inline int reverseBits(int num,
-                       int radix_2_data) {
-  int reversed = 0;
-  for (int i = 0; i < radix_2_data; ++i) {
-    reversed = (reversed << 1) | (num & 1);
-    num >>= 1;
-  }
-  return reversed;
+inline float hanning_window(const int index,
+                            const int windowSize) {
+  float angle = 2.0 * M_PI * index / (float(windowSize - 1));
+  return 0.5 * (1.0 - cos(angle));
+}
+
+inline float hamming_window(const int index,
+                            const int windowSize) {
+  float angle = 2.0 * M_PI * index / (float(windowSize - 1));
+  return 0.54 - (0.46 * cos(angle));
+}
+
+inline float blackman_window(const int index,
+                             const int windowSize) {
+  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Sangle = Fangle * 2.0;
+  return 0.42 - 0.5 * cos(Fangle) + 0.08 * cos(Sangle);
+}
+
+inline float nuttall_window(const int index,
+                            const int windowSize) {
+  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Sangle = Fangle * 2.0;
+  float Tangle = Fangle * 3.0;
+  return 0.355768 - 0.487396 * cos(Fangle) + 0.144232 * cos(Sangle) - 0.012604 * cos(
+    Tangle
+  );
+}
+
+inline float blackman_nuttall_window(const int index,
+                                     const int windowSize) {
+  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Sangle = Fangle * 2.0;
+  float Tangle = Fangle * 3.0;
+  return 0.3635819 - 0.4891775 * cos(Fangle) + 0.1365995 * cos(Sangle) - 0.0106411 * cos(
+    Tangle
+  );
+}
+
+inline float blackman_harris_window(const int index,
+                                    const int windowSize) {
+  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Sangle = Fangle * 2.0;
+  float Tangle = Fangle * 3.0;
+  return 0.35875 - 0.48829 * cos(Fangle) + 0.14128 * cos(Sangle) - 0.01168 * cos(
+    Tangle
+  );
+}
+
+inline float flatTop_window(const int index,
+                            const int windowSize) {
+  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Sangle = Fangle * 2.0;
+  float Tangle = Fangle * 3.0;
+  float FFangle = Fangle * 4.0;
+  return 0.21557895 - 0.41663158 * cos(Fangle) + 0.277263158 * cos(Sangle) - 0.083578947 * cos(
+    Tangle
+  ) + 0.006947368 * cos(FFangle);
+}
+
+inline float gaussian_window(const int index,
+                             const int windowSize,
+                             const float sigma) {
+  const int HWinSize = windowSize >> 1;
+  float angle = float(index - HWinSize) / float(HWinSize * sigma);
+  angle *= angle;
+  angle *= -0.5;
+  return exp(angle);
 }
 
 pairs indexer(const unsigned int firstMaximumID,
@@ -51,14 +111,6 @@ complex twiddle(int k,
   return temp;
 }
 
-inline complex cmult(const complex a,
-                     const complex b) {
-  complex result;
-  result.real = a.real * b.real - a.imag * b.imag;
-  result.imag = a.real * b.imag + a.imag * b.real;
-  return result;
-}
-
 inline float RMult(const float Ra,
                    const float Rb,
                    const float Ia,
@@ -73,55 +125,38 @@ inline float IMult(const float Ra,
   return (Ra * Ib) + (Ia * Rb);
 }
 
-inline complex cadd(complex a,
-                    const complex b) {
-  a.real += b.real;
-  a.imag += b.imag;
-  return a;
-}
-
-inline complex csub(complex a,
-                    const complex b) {
-  a.real -= b.real;
-  a.imag -= b.imag;
-  return a;
-}
-
-inline float cmod(complex a) {
-  return (sqrt(
-    a.real * a.real + a.imag * a.imag
-  ));
-}
-
-extern "C" void bitReverse_temp(complex * buffer,
-                                complex * result,
-                                const unsigned int & OFullSize,
-                                const int & windowSize,
-                                const int & radixData) {
-#pragma omp parallel for
-  for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256) {
-    for (int w_itr = 0; w_itr < 256; ++w_itr) {
-      unsigned int Gidx = (o_itr + w_itr);
-      unsigned int Lidx = (Gidx % windowSize);
-      unsigned int dst_idx = reverseBits(Lidx, radixData);
-      unsigned int BID = Gidx - Lidx + dst_idx;
-      result[BID] = buffer[Gidx];
-    }
-  }
-}
-
 extern "C" void toPower(float * out,
                         float * Real,
                         float * Imag,
-                        const unsigned int & OFullSize,
-                        const int & windowRadix) {
+                        const unsigned int & OFullSize) {
 #pragma omp parallel for
-  for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256) {
-    for (int i_itr = 0; i_itr < 256; ++i_itr) {
+  for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 64) {
+    for (int i_itr = 0; i_itr < 64; ++i_itr) {
       const unsigned int GID = o_itr + i_itr;
       float R = Real[GID];
       float I = Imag[GID];
       out[GID] = sqrt(R * R + I * I);
+    }
+  }
+  return;
+}
+
+extern "C" void toHalfComplexFormat(complex * out,
+                                    float * Real,
+                                    float * Imag,
+                                    const unsigned int & OHalfSize,
+                                    const int & windowRadix) {
+#pragma omp parallel for
+  for (unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 32) {
+    for (unsigned int i_itr = 0; i_itr < 32; ++i_itr) {
+      const unsigned int GID = o_itr + i_itr;
+      const unsigned int Mradix = windowRadix - 1;
+      const unsigned int HwindowSize = 1 << Mradix;
+      const unsigned int windowItr = GID % (HwindowSize);
+      const unsigned int FwindowedLoc = GID >> Mradix;
+      const unsigned int ReadIdx = FwindowedLoc * HwindowSize + windowItr;
+      out[GID].real = Real[ReadIdx];
+      out[GID].imag = Imag[ReadIdx];
     }
   }
   return;
@@ -2173,14 +2208,102 @@ extern "C" void Overlap_Common(float * inData,
   }
 }
 
-extern "C" void Window_Common(float * outReal,
-                              const unsigned int & OFullSize,
-                              const unsigned int & windowRadix) {
+extern "C" void Window_Hanning(float * outReal,
+                               const unsigned int & OFullSize,
+                               const unsigned int & windowSize) {
+#pragma omp parallel for
+  for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 64) {
+    for (unsigned int i_itr = 0; i_itr < 64; ++i_itr) {
+      const unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= hanning_window((Gidx & (windowSize - 1)), windowSize);
+    }
+  }
+}
+
+extern "C" void Window_Hamming(float * outReal,
+                               const unsigned int & OFullSize,
+                               const unsigned int & windowSize) {
 #pragma omp parallel for
   for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 64) {
     for (unsigned int i_itr = 0; i_itr < 64; ++i_itr) {
       unsigned int Gidx = o_itr + i_itr;
-      outReal[Gidx] *= window_func((Gidx & (windowRadix - 1)), 1 << windowRadix);
+      outReal[Gidx] *= hamming_window((Gidx & (windowSize - 1)), windowSize);
+    }
+  }
+}
+
+extern "C" void Window_Blackman(float * outReal,
+                                const unsigned int & OFullSize,
+                                const unsigned int & windowSize) {
+#pragma omp parallel for
+  for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 64) {
+    for (unsigned int i_itr = 0; i_itr < 64; ++i_itr) {
+      unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= blackman_window((Gidx & (windowSize - 1)), windowSize);
+    }
+  }
+}
+
+extern "C" void Window_Nuttall(float * outReal,
+                               const unsigned int & OFullSize,
+                               const unsigned int & windowSize) {
+#pragma omp parallel for
+  for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 64) {
+    for (unsigned int i_itr = 0; i_itr < 64; ++i_itr) {
+      unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= nuttall_window((Gidx & (windowSize - 1)), windowSize);
+    }
+  }
+}
+
+extern "C" void Window_Blackman_Nuttall(float * outReal,
+                                        const unsigned int & OFullSize,
+                                        const unsigned int & windowSize) {
+#pragma omp parallel for
+  for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 64) {
+    for (unsigned int i_itr = 0; i_itr < 64; ++i_itr) {
+      unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= blackman_nuttall_window(
+        (Gidx & (windowSize - 1)),
+        windowSize
+      );
+    }
+  }
+}
+
+extern "C" void Window_Blackman_harris(float * outReal,
+                                       const unsigned int & OFullSize,
+                                       const unsigned int & windowSize) {
+#pragma omp parallel for
+  for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 64) {
+    for (unsigned int i_itr = 0; i_itr < 64; ++i_itr) {
+      unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= blackman_harris_window((Gidx & (windowSize - 1)), windowSize);
+    }
+  }
+}
+
+extern "C" void Window_FlatTop(float * outReal,
+                               const unsigned int & OFullSize,
+                               const unsigned int & windowSize) {
+#pragma omp parallel for
+  for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 64) {
+    for (unsigned int i_itr = 0; i_itr < 64; ++i_itr) {
+      unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= flatTop_window((Gidx & (windowSize - 1)), windowSize);
+    }
+  }
+}
+
+extern "C" void Window_Gaussian(float * outReal,
+                                const unsigned int & OFullSize,
+                                const unsigned int & windowSize,
+                                const float & sigma) {
+#pragma omp parallel for
+  for (unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 64) {
+    for (unsigned int i_itr = 0; i_itr < 64; ++i_itr) {
+      unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= gaussian_window((Gidx & (windowSize - 1)), windowSize, sigma);
     }
   }
 }

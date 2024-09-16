@@ -68,7 +68,7 @@ int main(int, char**){
     
     constexpr int readFrame = 1024*1000;
     constexpr float overlap = 0.0f;
-    constexpr int windowRadix = 11;
+    constexpr int windowRadix = 10;
     constexpr int windowSize = 1 << windowRadix;
     float *hostBuffer = new float[readFrame];
     ma_decoder_seek_to_pcm_frame(&dec, 48000*20);
@@ -80,7 +80,7 @@ int main(int, char**){
     constexpr unsigned int OFullSize = qt * windowSize;
     constexpr unsigned int OHalfSize = OFullSize / 2;
     occa::memory dataIn = dev.malloc<float>(readFrame);
-    occa::memory dataOut = dev.malloc<float>(OHalfSize);
+    occa::memory dataOut = dev.malloc<float>(OFullSize);
     
     
     occa::memory FReal = dev.malloc<float>(OFullSize);
@@ -96,8 +96,18 @@ int main(int, char**){
     occa::kernel overlap_common = dev.buildKernel("../include/RadixCommon.okl", "Overlap_Common", prop);
     
     occa::kernel Butterfly_Common = dev.buildKernel("../include/RadixCommon.okl", "StockHamDITCommon", prop);
-    occa::kernel bitReverseTemp = dev.buildKernel("../include/kernel.okl", "bitReverse_temp", prop);
     
+    occa::kernel Hanning = dev.buildKernel("../include/RadixCommon.okl", "Window_Hanning", prop);
+    occa::kernel Hamming = dev.buildKernel("../include/RadixCommon.okl", "Window_Hamming", prop);
+    occa::kernel Blackman = dev.buildKernel("../include/RadixCommon.okl", "Window_Blackman", prop);
+    occa::kernel Nuttall = dev.buildKernel("../include/RadixCommon.okl", "Window_Nuttall", prop);
+    occa::kernel Blackman_Nuttall = dev.buildKernel("../include/RadixCommon.okl", "Window_Blackman_Nuttall", prop);
+    occa::kernel Blackman_harris = dev.buildKernel("../include/RadixCommon.okl", "Window_Blackman_harris", prop);
+    occa::kernel FlatTop = dev.buildKernel("../include/RadixCommon.okl", "Window_FlatTop", prop);
+    occa::kernel Gaussian = dev.buildKernel("../include/RadixCommon.okl", "Window_Gaussian", prop);
+    
+
+    occa::kernel halfComplexFormat = dev.buildKernel("../include/kernel.okl", "toHalfComplexFormat", prop);
     
     occa::kernel R6 = dev.buildKernel("../include/Radix6.okl", "Stockhpotimized6", prop);
     occa::kernel R7 = dev.buildKernel("../include/Radix7.okl", "Stockhpotimized7", prop);
@@ -121,93 +131,95 @@ int main(int, char**){
                     (unsigned int)(windowSize * (1.0f - overlap)), 
                     Rout
                     );
-                    
-    R11
+    float sigma = 0.4952;
+    Gaussian
+    (
+        FReal,
+        OFullSize,
+        windowSize,
+        sigma
+    );
+    R10
     (
         Rout,
         Iout,
         OHalfSize
     );
-    // R11AIO
-    // (
-    //     dataIn,
-    //     qt,
-    //     readFrame,
-    //     (unsigned int)(windowSize * (1.0f - overlap)),
-    //     OHalfSize,
-    //     Rout,
-    //     Iout
-    // );
-    R10
+
+    halfComplexFormat
     (
-        FReal,
-        FImag,
-        OHalfSize
-    );
-    Butterfly_Common
-    (
-        FReal,
-        FImag,
-        SReal,
-        SImag,
-        (windowSize / 2),
-        10,
+        dataOut,
+        Rout,
+        Iout,
         OHalfSize,
         windowRadix
     );
-    // for(unsigned int stage = 0; stage < windowRadix; ++stage)
-    // {
-    //     if(stage % 2 == 0)
-    //     {
-    //         Butterfly_Common
-    //         (
-    //             FReal,
-    //             FImag,
-    //             SReal,
-    //             SImag,
-    //             (windowSize / 2),
-    //             stage,
-    //             OHalfSize,
-    //             windowRadix
-    //         );
-    //         std::cout<<"touched"<<std::endl;
-    //         getchar();
-    //     }
-    //     else
-    //     {
-    //         Butterfly_Common
-    //         (
-    //             SReal,
-    //             SImag,
-    //             FReal,
-    //             FImag,
-    //             (windowSize / 2),
-    //             stage,
-    //             OHalfSize,
-    //             windowRadix
-    //         );
-    //     }
-
-    // }
-    std::vector<float> fixedOut(OFullSize);
-    std::vector<float> commonOut(OFullSize);
     
-    Rout.copyTo(fixedOut.data());
+    for(unsigned int stage = 0; stage < windowRadix; ++stage)
+    {
+        if(stage % 2 == 0)
+        {
+            Butterfly_Common
+            (
+                FReal,
+                FImag,
+                SReal,
+                SImag,
+                (windowSize / 2),
+                stage,
+                OHalfSize,
+                windowRadix
+            );
+            
+        }
+        else
+        {
+            Butterfly_Common
+            (
+                SReal,
+                SImag,
+                FReal,
+                FImag,
+                (windowSize / 2),
+                stage,
+                OHalfSize,
+                windowRadix
+            );
+        }
+
+    }
+    struct cplx{
+        float real;
+        float imag;
+    };
+    std::vector<cplx> fixedOut(OHalfSize);
+    std::vector<float> commonOut(OFullSize);
+    std::vector<float> commonImage(OFullSize);
+    dataOut.copyTo(fixedOut.data());
     if(windowRadix % 2 == 0)
     {
         FReal.copyTo(commonOut.data());
+        FImag.copyTo(commonImage.data());
     }
     else
     {
         SReal.copyTo(commonOut.data());
+        SImag.copyTo(commonImage.data());
     }
-    for(unsigned int i =0; i< OFullSize; ++i)
-        {
-            if(fixedOut[i] != commonOut[i])
-            {
-                std::cout << "DIFF: " << fixedOut[i] - commonOut[i] <<std::endl;
-            }
-        }
+    unsigned int HwinSize= windowSize / 2;
+    // for(unsigned int i =0; i< (512 + 1024); ++i)
+    // {
+    //     // unsigned int wqt = i / HwinSize;
+    //     // unsigned int witr= i % HwinSize;
+    //     if(fixedOut[i].real != commonOut[i])
+    //     {
+    //         std::cout << "Real unmatched err on IDX: " << i <<"DIFF " <<fixedOut[i].real <<"<><>"<< commonOut[i]<<std::endl;
+    //     }
+    //     if(fixedOut[i].imag != commonImage[i])
+    //     {
+    //         std::cout << "Imag unmatched err on IDX: " << i <<"DIFF " << fixedOut[i].imag <<"<><>"<< commonImage[i]<<std::endl;
+    //     }
+    // }
     
     
     float * Rfixed = new float[OFullSize];

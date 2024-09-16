@@ -118,3 +118,31 @@ FFTRequest::SetData(std::vector<float>& requestedData)
         copyToCapnpParallel(requestedData.data(), &dataP, dataLength);
     }
 }
+
+void
+FFTRequest::SetOption(const std::string& options)
+{
+    if(!mw.has_value())
+    {
+        return;
+    }
+    auto mp = &mw.value();
+    mp->setOptions(options);
+}
+
+std::string
+FFTRequest::GetOption()
+{
+    if(mr.has_value())
+    {
+        return mr.value().getOptions().cStr();
+    }
+    else if(mw.has_value())
+    {
+        return mw.value().getOptions().asString();
+    }
+    else
+    {
+        return "ERR NO OBJECT";
+    }
+}

@@ -5,7 +5,7 @@
 
 using namespace metal;
 #include <math.h>
-// #include <math.h>
+#include <math.h>
 
 typedef struct complex_t {
   float real, imag;
@@ -23,14 +23,74 @@ inline float window_func(const int index,
   return 0.5f * (1.0f - cos(angle));
 }
 
-inline int reverseBits(int num,
-                       int radix_2_data) {
-  int reversed = 0;
-  for (int i = 0; i < radix_2_data; ++i) {
-    reversed = (reversed << 1) | (num & 1);
-    num >>= 1;
-  }
-  return reversed;
+inline float hanning_window(const int index,
+                            const int windowSize) {
+  float angle = 2.0 * M_PI * index / (float(windowSize - 1));
+  return 0.5 * (1.0 - cos(angle));
+}
+
+inline float hamming_window(const int index,
+                            const int windowSize) {
+  float angle = 2.0 * M_PI * index / (float(windowSize - 1));
+  return 0.54 - (0.46 * cos(angle));
+}
+
+inline float blackman_window(const int index,
+                             const int windowSize) {
+  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Sangle = Fangle * 2.0;
+  return 0.42 - 0.5 * cos(Fangle) + 0.08 * cos(Sangle);
+}
+
+inline float nuttall_window(const int index,
+                            const int windowSize) {
+  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Sangle = Fangle * 2.0;
+  float Tangle = Fangle * 3.0;
+  return 0.355768 - 0.487396 * cos(Fangle) + 0.144232 * cos(Sangle) - 0.012604 * cos(
+    Tangle
+  );
+}
+
+inline float blackman_nuttall_window(const int index,
+                                     const int windowSize) {
+  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Sangle = Fangle * 2.0;
+  float Tangle = Fangle * 3.0;
+  return 0.3635819 - 0.4891775 * cos(Fangle) + 0.1365995 * cos(Sangle) - 0.0106411 * cos(
+    Tangle
+  );
+}
+
+inline float blackman_harris_window(const int index,
+                                    const int windowSize) {
+  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Sangle = Fangle * 2.0;
+  float Tangle = Fangle * 3.0;
+  return 0.35875 - 0.48829 * cos(Fangle) + 0.14128 * cos(Sangle) - 0.01168 * cos(
+    Tangle
+  );
+}
+
+inline float flatTop_window(const int index,
+                            const int windowSize) {
+  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Sangle = Fangle * 2.0;
+  float Tangle = Fangle * 3.0;
+  float FFangle = Fangle * 4.0;
+  return 0.21557895 - 0.41663158 * cos(Fangle) + 0.277263158 * cos(Sangle) - 0.083578947 * cos(
+    Tangle
+  ) + 0.006947368 * cos(FFangle);
+}
+
+inline float gaussian_window(const int index,
+                             const int windowSize,
+                             const float sigma) {
+  const int HWinSize = windowSize >> 1;
+  float angle = float(index - HWinSize) / float(HWinSize * sigma);
+  angle *= angle;
+  angle *= -0.5;
+  return exp(angle);
 }
 
 pairs indexer(const unsigned int firstMaximumID,
@@ -56,14 +116,6 @@ complex twiddle(int k,
   return temp;
 }
 
-inline complex cmult(const complex a,
-                     const complex b) {
-  complex result;
-  result.real = a.real * b.real - a.imag * b.imag;
-  result.imag = a.real * b.imag + a.imag * b.real;
-  return result;
-}
-
 inline float RMult(const float Ra,
                    const float Rb,
                    const float Ia,
@@ -78,61 +130,43 @@ inline float IMult(const float Ra,
   return (Ra * Ib) + (Ia * Rb);
 }
 
-inline complex cadd(complex a,
-                    const complex b) {
-  a.real += b.real;
-  a.imag += b.imag;
-  return a;
-}
-
-inline complex csub(complex a,
-                    const complex b) {
-  a.real -= b.real;
-  a.imag -= b.imag;
-  return a;
-}
-
-inline float cmod(complex a) {
-  return (sqrt(
-    a.real * a.real + a.imag * a.imag
-  ));
-}
-
-kernel void _occa_bitReverse_temp_0(device complex * buffer [[buffer(0)]],
-                                    device complex * result [[buffer(1)]],
-                                    constant unsigned int & OFullSize [[buffer(2)]],
-                                    constant int & windowSize [[buffer(3)]],
-                                    constant int & radixData [[buffer(4)]],
-                                    uint3 _occa_group_position [[threadgroup_position_in_grid]],
-                                    uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
-  {
-    unsigned int o_itr = 0 + (256 * _occa_group_position.x);
-    {
-      int w_itr = 0 + _occa_thread_position.x;
-      unsigned int Gidx = (o_itr + w_itr);
-      unsigned int Lidx = (Gidx % windowSize);
-      unsigned int dst_idx = reverseBits(Lidx, radixData);
-      unsigned int BID = Gidx - Lidx + dst_idx;
-      result[BID] = buffer[Gidx];
-    }
-  }
-}
-
 kernel void _occa_toPower_0(device float * out [[buffer(0)]],
                             device float * Real [[buffer(1)]],
                             device float * Imag [[buffer(2)]],
                             constant unsigned int & OFullSize [[buffer(3)]],
-                            constant int & windowRadix [[buffer(4)]],
                             uint3 _occa_group_position [[threadgroup_position_in_grid]],
                             uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
   {
-    unsigned int o_itr = 0 + (256 * _occa_group_position.x);
+    unsigned int o_itr = 0 + (64 * _occa_group_position.x);
     {
       int i_itr = 0 + _occa_thread_position.x;
       const unsigned int GID = o_itr + i_itr;
       float R = Real[GID];
       float I = Imag[GID];
       out[GID] = sqrt(R * R + I * I);
+    }
+  }
+}
+
+kernel void _occa_toHalfComplexFormat_0(device complex * out [[buffer(0)]],
+                                        device float * Real [[buffer(1)]],
+                                        device float * Imag [[buffer(2)]],
+                                        constant unsigned int & OHalfSize [[buffer(3)]],
+                                        constant int & windowRadix [[buffer(4)]],
+                                        uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                        uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  {
+    unsigned int o_itr = 0 + (32 * _occa_group_position.x);
+    {
+      unsigned int i_itr = 0 + _occa_thread_position.x;
+      const unsigned int GID = o_itr + i_itr;
+      const unsigned int Mradix = windowRadix - 1;
+      const unsigned int HwindowSize = 1 << Mradix;
+      const unsigned int windowItr = GID % (HwindowSize);
+      const unsigned int FwindowedLoc = GID >> Mradix;
+      const unsigned int ReadIdx = FwindowedLoc * HwindowSize + windowItr;
+      out[GID].real = Real[ReadIdx];
+      out[GID].imag = Imag[ReadIdx];
     }
   }
 }
@@ -2444,17 +2478,126 @@ kernel void _occa_Overlap_Common_0(device float * inData [[buffer(0)]],
   }
 }
 
-kernel void _occa_Window_Common_0(device float * outReal [[buffer(0)]],
-                                  constant unsigned int & OFullSize [[buffer(1)]],
-                                  constant unsigned int & windowRadix [[buffer(2)]],
-                                  uint3 _occa_group_position [[threadgroup_position_in_grid]],
-                                  uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+kernel void _occa_Window_Hanning_0(device float * outReal [[buffer(0)]],
+                                   constant unsigned int & OFullSize [[buffer(1)]],
+                                   constant unsigned int & windowSize [[buffer(2)]],
+                                   uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                   uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  {
+    unsigned int o_itr = 0 + (64 * _occa_group_position.x);
+    {
+      unsigned int i_itr = 0 + _occa_thread_position.x;
+      const unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= hanning_window((Gidx & (windowSize - 1)), windowSize);
+    }
+  }
+}
+
+kernel void _occa_Window_Hamming_0(device float * outReal [[buffer(0)]],
+                                   constant unsigned int & OFullSize [[buffer(1)]],
+                                   constant unsigned int & windowSize [[buffer(2)]],
+                                   uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                   uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
   {
     unsigned int o_itr = 0 + (64 * _occa_group_position.x);
     {
       unsigned int i_itr = 0 + _occa_thread_position.x;
       unsigned int Gidx = o_itr + i_itr;
-      outReal[Gidx] *= window_func((Gidx & (windowRadix - 1)), 1 << windowRadix);
+      outReal[Gidx] *= hamming_window((Gidx & (windowSize - 1)), windowSize);
+    }
+  }
+}
+
+kernel void _occa_Window_Blackman_0(device float * outReal [[buffer(0)]],
+                                    constant unsigned int & OFullSize [[buffer(1)]],
+                                    constant unsigned int & windowSize [[buffer(2)]],
+                                    uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                    uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  {
+    unsigned int o_itr = 0 + (64 * _occa_group_position.x);
+    {
+      unsigned int i_itr = 0 + _occa_thread_position.x;
+      unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= blackman_window((Gidx & (windowSize - 1)), windowSize);
+    }
+  }
+}
+
+kernel void _occa_Window_Nuttall_0(device float * outReal [[buffer(0)]],
+                                   constant unsigned int & OFullSize [[buffer(1)]],
+                                   constant unsigned int & windowSize [[buffer(2)]],
+                                   uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                   uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  {
+    unsigned int o_itr = 0 + (64 * _occa_group_position.x);
+    {
+      unsigned int i_itr = 0 + _occa_thread_position.x;
+      unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= nuttall_window((Gidx & (windowSize - 1)), windowSize);
+    }
+  }
+}
+
+kernel void _occa_Window_Blackman_Nuttall_0(device float * outReal [[buffer(0)]],
+                                            constant unsigned int & OFullSize [[buffer(1)]],
+                                            constant unsigned int & windowSize [[buffer(2)]],
+                                            uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                            uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  {
+    unsigned int o_itr = 0 + (64 * _occa_group_position.x);
+    {
+      unsigned int i_itr = 0 + _occa_thread_position.x;
+      unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= blackman_nuttall_window(
+        (Gidx & (windowSize - 1)),
+        windowSize
+      );
+    }
+  }
+}
+
+kernel void _occa_Window_Blackman_harris_0(device float * outReal [[buffer(0)]],
+                                           constant unsigned int & OFullSize [[buffer(1)]],
+                                           constant unsigned int & windowSize [[buffer(2)]],
+                                           uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                           uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  {
+    unsigned int o_itr = 0 + (64 * _occa_group_position.x);
+    {
+      unsigned int i_itr = 0 + _occa_thread_position.x;
+      unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= blackman_harris_window((Gidx & (windowSize - 1)), windowSize);
+    }
+  }
+}
+
+kernel void _occa_Window_FlatTop_0(device float * outReal [[buffer(0)]],
+                                   constant unsigned int & OFullSize [[buffer(1)]],
+                                   constant unsigned int & windowSize [[buffer(2)]],
+                                   uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                   uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  {
+    unsigned int o_itr = 0 + (64 * _occa_group_position.x);
+    {
+      unsigned int i_itr = 0 + _occa_thread_position.x;
+      unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= flatTop_window((Gidx & (windowSize - 1)), windowSize);
+    }
+  }
+}
+
+kernel void _occa_Window_Gaussian_0(device float * outReal [[buffer(0)]],
+                                    constant unsigned int & OFullSize [[buffer(1)]],
+                                    constant unsigned int & windowSize [[buffer(2)]],
+                                    constant float & sigma [[buffer(3)]],
+                                    uint3 _occa_group_position [[threadgroup_position_in_grid]],
+                                    uint3 _occa_thread_position [[thread_position_in_threadgroup]]) {
+  {
+    unsigned int o_itr = 0 + (64 * _occa_group_position.x);
+    {
+      unsigned int i_itr = 0 + _occa_thread_position.x;
+      unsigned int Gidx = o_itr + i_itr;
+      outReal[Gidx] *= gaussian_window((Gidx & (windowSize - 1)), windowSize, sigma);
     }
   }
 }

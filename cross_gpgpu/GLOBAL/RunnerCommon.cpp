@@ -88,7 +88,8 @@ Runner::ServerInit(const int& pNum)
                             auto result =
                             ActivateSTFT(   data.value(), 
                                             received.get_WindowRadix(),
-                                            received.get_OverlapRate());
+                                            received.get_OverlapRate(),
+                                            received.GetOption());
                             if(dataInfo.has_value() && result.has_value())
                             {
                                 memcpy( dataInfo.value().first, 

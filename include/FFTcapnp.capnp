@@ -12,4 +12,6 @@ struct RequestCapnp {
     overlapRatio @7 :Float32;
     dataLength @8 :UInt64;
     overlapdataLength @9 :UInt64;
+
+    options @10 :Text;
 }

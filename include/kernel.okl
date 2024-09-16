@@ -4,7 +4,7 @@
 #ifdef __NEED_PI
 #include <math.h>
 #endif
-// #include <math.h>
+#include <math.h>
 
 #define BPOW(DATA, N) DATA << N
 #define BDIV(DATA, N) DATA >> N
@@ -21,7 +21,7 @@ typedef struct pairs_t{
 }pairs;
 
 
-inline 
+inline
 float 
 window_func(const int index, const int window_size) {
     float normalized_index = (float)index;
@@ -30,15 +30,100 @@ window_func(const int index, const int window_size) {
     return 0.5f * (1.0f - cos(angle));
 }
 
+inline
+float
+hanning_window(const int index, const int windowSize)
+{
+    float angle = 2.0 * M_PI * index / (float(windowSize - 1));
+    return  0.5 * (1.0 - cos(angle));
+}
 
-inline int 
-reverseBits(int num, int radix_2_data) {
-    int reversed = 0;
-    for (int i = 0; i < radix_2_data; ++i) {
-        reversed = (reversed << 1) | (num & 1);
-        num >>= 1;
-    }
-    return reversed;
+inline
+float
+hamming_window(const int index, const int windowSize)
+{
+    float angle = 2.0 * M_PI * index / (float(windowSize - 1));
+    return  0.54 - (0.46 * cos(angle));
+}
+
+inline
+float
+blackman_window(const int index, const int windowSize)
+{
+    float Fangle = 2.0 * M_PI * index / (float(windowSize));
+    float Sangle = Fangle * 2.0;
+    return 0.42 - 0.5 * cos(Fangle) + 0.08 * cos(Sangle);
+}
+
+inline
+float
+nuttall_window(const int index, const int windowSize)
+{
+    float Fangle = 2.0 * M_PI * index / (float(windowSize));
+    float Sangle = Fangle * 2.0;
+    float Tangle = Fangle * 3.0;
+    return 0.355768 
+        - 0.487396 * cos(Fangle) 
+        + 0.144232 * cos(Sangle) 
+        - 0.012604 * cos(Tangle);
+
+}
+
+inline
+float
+blackman_nuttall_window(const int index, const int windowSize)
+{
+    float Fangle = 2.0 * M_PI * index / (float(windowSize));
+    float Sangle = Fangle * 2.0;
+    float Tangle = Fangle * 3.0;
+    return
+        0.3635819
+        - 0.4891775 * cos(Fangle)
+        + 0.1365995 * cos(Sangle)
+        - 0.0106411 * cos(Tangle);
+}
+
+inline
+float
+blackman_harris_window(const int index, const int windowSize)
+{
+    float Fangle = 2.0 * M_PI * index / (float(windowSize));
+    float Sangle = Fangle * 2.0;
+    float Tangle = Fangle * 3.0;
+    return
+        0.35875
+        - 0.48829 * cos(Fangle)
+        + 0.14128 * cos(Sangle)
+        - 0.01168 * cos(Tangle);
+}
+
+inline
+float
+flatTop_window(const int index, const int windowSize)
+{
+    float Fangle = 2.0 * M_PI * index / (float(windowSize));
+    float Sangle = Fangle * 2.0;
+    float Tangle = Fangle * 3.0;
+    float FFangle= Fangle * 4.0;
+
+    return
+        0.21557895
+        - 0.41663158 * cos(Fangle)
+        + 0.277263158 * cos(Sangle)
+        - 0.083578947 * cos(Tangle)
+        + 0.006947368 * cos(FFangle);
+}
+
+inline
+float
+gaussian_window(const int index, const int windowSize, const float sigma)
+{
+    
+    const int HWinSize = BDIV(windowSize, 1);
+    float angle = float(index - HWinSize) / float(HWinSize * sigma);
+    angle *= angle;
+    angle *= -0.5;
+    return exp(angle);
 }
 
 
@@ -50,6 +135,7 @@ indexer(const unsigned int firstMaximumID, const int powed_stage)
     temp.second = temp.first + powed_stage;
     return temp;
 }
+
 
 
 inline
@@ -69,16 +155,6 @@ twiddle(int k, int windowSize)
     return temp;
 }
 
-inline 
-complex  
-cmult(const complex a, const complex b){
-    complex result;
-    result.real = a.real * b.real - a.imag * b.imag;
-    result.imag = a.real * b.imag + a.imag * b.real;
-
-    return result;
-}
-
 inline
 float
 RMult(const float Ra, const float Rb, const float Ia, const float Ib)
@@ -92,28 +168,6 @@ IMult(const float Ra, const float Rb, const float Ia, const float Ib)
     return (Ra * Ib) + (Ia * Rb);
 }
 
-inline
-complex
-cadd(complex a, const complex b){
-    a.real += b.real;
-    a.imag += b.imag;
-    return a;
-}
-
-inline
-complex
-csub(complex a, const complex b){
-    a.real -= b.real;
-    a.imag -= b.imag;
-    return a;
-}
-
-inline 
-float 
-cmod(complex a){
-    return (sqrt(a.real*a.real + a.imag*a.imag));
-}
-
 #define DaCAdd(i_itr, Half, windowAdded)\
 unsigned int inRange = i_itr < Half;\
 float Dpoint = windowAdded[i_itr];\
@@ -121,72 +175,14 @@ float Apoint = windowAdded[i_itr + (Half * inRange)];\
 windowAdded[i_itr] = (Dpoint + Apoint) * inRange;
 
 
-#define OpSthmSecondTF(SEG, SEGMO, SEGR, SEGRPO, HW, WINDOWSIZE)\
-complex thisTwiddle = twiddle(segmentK(i_itr, SEG, HW), WINDOWSIZE);\
-unsigned int LeftIndex = (i_itr & SEGMO) | ((i_itr >> SEGR) << SEGRPO);\
-\
-complex LEFT;\
-complex RIGHT;\
-LEFT.real = SRBank[LeftIndex];\
-LEFT.imag = SIBank[LeftIndex];\
-RIGHT.real= SRBank[LeftIndex + SEG];\
-RIGHT.imag= SIBank[LeftIndex + SEG];\
-complex storeL = cadd(LEFT, RIGHT);\
-complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);\
-\
-FRBank[i_itr] = storeL.real;\
-FIBank[i_itr] = storeL.imag;\
-FRBank[i_itr + HW] = storeR.real;\
-FIBank[i_itr + HW] = storeR.imag;
-
-#define OpSthmFirstTS(SEG, SEGMO, SEGR, SEGRPO, HW, WINDOWSIZE)\
-complex thisTwiddle = twiddle(segmentK(i_itr, SEG, HW), WINDOWSIZE);\
-unsigned int LeftIndex = (i_itr & SEGMO) | ((i_itr >> SEGR) << SEGRPO);\
-\
-complex LEFT;\
-complex RIGHT;\
-LEFT.real = FRBank[LeftIndex];\
-LEFT.imag = FIBank[LeftIndex];\
-RIGHT.real= FRBank[LeftIndex + SEG];\
-RIGHT.imag= FIBank[LeftIndex + SEG];\
-complex storeL = cadd(LEFT, RIGHT);\
-complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);\
-\
-SRBank[i_itr] = storeL.real;\
-SIBank[i_itr] = storeL.imag;\
-SRBank[i_itr + HW] = storeR.real;\
-SIBank[i_itr + HW] = storeR.imag;
-
-@kernel void bitReverse_temp(
-                        complex* buffer,
-                        complex* result,
-                        const unsigned int OFullSize,
-                        const int windowSize,
-                        const int radixData)
-{
-    for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 256; @outer)
-    {
-        for(int w_itr=0; w_itr < 256; ++w_itr; @inner)
-        {
-            unsigned int Gidx = (o_itr + w_itr);
-            unsigned int Lidx = (Gidx % windowSize);
-            unsigned int dst_idx = reverseBits(Lidx, radixData);
-            unsigned int BID = Gidx - Lidx + dst_idx;
-            result[BID] = buffer[Gidx];
-        }
-    }
-}
-
-
 @kernel void toPower(   float* out,
                         float* Real,
                         float* Imag,
-                        const unsigned int OFullSize,
-                        const int windowRadix)
+                        const unsigned int OFullSize)
 {
-    for(unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 256; @outer)
+    for(unsigned int o_itr = 0; o_itr < OFullSize; o_itr += 64; @outer)
     {
-        for(int i_itr = 0; i_itr < 256; ++i_itr; @inner)
+        for(int i_itr = 0; i_itr < 64; ++i_itr; @inner)
         {
             const unsigned int GID = o_itr + i_itr;
             float R = Real[GID];
@@ -197,7 +193,29 @@ SIBank[i_itr + HW] = storeR.imag;
     return;
 }
 
+@kernel void toHalfComplexFormat(   complex* out, 
+                                    float* Real, 
+                                    float* Imag, 
+                                    const unsigned int OHalfSize, 
+                                    const int windowRadix)
+{
+    for(unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 32; @outer)
+    {
+        for(unsigned int i_itr = 0; i_itr < 32; ++i_itr; @inner)
+        {
+            const unsigned int GID = o_itr + i_itr;
+            const unsigned int Mradix = windowRadix - 1;
+            const unsigned int HwindowSize = BPOW(1, Mradix);
+            const unsigned int windowItr = GID % (HwindowSize);
+            const unsigned int FwindowedLoc = BDIV(GID, Mradix);
 
+            const unsigned int ReadIdx = FwindowedLoc * HwindowSize + windowItr;
+            out[GID].real = Real[ReadIdx];
+            out[GID].imag = Imag[ReadIdx];
+        }
+    }
+    return;
+}
 
 
 

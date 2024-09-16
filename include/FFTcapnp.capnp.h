@@ -32,7 +32,7 @@ struct RequestCapnp {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(c1f97193a7bbbf4d, 6, 3)
+    CAPNP_DECLARE_STRUCT_HEADER(c1f97193a7bbbf4d, 6, 4)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -80,6 +80,9 @@ public:
   inline  ::uint64_t getDataLength() const;
 
   inline  ::uint64_t getOverlapdataLength() const;
+
+  inline bool hasOptions() const;
+  inline  ::capnp::Text::Reader getOptions() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -151,6 +154,13 @@ public:
 
   inline  ::uint64_t getOverlapdataLength();
   inline void setOverlapdataLength( ::uint64_t value);
+
+  inline bool hasOptions();
+  inline  ::capnp::Text::Builder getOptions();
+  inline void setOptions( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initOptions(unsigned int size);
+  inline void adoptOptions(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownOptions();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -382,6 +392,40 @@ inline  ::uint64_t RequestCapnp::Builder::getOverlapdataLength() {
 inline void RequestCapnp::Builder::setOverlapdataLength( ::uint64_t value) {
   _builder.setDataField< ::uint64_t>(
       ::capnp::bounded<5>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool RequestCapnp::Reader::hasOptions() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS).isNull();
+}
+inline bool RequestCapnp::Builder::hasOptions() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader RequestCapnp::Reader::getOptions() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder RequestCapnp::Builder::getOptions() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+inline void RequestCapnp::Builder::setOptions( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder RequestCapnp::Builder::initOptions(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), size);
+}
+inline void RequestCapnp::Builder::adoptOptions(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> RequestCapnp::Builder::disownOptions() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
 }
 
 

@@ -26,20 +26,127 @@
     }
 }
 
-@kernel void Window_Common(
+@kernel void Window_Hanning(
     float* outReal,
     const unsigned int OFullSize,
-    const unsigned int windowRadix)
+    const unsigned int windowSize)
+{
+    for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 64; @outer)
+    {
+        for(unsigned int i_itr=0; i_itr < 64; ++i_itr; @inner)
+        {
+            const unsigned int Gidx = o_itr + i_itr;
+            outReal[Gidx] *= hanning_window(BREMAIN(Gidx, windowSize), windowSize);
+        }
+    }
+}
+
+@kernel void Window_Hamming(
+    float* outReal,
+    const unsigned int OFullSize,
+    const unsigned int windowSize)
 {
     for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 64; @outer)
     {
         for(unsigned int i_itr=0; i_itr < 64; ++i_itr; @inner)
         {
             unsigned int Gidx = o_itr + i_itr;
-            outReal[Gidx] *= window_func(BREMAIN(Gidx, windowRadix), BPOW(1, windowRadix));
+            outReal[Gidx] *= hamming_window(BREMAIN(Gidx, windowSize), windowSize);
         }
     }
 }
+
+@kernel void Window_Blackman(
+    float* outReal,
+    const unsigned int OFullSize,
+    const unsigned int windowSize)
+{
+    for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 64; @outer)
+    {
+        for(unsigned int i_itr=0; i_itr < 64; ++i_itr; @inner)
+        {
+            unsigned int Gidx = o_itr + i_itr;
+            outReal[Gidx] *= blackman_window(BREMAIN(Gidx, windowSize), windowSize);
+        }
+    }
+}
+
+@kernel void Window_Nuttall(
+    float* outReal,
+    const unsigned int OFullSize,
+    const unsigned int windowSize)
+{
+    for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 64; @outer)
+    {
+        for(unsigned int i_itr=0; i_itr < 64; ++i_itr; @inner)
+        {
+            unsigned int Gidx = o_itr + i_itr;
+            outReal[Gidx] *= nuttall_window(BREMAIN(Gidx, windowSize), windowSize);
+        }
+    }
+}
+
+@kernel void Window_Blackman_Nuttall(
+    float* outReal,
+    const unsigned int OFullSize,
+    const unsigned int windowSize)
+{
+    for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 64; @outer)
+    {
+        for(unsigned int i_itr=0; i_itr < 64; ++i_itr; @inner)
+        {
+            unsigned int Gidx = o_itr + i_itr;
+            outReal[Gidx] *= blackman_nuttall_window(BREMAIN(Gidx, windowSize), windowSize);
+        }
+    }
+}
+
+@kernel void Window_Blackman_harris(
+    float* outReal,
+    const unsigned int OFullSize,
+    const unsigned int windowSize)
+{
+    for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 64; @outer)
+    {
+        for(unsigned int i_itr=0; i_itr < 64; ++i_itr; @inner)
+        {
+            unsigned int Gidx = o_itr + i_itr;
+            outReal[Gidx] *= blackman_harris_window(BREMAIN(Gidx, windowSize), windowSize);
+        }
+    }
+}
+
+@kernel void Window_FlatTop(
+    float* outReal,
+    const unsigned int OFullSize,
+    const unsigned int windowSize)
+{
+    for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 64; @outer)
+    {
+        for(unsigned int i_itr=0; i_itr < 64; ++i_itr; @inner)
+        {
+            unsigned int Gidx = o_itr + i_itr;
+            outReal[Gidx] *= flatTop_window(BREMAIN(Gidx, windowSize), windowSize);
+        }
+    }
+}
+
+@kernel void Window_Gaussian(
+    float* outReal,
+    const unsigned int OFullSize,
+    const unsigned int windowSize,
+    const float sigma)
+{
+    for(unsigned int o_itr=0; o_itr < OFullSize; o_itr += 64; @outer)
+    {
+        for(unsigned int i_itr=0; i_itr < 64; ++i_itr; @inner)
+        {
+            unsigned int Gidx = o_itr + i_itr;
+            outReal[Gidx] *= gaussian_window(BREMAIN(Gidx, windowSize), windowSize, sigma);
+        }
+    }
+}
+
 
 @kernel void DCRemove_Common(
     float* outReal,

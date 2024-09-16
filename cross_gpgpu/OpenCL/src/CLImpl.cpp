@@ -55,7 +55,7 @@ Runner::BuildKernel()
 {
     kens = new Gcodes;
     okl_embed clCodes;
-    Program codeBase = clboost::make_prog(clCodes.radixALL, env->CT, env->DV);
+    Program codeBase = clboost::make_prog(clCodes.opencl_code, env->CT, env->DV);
     
     kens->R6STFT = clboost::make_kernel(codeBase, "_occa_Stockhpotimized6_0");
     kens->R7STFT = clboost::make_kernel(codeBase, "_occa_Stockhpotimized7_0");
@@ -81,68 +81,6 @@ Runner::BuildKernel()
     
     kens->toPower = clboost::make_kernel(codeBase, "_occa_toPower_0");
 
-    vps.Hanning = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        kens->Hanning.setArg(0, *((Buffer*)outReal));
-        kens->Hanning.setArg(1, OFullSize);
-        kens->Hanning.setArg(2, windowSize);
-        clboost::enq_q((*(CommandQueue*)usrPointer), kens->Hanning, OFullSize, 64);
-    };
-
-    vps.Hamming = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        kens->Hamming.setArg(0, *((Buffer*)outReal));
-        kens->Hamming.setArg(1, OFullSize);
-        kens->Hamming.setArg(2, windowSize);
-        clboost::enq_q((*(CommandQueue*)usrPointer), kens->Hamming, OFullSize, 64);
-    };
-    vps.Blackman = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        kens->Blackman.setArg(0, *((Buffer*)outReal));
-        kens->Blackman.setArg(1, OFullSize);
-        kens->Blackman.setArg(2, windowSize);
-        clboost::enq_q((*(CommandQueue*)usrPointer), kens->Blackman, OFullSize, 64);
-    };
-
-    vps.Nuttall = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        kens->Nuttall.setArg(0, *((Buffer*)outReal));
-        kens->Nuttall.setArg(1, OFullSize);
-        kens->Nuttall.setArg(2, windowSize);
-        clboost::enq_q((*(CommandQueue*)usrPointer), kens->Nuttall, OFullSize, 64);
-    };
-
-    vps.Blackman_Nuttall = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        kens->Blackman_Nuttall.setArg(0, *((Buffer*)outReal));
-        kens->Blackman_Nuttall.setArg(1, OFullSize);
-        kens->Blackman_Nuttall.setArg(2, windowSize);
-        clboost::enq_q((*(CommandQueue*)usrPointer), kens->Blackman_Nuttall, OFullSize, 64);
-    };
-
-    vps.Blackman_Harris = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        kens->Blackman_Harris.setArg(0, *((Buffer*)outReal));
-        kens->Blackman_Harris.setArg(1, OFullSize);
-        kens->Blackman_Harris.setArg(2, windowSize);
-        clboost::enq_q((*(CommandQueue*)usrPointer), kens->Blackman_Harris, OFullSize, 64);
-    };
-
-    vps.FlatTop = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        kens->FlatTop.setArg(0, *((Buffer*)outReal));
-        kens->FlatTop.setArg(1, OFullSize);
-        kens->FlatTop.setArg(2, windowSize);
-        clboost::enq_q((*(CommandQueue*)usrPointer), kens->FlatTop, OFullSize, 64);
-    };
-
-    vps.Gaussian = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize, const float sigma){
-        kens->Gaussian.setArg(0, *((Buffer*)outReal));
-        kens->Gaussian.setArg(1, OFullSize);
-        kens->Gaussian.setArg(2, windowSize);
-        kens->Gaussian.setArg(3, sigma);
-        clboost::enq_q((*(CommandQueue*)usrPointer), kens->Gaussian, OFullSize, 64);
-    };
-
-    vps.Remove_DC = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        kens->DCRemove.setArg(0, *((Buffer*)outReal));
-        kens->DCRemove.setArg(1, OFullSize);
-        kens->DCRemove.setArg(2, windowSize);
-        clboost::enq_q((*(CommandQueue*)usrPointer), kens->DCRemove, OFullSize, 64);
-    };
 }
 
 MAYBE_DATA
@@ -175,10 +113,91 @@ Runner::ActivateSTFT(   VECF& inData,
     error_container.push_back(kens->Overlap.setArg(3, windowRadix));
     error_container.push_back(kens->Overlap.setArg(4, OMove));
     error_container.push_back(kens->Overlap.setArg(5, RealMem));
-    error_container.push_back(clboost::enq_q(CQ, kens->Overlap, OHalfSize, 64));
-
-    vps.UseOption(options, &CQ, &RealMem, OFullSize, windowSize);
-
+    
+    error_container.push_back(clboost::enq_q(CQ, kens->Overlap, OFullSize, 64));
+    
+    if(options.find("--hanning_window") != std::string::npos)
+    {
+        error_container.push_back(kens->Hanning.setArg(0, RealMem));
+        error_container.push_back(kens->Hanning.setArg(1, OFullSize));
+        error_container.push_back(kens->Hanning.setArg(2, windowSize));
+        error_container.push_back(clboost::enq_q(CQ, kens->Hanning, OFullSize, 64));
+    }
+    else if(options.find("--hamming_window") != std::string::npos)
+    {
+        error_container.push_back(kens->Hamming.setArg(0, RealMem));
+        error_container.push_back(kens->Hamming.setArg(1, OFullSize));
+        error_container.push_back(kens->Hamming.setArg(2, windowSize));
+        error_container.push_back(clboost::enq_q(CQ, kens->Hamming, OFullSize, 64));
+    }
+    else if(options.find("--blackman_window") != std::string::npos)
+    {
+        error_container.push_back(kens->Blackman.setArg(0, RealMem));
+        error_container.push_back(kens->Blackman.setArg(1, OFullSize));
+        error_container.push_back(kens->Blackman.setArg(2, windowSize));
+        error_container.push_back(clboost::enq_q(CQ, kens->Blackman, OFullSize, 64));
+    }
+    else if(options.find("--nuttall_window") != std::string::npos)
+    {
+        error_container.push_back(kens->Nuttall.setArg(0, RealMem));
+        error_container.push_back(kens->Nuttall.setArg(1, OFullSize));
+        error_container.push_back(kens->Nuttall.setArg(2, windowSize));
+        error_container.push_back(clboost::enq_q(CQ, kens->Nuttall, OFullSize, 64));
+    }
+    else if(options.find("--blackman_nuttall_window") != std::string::npos)
+    {
+        error_container.push_back(kens->Blackman_Nuttall.setArg(0, RealMem));
+        error_container.push_back(kens->Blackman_Nuttall.setArg(1, OFullSize));
+        error_container.push_back(kens->Blackman_Nuttall.setArg(2, windowSize));
+        error_container.push_back(clboost::enq_q(CQ, kens->Blackman_Nuttall, OFullSize, 64));
+    }
+    else if(options.find("--blackman_harris_window") != std::string::npos)
+    {
+        error_container.push_back(kens->Blackman_Harris.setArg(0, RealMem));
+        error_container.push_back(kens->Blackman_Harris.setArg(1, OFullSize));
+        error_container.push_back(kens->Blackman_Harris.setArg(2, windowSize));
+        error_container.push_back(clboost::enq_q(CQ, kens->Blackman_Harris, OFullSize, 64));
+    }
+    else if(options.find("--flattop_window") != std::string::npos)
+    {
+        error_container.push_back(kens->FlatTop.setArg(0, RealMem));
+        error_container.push_back(kens->FlatTop.setArg(1, OFullSize));
+        error_container.push_back(kens->FlatTop.setArg(2, windowSize));
+        error_container.push_back(clboost::enq_q(CQ, kens->FlatTop, OFullSize, 64));
+    }
+    else if(options.find("--gaussian_window=") != std::string::npos)
+    {
+        if(options.find("<<sigma") != std::string::npos)
+        {
+            auto P1 = options.find("--gaussian_window=") + 19;
+            auto P2 = options.find("<<sigma");
+            float sigma = -1.0f;
+            std::string sigmaString = options.substr(P1, P2 - P1);
+            try
+            {
+                sigma = std::stof(sigmaString);
+            }
+            catch(const std::exception& e)
+            {
+                
+            }
+            if(sigma > 0)
+            {
+                error_container.push_back(kens->Gaussian.setArg(0, RealMem));
+                error_container.push_back(kens->Gaussian.setArg(1, OFullSize));
+                error_container.push_back(kens->Gaussian.setArg(2, windowSize));
+                error_container.push_back(kens->Gaussian.setArg(3, sigma));
+                error_container.push_back(clboost::enq_q(CQ, kens->Gaussian, OFullSize, 64));
+            }
+        }
+    }
+    if(options.find("--remove_dc") != std::string::npos)
+    {
+        error_container.push_back(kens->DCRemove.setArg(0, RealMem));
+        error_container.push_back(kens->DCRemove.setArg(1, OFullSize));
+        error_container.push_back(kens->DCRemove.setArg(2, windowSize));
+        error_container.push_back(clboost::enq_q(CQ, kens->DCRemove, qtConst * 64, 64));
+    }
     switch (windowRadix)
     {
     case 6:
@@ -252,7 +271,6 @@ Runner::ActivateSTFT(   VECF& inData,
         }
         break;
     }
-
     if(options.find("--half_complex_return") != std::string::npos)
     {
         error_container.push_back(kens->HalfComplex.setArg(0, outMem));
@@ -270,7 +288,6 @@ Runner::ActivateSTFT(   VECF& inData,
         error_container.push_back(kens->toPower.setArg(3, OFullSize));
         error_container.push_back(clboost::enq_q(CQ, kens->toPower, OFullSize, 64));
     }
-    
     std::vector<float> outData(OFullSize);
     error_container.push_back(clboost::q_read(CQ, outMem, true, OFullSize, outData.data()));
     
@@ -279,6 +296,5 @@ Runner::ActivateSTFT(   VECF& inData,
             return std::nullopt;
         }
     }
-
     return std::move(outData);
 }

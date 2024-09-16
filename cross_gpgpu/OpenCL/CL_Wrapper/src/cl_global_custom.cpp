@@ -72,8 +72,8 @@ clboost::make_prog(const std::string& hardcoded_cl_code, const Context& ct, cons
 	Program pg(ct, hardcoded_cl_code);
 	
 	auto buildSuccess = pg.build(dev);
-	std::string err_message = pg.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dev);
-	std::cout << err_message << std::endl;
+	// std::string err_message = pg.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dev);
+	// std::cout << err_message << std::endl;
 	ASSERT_EQ(buildSuccess, CL_SUCCESS);
 	//ASSERT_EQ(err_message, "\n");
 	return pg;

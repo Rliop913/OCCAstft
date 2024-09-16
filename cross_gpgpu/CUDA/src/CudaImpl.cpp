@@ -149,7 +149,9 @@ Runner::UnInit()
 }
 struct CustomData{
     CUstream* strm;
-    const unsigned int* qtCp;
+    const unsigned int* OFullSize;
+    const unsigned int* qtC;
+    
 };
 // BuildKernel: Compiles or prepares the GPGPU kernel for execution.
 void
@@ -188,7 +190,7 @@ Runner::BuildKernel()
         };
         CheckCudaError(cuLaunchKernel(
             kens->Hanning,
-            *(((CustomData*)usrPointer)->qtCp), 1, 1,
+            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
             64, 1, 1,
             0,
             *(((CustomData*)usrPointer)->strm),
@@ -206,7 +208,7 @@ Runner::BuildKernel()
         };
         CheckCudaError(cuLaunchKernel(
             kens->Hamming,
-            *(((CustomData*)usrPointer)->qtCp), 1, 1,
+            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
             64, 1, 1,
             0,
             *(((CustomData*)usrPointer)->strm),
@@ -223,7 +225,7 @@ Runner::BuildKernel()
         };
         CheckCudaError(cuLaunchKernel(
             kens->Blackman,
-            *(((CustomData*)usrPointer)->qtCp), 1, 1,
+            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
             64, 1, 1,
             0,
             *(((CustomData*)usrPointer)->strm),
@@ -241,7 +243,7 @@ Runner::BuildKernel()
         };
         CheckCudaError(cuLaunchKernel(
             kens->Nuttall,
-            *(((CustomData*)usrPointer)->qtCp), 1, 1,
+            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
             64, 1, 1,
             0,
             *(((CustomData*)usrPointer)->strm),
@@ -259,7 +261,7 @@ Runner::BuildKernel()
         };
         CheckCudaError(cuLaunchKernel(
             kens->Blackman_Nuttall,
-            *(((CustomData*)usrPointer)->qtCp), 1, 1,
+            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
             64, 1, 1,
             0,
             *(((CustomData*)usrPointer)->strm),
@@ -277,7 +279,7 @@ Runner::BuildKernel()
         };
         CheckCudaError(cuLaunchKernel(
             kens->Blackman_Harris,
-            *(((CustomData*)usrPointer)->qtCp), 1, 1,
+            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
             64, 1, 1,
             0,
             *(((CustomData*)usrPointer)->strm),
@@ -295,7 +297,7 @@ Runner::BuildKernel()
         };
         CheckCudaError(cuLaunchKernel(
             kens->FlatTop,
-            *(((CustomData*)usrPointer)->qtCp), 1, 1,
+            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
             64, 1, 1,
             0,
             *(((CustomData*)usrPointer)->strm),
@@ -314,7 +316,7 @@ Runner::BuildKernel()
         };
         CheckCudaError(cuLaunchKernel(
             kens->Gaussian,
-            *(((CustomData*)usrPointer)->qtCp), 1, 1,
+            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
             64, 1, 1,
             0,
             *(((CustomData*)usrPointer)->strm),
@@ -332,7 +334,7 @@ Runner::BuildKernel()
         };
         CheckCudaError(cuLaunchKernel(
             kens->DCRemove,
-            *(((CustomData*)usrPointer)->qtCp), 1, 1,
+            *(((CustomData*)usrPointer)->qtC), 1, 1,
             64, 1, 1,
             0,
             *(((CustomData*)usrPointer)->strm),
@@ -403,7 +405,8 @@ Runner::ActivateSTFT(   VECF& inData,
     ));
     CustomData cd;
     cd.strm = &stream;
-    cd.qtCp = &qtConst;
+    cd.OFullSize = &OFullSize;
+    cd.qtC = &qtConst;
     vps.UseOption(options, &cd, &DFR, OFullSize, windowSize);
 
     void *optRadixArgs[] =

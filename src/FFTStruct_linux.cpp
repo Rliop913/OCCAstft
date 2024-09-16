@@ -83,9 +83,13 @@ FFTRequest::FreeAndGetData()
     auto __memPtr   = reinterpret_cast<void*>(mp->getMemPTR());
     auto __POSIX_FileDes = mp->getPosixFileDes();
     auto sourceSize = mp->getData().size();
-    
+    if(sharemem == "ERR")
+    {
+        return std::nullopt;
+    }
     if(sharemem != "")
     {
+        std::cout<<"FFTLINUX:89 -- "<<sharemem<<std::endl;
         std::vector<float> result(OdataLength);
         memcpy(result.data(), __memPtr, OdataLength * sizeof(float));
         ULL pageSize = adjustToPage<float>(OdataLength);
@@ -117,7 +121,11 @@ FFTRequest::GetSHMPtr()
     SHMOBJ sharedObj;
     std::string sharemem = mp->getSharedMemory().cStr();
     ULL OdataLength = mp->getOverlapdataLength();
-
+    if(sharemem == "ERR")
+    {
+        return std::nullopt;
+    }
+    
     if(sharemem == "")
     {
         return std::nullopt;
@@ -183,6 +191,10 @@ FFTRequest::FreeData()
         __POSIX_FileDes = pw->getPosixFileDes();
         sharemem = pw->getSharedMemory().cStr();
 
+    }
+    if(sharemem == "ERR")
+    {
+        return ;
     }
     if(sharemem != "")
     {

@@ -102,6 +102,10 @@ FFTRequest::FreeData()
         WIN_HANDLE = reinterpret_cast<void*>(pw->getWindowsHandlePTR());
         sharemem = pw->getSharedMemory().cStr();
     }
+    if(sharemem == "ERR")
+    {
+        return std::nullopt;
+    }
     if(sharemem != "")
     {
         
@@ -132,7 +136,10 @@ FFTRequest::GetSHMPtr()
     {
         return std::nullopt;
     }
-
+    if(sharemem == "ERR")
+    {
+        return std::nullopt;
+    }
     sharedObj.second = OpenFileMapping
     (
         FILE_MAP_ALL_ACCESS,

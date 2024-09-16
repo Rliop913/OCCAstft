@@ -34,7 +34,7 @@ inline
 float
 hanning_window(const int index, const int windowSize)
 {
-    float angle = 2.0 * M_PI * index / (float(windowSize - 1));
+    float angle = 2.0 * M_PI * index / ((float)(windowSize - 1));
     return  0.5 * (1.0 - cos(angle));
 }
 
@@ -42,7 +42,7 @@ inline
 float
 hamming_window(const int index, const int windowSize)
 {
-    float angle = 2.0 * M_PI * index / (float(windowSize - 1));
+    float angle = 2.0 * M_PI * index / ((float)(windowSize - 1));
     return  0.54 - (0.46 * cos(angle));
 }
 
@@ -50,7 +50,7 @@ inline
 float
 blackman_window(const int index, const int windowSize)
 {
-    float Fangle = 2.0 * M_PI * index / (float(windowSize));
+    float Fangle = 2.0 * M_PI * index / ((float)(windowSize));
     float Sangle = Fangle * 2.0;
     return 0.42 - 0.5 * cos(Fangle) + 0.08 * cos(Sangle);
 }
@@ -59,7 +59,7 @@ inline
 float
 nuttall_window(const int index, const int windowSize)
 {
-    float Fangle = 2.0 * M_PI * index / (float(windowSize));
+    float Fangle = 2.0 * M_PI * index / ((float)(windowSize));
     float Sangle = Fangle * 2.0;
     float Tangle = Fangle * 3.0;
     return 0.355768 
@@ -73,7 +73,7 @@ inline
 float
 blackman_nuttall_window(const int index, const int windowSize)
 {
-    float Fangle = 2.0 * M_PI * index / (float(windowSize));
+    float Fangle = 2.0 * M_PI * index / ((float)(windowSize));
     float Sangle = Fangle * 2.0;
     float Tangle = Fangle * 3.0;
     return
@@ -87,7 +87,7 @@ inline
 float
 blackman_harris_window(const int index, const int windowSize)
 {
-    float Fangle = 2.0 * M_PI * index / (float(windowSize));
+    float Fangle = 2.0 * M_PI * index / ((float)(windowSize));
     float Sangle = Fangle * 2.0;
     float Tangle = Fangle * 3.0;
     return
@@ -101,7 +101,7 @@ inline
 float
 flatTop_window(const int index, const int windowSize)
 {
-    float Fangle = 2.0 * M_PI * index / (float(windowSize));
+    float Fangle = 2.0 * M_PI * index / ((float)(windowSize));
     float Sangle = Fangle * 2.0;
     float Tangle = Fangle * 3.0;
     float FFangle= Fangle * 4.0;
@@ -120,7 +120,7 @@ gaussian_window(const int index, const int windowSize, const float sigma)
 {
     
     const int HWinSize = BDIV(windowSize, 1);
-    float angle = float(index - HWinSize) / float(HWinSize * sigma);
+    float angle = ((float)(index - HWinSize)) / ((float)(HWinSize * sigma));
     angle *= angle;
     angle *= -0.5;
     return exp(angle);

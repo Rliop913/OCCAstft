@@ -20,26 +20,26 @@ __device__ inline float window_func(const int index,
 
 __device__ inline float hanning_window(const int index,
                                        const int windowSize) {
-  float angle = 2.0 * M_PI * index / (float(windowSize - 1));
+  float angle = 2.0 * M_PI * index / ((float) (windowSize - 1));
   return 0.5 * (1.0 - cos(angle));
 }
 
 __device__ inline float hamming_window(const int index,
                                        const int windowSize) {
-  float angle = 2.0 * M_PI * index / (float(windowSize - 1));
+  float angle = 2.0 * M_PI * index / ((float) (windowSize - 1));
   return 0.54 - (0.46 * cos(angle));
 }
 
 __device__ inline float blackman_window(const int index,
                                         const int windowSize) {
-  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Fangle = 2.0 * M_PI * index / ((float) (windowSize));
   float Sangle = Fangle * 2.0;
   return 0.42 - 0.5 * cos(Fangle) + 0.08 * cos(Sangle);
 }
 
 __device__ inline float nuttall_window(const int index,
                                        const int windowSize) {
-  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Fangle = 2.0 * M_PI * index / ((float) (windowSize));
   float Sangle = Fangle * 2.0;
   float Tangle = Fangle * 3.0;
   return 0.355768 - 0.487396 * cos(Fangle) + 0.144232 * cos(Sangle) - 0.012604 * cos(
@@ -49,7 +49,7 @@ __device__ inline float nuttall_window(const int index,
 
 __device__ inline float blackman_nuttall_window(const int index,
                                                 const int windowSize) {
-  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Fangle = 2.0 * M_PI * index / ((float) (windowSize));
   float Sangle = Fangle * 2.0;
   float Tangle = Fangle * 3.0;
   return 0.3635819 - 0.4891775 * cos(Fangle) + 0.1365995 * cos(Sangle) - 0.0106411 * cos(
@@ -59,7 +59,7 @@ __device__ inline float blackman_nuttall_window(const int index,
 
 __device__ inline float blackman_harris_window(const int index,
                                                const int windowSize) {
-  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Fangle = 2.0 * M_PI * index / ((float) (windowSize));
   float Sangle = Fangle * 2.0;
   float Tangle = Fangle * 3.0;
   return 0.35875 - 0.48829 * cos(Fangle) + 0.14128 * cos(Sangle) - 0.01168 * cos(
@@ -69,7 +69,7 @@ __device__ inline float blackman_harris_window(const int index,
 
 __device__ inline float flatTop_window(const int index,
                                        const int windowSize) {
-  float Fangle = 2.0 * M_PI * index / (float(windowSize));
+  float Fangle = 2.0 * M_PI * index / ((float) (windowSize));
   float Sangle = Fangle * 2.0;
   float Tangle = Fangle * 3.0;
   float FFangle = Fangle * 4.0;
@@ -82,7 +82,7 @@ __device__ inline float gaussian_window(const int index,
                                         const int windowSize,
                                         const float sigma) {
   const int HWinSize = windowSize >> 1;
-  float angle = float(index - HWinSize) / float(HWinSize * sigma);
+  float angle = ((float) (index - HWinSize)) / ((float) (HWinSize * sigma));
   angle *= angle;
   angle *= -0.5;
   return exp(angle);

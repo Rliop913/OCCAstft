@@ -3,7 +3,7 @@
 #include "RunnerInterface.hpp"
 #include "CL_Wrapper.h"
 #include "cl_global_custom.h"
-#include "okl_embedded.h"
+#include "okl_embed.hpp"
 struct Genv{
     std::vector<Platform> PF;
     Device DV;

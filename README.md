@@ -168,13 +168,13 @@ The program processes input signal data through STFT and returns the results. Yo
    This code demonstrates how to manage executables and set up WebSocket communication for STFT processing. The `KillRunner` function works **only if the proxy object directly started the Runner** and requests a safe shutdown. Additionally, if the proxy starts the Runner directly, the proxy and Runner can use shared memory between processes, enabling faster execution.
 ## Available Options
 - **PreProcess**
--- **--hanning_window**
--- **--hamming_window**
--- **--blackman_window**
--- **--nuttall_window**
--- **--blackman_nuttall_window**
--- **--blackman_harris_window**
--- **--flattop_window**
+-- **--hanning_window**: hanning window
+-- **--hamming_window**: hamming window
+-- **--blackman_window**: blackman window
+-- **--nuttall_window** : nuttall window
+-- **--blackman_nuttall_window** : As written
+-- **--blackman_harris_window** : As written
+-- **--flattop_window** : As written
 -- **--gaussian_window=(sigmaSize)<<sigma**: gaussian window. Enter the sigma value to use it. e.g. --gaussian_window=4.312345<<sigma
 
 -- **--remove_dc**: removes the DC component within the window.

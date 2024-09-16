@@ -2,4 +2,4 @@
 class okl_embed90_11_6 {
  public:
  const char* ptx_code = 
- R"(
+ R"(    )";};

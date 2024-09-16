@@ -92,7 +92,8 @@ JsonStore
 MAYBE_DATA
 Runner::ActivateSTFT(   VECF& inData, 
                         const int& windowRadix, 
-                        const float& overlapRatio)
+                        const float& overlapRatio,
+                        const std::string& options)
 {
     //default code blocks
     const unsigned int  FullSize    = inData.size();

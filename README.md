@@ -182,8 +182,9 @@ The program processes input signal data through STFT and returns the results. Yo
     -- **--blackman_harris_window** : As written
 
     -- **--flattop_window** : As written
-    
-    -- **--gaussian_window=(sigmaSize)<<sigma**: gaussian window. Enter the sigma value to use it. e.g. --gaussian_window=4.312345<<sigma
+
+    -- **--gaussian_window=(sigmaSize)<<sigma**: gaussian window. Enter the sigma value to use it. 
+    e.g. --gaussian_window=4.312345<<sigma
 
     -- **--remove_dc**: removes the DC component within the window.
 

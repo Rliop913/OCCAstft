@@ -163,3 +163,114 @@ int main(int argc, char *argv[])
     ix::uninitNetSystem();
     return 0;
 }
+
+#define I_OPTION_CHECK(FUNC, OPT)\
+if(options.find(OPT) != std::string::npos)\
+{\
+    if(!FUNC)\
+    {\
+        return std::move(OPT);\
+    }\
+}
+
+#define EI_OPTION_CHECK(FUNC, OPT)\
+else if(options.find(OPT) != std::string::npos)\
+{\
+    if(!FUNC)\
+    {\
+        return std::move(OPT);\
+    }\
+}
+
+std::string&&
+Default_Pipeline(
+    void* userStruct, 
+    void* real,
+    void* imag, 
+    void* out,
+    CUI&& FullSize,
+    CUI&& windowSize,
+    CUI&& qtConst,
+    CUI&& OFullSize,
+    CUI&& OHalfSize,
+    CUI&& OMove,
+    const std::string&  options,
+    const int           windowRadix,
+    const float         overlapRatio
+)
+{
+    I_OPTION_CHECK ( Hanning            (userStruct, real, OFullSize, windowSize), "--hanning_window"           )
+    EI_OPTION_CHECK( Hamming            (userStruct, real, OFullSize, windowSize), "--hamming_window"           )
+    EI_OPTION_CHECK( Blackman           (userStruct, real, OFullSize, windowSize), "--blackman_window"          )
+    EI_OPTION_CHECK( Nuttall            (userStruct, real, OFullSize, windowSize), "--nuttall_window"           )
+    EI_OPTION_CHECK( Blackman_Nuttall   (userStruct, real, OFullSize, windowSize), "--blackman_nuttall_window"  )
+    EI_OPTION_CHECK( Blackman_Harris    (userStruct, real, OFullSize, windowSize), "--blackman_harris_window"   )
+    EI_OPTION_CHECK( FlatTop            (userStruct, real, OFullSize, windowSize), "--flattop_window"           )
+    
+    else if(options.find("--gaussian_window=") != std::string::npos)
+    {
+        if(options.find("<<sigma") != std::string::npos)
+        {
+            auto    P1                  = options.find("--gaussian_window=") + 19;
+            auto    P2                  = options.find("<<sigma");
+            float   sigma               = -1.0f;
+            std::string sigmaString     = options.substr(P1, P2 - P1);
+            
+            try {   
+                sigma = std::stof(sigmaString);
+            }catch( const std::exception& e){   
+                return std::move("--gaussian_window");
+            }
+            
+            if(sigma > 0)
+            {
+                if(!Gaussian(userStruct, real, OFullSize, windowSize, sigma))
+                {
+                    return std::move("--gaussian_window");
+                }
+            }
+        }
+    }
+    I_OPTION_CHECK(Remove_DC(userStruct, real, OFullSize, windowSize), "--remove_dc")
+    
+    if(windowRadix < 6)
+    {
+        return std::move("Operation not supported");
+    }
+    void* realResult = &real;
+    void* imagResult = &imag;
+    switch (windowRadix)
+    {
+    case 6:
+        Radix6  (userStruct, real, imag, OHalfSize);
+        break;
+    case 7:
+        Radix7  (userStruct, real, imag, OHalfSize);
+        break;
+    case 8:
+        Radix8  (userStruct, real, imag, OHalfSize);
+        break;
+    case 9:
+        Radix9  (userStruct, real, imag, OHalfSize);
+        break;
+    case 10:
+        Radix10 (userStruct, real, imag, OHalfSize);
+        break;
+    case 11:
+        Radix11 (userStruct, real, imag, OHalfSize);
+        break;
+    default:
+        CUI HW = windowSize >> 1;
+        RadixC  (userStruct, real, imag, HW, windowRadix, OFullSize, realResult, imagResult);
+        break;
+    }
+    
+    I_OPTION_CHECK(
+        HalfComplex(userStruct, out, realResult, imagResult, OHalfSize, windowRadix),
+        "--half_complex_return"
+    )else{
+        ToPower(userStruct, out, realResult, imagResult, OFullSize);
+    }
+}
+#undef I_OPTION_CHECK
+#undef EI_OPTION_CHECK

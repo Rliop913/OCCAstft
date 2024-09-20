@@ -4,18 +4,17 @@
 #include <optional>
 #include <iostream>
 #include <thread>
-#include <functional>
 
 #include <IXWebSocket.h>
 #include <IXWebSocketServer.h>
 #include "FFTStruct.hpp"
 
-#define LOCAL_SIZE 256
 
 using VECF = std::vector<float>;
 using MAYBE_DATA = std::optional<VECF>;
 using BIN = std::string;
-
+using CUI = const unsigned int;
+using UI = unsigned int;
 struct Genv;
 struct Gcodes;
 
@@ -34,6 +33,67 @@ toQuot(float fullSize, float overlapRatio, float windowSize){
         return ((fullSize ) / (windowSize * (1.0f - overlapRatio))) + 1;
     }
 }
+
+bool Hanning            (void* userStruct, void* data, CUI OFullSize, CUI windowSize);
+bool Hamming            (void* userStruct, void* data, CUI OFullSize, CUI windowSize);
+bool Blackman           (void* userStruct, void* data, CUI OFullSize, CUI windowSize);
+bool Nuttall            (void* userStruct, void* data, CUI OFullSize, CUI windowSize);
+bool Blackman_Nuttall   (void* userStruct, void* data, CUI OFullSize, CUI windowSize);
+bool Blackman_Harris    (void* userStruct, void* data, CUI OFullSize, CUI windowSize);
+bool FlatTop            (void* userStruct, void* data, CUI OFullSize, CUI windowSize);
+bool RemoveDC           (void* userStruct, void* data, CUI OFullSize, CUI windowSize);
+bool Gaussian           (void* userStruct, void* data, CUI OFullSize, CUI windowSize, const float sigma);
+
+bool Radix6             (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
+bool Radix7             (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
+bool Radix8             (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
+bool Radix9             (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
+bool Radix10            (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
+bool Radix11            (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
+
+bool RadixC             (   void*   userStruct,
+                            void*   real, 
+                            void*   imag,
+                            void*   out,
+                            CUI&&   HWindowSize,
+                            CUI     windowRadix,
+                            CUI     OFullSize,
+                            void*   realResult,
+                            void*   imagResult
+                        );
+
+bool HalfComplex        (   void*   userStruct, 
+                            void*   out, 
+                            void*   realResult, 
+                            void*   imagResult, 
+                            CUI     OHalfSize, 
+                            CUI     windowRadix
+                        );
+
+bool ToPower            (   void* userStruct, 
+                            void* out, 
+                            void* realResult, 
+                            void* imagResult, 
+                            CUI OFullSize
+                        );
+
+std::string&& 
+Default_Pipeline(
+    void* userStruct, 
+    void* real,
+    void* imag,
+    CUI&& FullSize,
+    CUI&& windowSize,
+    CUI&& qtConst,
+    CUI&& OFullSize,
+    CUI&& OHalfSize,
+    CUI&& OMove,
+    const std::string&  options,
+    const int           windowRadix,
+    const float         overlapRatio);
+
+
+
 
 struct PreProcess{
     std::function<void(float*, const unsigned int, const unsigned int)> Hanning;

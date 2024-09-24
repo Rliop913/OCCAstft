@@ -182,30 +182,50 @@ else if(options.find(OPT) != std::string::npos)\
     }\
 }
 
-std::string&&
-Default_Pipeline(
+std::string
+runnerFunction::Default_Pipeline(
     void* userStruct, 
+    void* origin,
     void* real,
-    void* imag, 
+    void* imag,
+    void* subreal,
+    void* subimag,
     void* out,
-    CUI&& FullSize,
-    CUI&& windowSize,
-    CUI&& qtConst,
-    CUI&& OFullSize,
-    CUI&& OHalfSize,
-    CUI&& OMove,
+    CUI&& __FullSize,
+    CUI&& __windowSize,
+    CUI&& __qtConst,
+    CUI&& __OFullSize,
+    CUI&& __OHalfSize,
+    CUI&& __OMove,
     const std::string&  options,
     const int           windowRadix,
     const float         overlapRatio
 )
 {
-    I_OPTION_CHECK ( Hanning            (userStruct, real, OFullSize, windowSize), "--hanning_window"           )
-    EI_OPTION_CHECK( Hamming            (userStruct, real, OFullSize, windowSize), "--hamming_window"           )
-    EI_OPTION_CHECK( Blackman           (userStruct, real, OFullSize, windowSize), "--blackman_window"          )
-    EI_OPTION_CHECK( Nuttall            (userStruct, real, OFullSize, windowSize), "--nuttall_window"           )
-    EI_OPTION_CHECK( Blackman_Nuttall   (userStruct, real, OFullSize, windowSize), "--blackman_nuttall_window"  )
-    EI_OPTION_CHECK( Blackman_Harris    (userStruct, real, OFullSize, windowSize), "--blackman_harris_window"   )
-    EI_OPTION_CHECK( FlatTop            (userStruct, real, OFullSize, windowSize), "--flattop_window"           )
+    CUI FullSize = std::move(__FullSize);
+    CUI windowSize = std::move(__windowSize);
+    CUI qtConst = std::move(__qtConst);
+    CUI OFullSize = std::move(__OFullSize);
+    CUI OHalfSize = std::move(__OHalfSize);
+    CUI OMove = std::move(__OMove);
+
+    runnerFunction::Overlap
+    (
+        userStruct,
+        origin,
+        OFullSize,
+        FullSize,
+        windowRadix,
+        OMove,
+        real
+    );
+    I_OPTION_CHECK ( runnerFunction::Hanning            (userStruct, real, OFullSize, windowSize), "--hanning_window"           )
+    EI_OPTION_CHECK( runnerFunction::Hamming            (userStruct, real, OFullSize, windowSize), "--hamming_window"           )
+    EI_OPTION_CHECK( runnerFunction::Blackman           (userStruct, real, OFullSize, windowSize), "--blackman_window"          )
+    EI_OPTION_CHECK( runnerFunction::Nuttall            (userStruct, real, OFullSize, windowSize), "--nuttall_window"           )
+    EI_OPTION_CHECK( runnerFunction::Blackman_Nuttall   (userStruct, real, OFullSize, windowSize), "--blackman_nuttall_window"  )
+    EI_OPTION_CHECK( runnerFunction::Blackman_Harris    (userStruct, real, OFullSize, windowSize), "--blackman_harris_window"   )
+    EI_OPTION_CHECK( runnerFunction::FlatTop            (userStruct, real, OFullSize, windowSize), "--flattop_window"           )
     
     else if(options.find("--gaussian_window=") != std::string::npos)
     {
@@ -224,53 +244,66 @@ Default_Pipeline(
             
             if(sigma > 0)
             {
-                if(!Gaussian(userStruct, real, OFullSize, windowSize, sigma))
+                if(!runnerFunction::Gaussian(userStruct, real, OFullSize, windowSize, sigma))
                 {
                     return std::move("--gaussian_window");
                 }
             }
         }
     }
-    I_OPTION_CHECK(Remove_DC(userStruct, real, OFullSize, windowSize), "--remove_dc")
+    I_OPTION_CHECK(runnerFunction::RemoveDC(userStruct, real, qtConst, OFullSize, windowSize), "--remove_dc")
     
     if(windowRadix < 6)
     {
         return std::move("Operation not supported");
     }
-    void* realResult = &real;
-    void* imagResult = &imag;
+    void* realResult = real;
+    void* imagResult = imag;
     switch (windowRadix)
     {
     case 6:
-        Radix6  (userStruct, real, imag, OHalfSize);
+        runnerFunction::Radix6  (userStruct, real, imag, OHalfSize);
         break;
     case 7:
-        Radix7  (userStruct, real, imag, OHalfSize);
+        runnerFunction::Radix7  (userStruct, real, imag, OHalfSize);
         break;
     case 8:
-        Radix8  (userStruct, real, imag, OHalfSize);
+        runnerFunction::Radix8  (userStruct, real, imag, OHalfSize);
         break;
     case 9:
-        Radix9  (userStruct, real, imag, OHalfSize);
+        runnerFunction::Radix9  (userStruct, real, imag, OHalfSize);
         break;
     case 10:
-        Radix10 (userStruct, real, imag, OHalfSize);
+        runnerFunction::Radix10 (userStruct, real, imag, OHalfSize);
         break;
     case 11:
-        Radix11 (userStruct, real, imag, OHalfSize);
+        runnerFunction::Radix11 (userStruct, real, imag, OHalfSize);
         break;
     default:
-        CUI HW = windowSize >> 1;
-        RadixC  (userStruct, real, imag, HW, windowRadix, OFullSize, realResult, imagResult);
+        runnerFunction::RadixC
+        (
+            userStruct, 
+            real, 
+            imag, 
+            subreal, 
+            subimag, 
+            out, 
+            (windowSize >> 1), 
+            windowRadix, 
+            OFullSize, 
+            realResult, 
+            imagResult
+        );
         break;
     }
     
     I_OPTION_CHECK(
-        HalfComplex(userStruct, out, realResult, imagResult, OHalfSize, windowRadix),
+        runnerFunction::HalfComplex(userStruct, out, realResult, imagResult, OHalfSize, windowRadix),
         "--half_complex_return"
     )else{
-        ToPower(userStruct, out, realResult, imagResult, OFullSize);
+        runnerFunction::ToPower(userStruct, out, realResult, imagResult, OFullSize);
     }
+    return std::move("OK");
 }
 #undef I_OPTION_CHECK
 #undef EI_OPTION_CHECK

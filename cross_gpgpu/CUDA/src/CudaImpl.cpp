@@ -1,39 +1,5 @@
-#include "RunnerInterface.hpp"
 
-
-#include "okl_embed_52_11_6.hpp"
-#include "okl_embed_52_12_1.hpp"
-#include "okl_embed_52_12_3.hpp"
-
-#include "okl_embed_61_11_6.hpp"
-#include "okl_embed_61_12_1.hpp"
-#include "okl_embed_61_12_3.hpp"
-
-#include "okl_embed_70_11_6.hpp"
-#include "okl_embed_70_12_1.hpp"
-#include "okl_embed_70_12_3.hpp"
-
-#include "okl_embed_75_11_6.hpp"
-#include "okl_embed_75_12_1.hpp"
-#include "okl_embed_75_12_3.hpp"
-
-#include "okl_embed_80_11_6.hpp"
-#include "okl_embed_80_12_1.hpp"
-#include "okl_embed_80_12_3.hpp"
-
-
-#include "okl_embed_90_12_1.hpp"
-#include "okl_embed_90_12_3.hpp"
-
-#include <cuda.h>
-
-
-#define LOAD_PTX(buildName, ValueName, IF_Fail_DO)\
-    buildName ValueName;\
-    if(cuModuleLoadData(&(env->RadixAll), ValueName.ptx_code) != CUDA_SUCCESS)\
-    {\
-        IF_Fail_DO;\
-    }
+#include "cudaStruct.hpp"
 
 int counter = 0;
 void CheckCudaError(CUresult err) {
@@ -49,42 +15,7 @@ void CheckCudaError(CUresult err) {
         
     }
 }
-// Genv: Structure to hold the GPGPU environment settings and resources.
-struct Genv{
-    CUdevice device;
-    CUcontext context;
-    CUmodule RadixAll;
-    
-    
-    //
-};
 
-// Gcodes: Structure to manage and store GPGPU kernel codes.
-struct Gcodes{
-    CUfunction R6STFT;
-    CUfunction R7STFT;
-    CUfunction R8STFT;
-    CUfunction R9STFT;
-    CUfunction R10STFT;
-    CUfunction R11STFT;
-    
-    CUfunction RadixCommon;
-    CUfunction Overlap;
-    CUfunction DCRemove;
-
-    CUfunction Hanning;
-    CUfunction Hamming;
-    CUfunction Blackman;
-    CUfunction Nuttall;
-    CUfunction Blackman_Nuttall;
-    CUfunction Blackman_Harris;
-    CUfunction FlatTop;
-    CUfunction Gaussian;
-
-    CUfunction HalfComplex;
-    CUfunction toPower;
-
-};
 
 // InitEnv: Initializes the GPGPU environment and kernel code structures.
 // Allocates memory for 'env' (Genv) and 'kens' (Gcodes).
@@ -179,169 +110,6 @@ Runner::BuildKernel()
 
     CheckCudaError(cuModuleGetFunction(&(kens->toPower), env->RadixAll, "_occa_toPower_0"));
     CheckCudaError(cuModuleGetFunction(&(kens->HalfComplex), env->RadixAll, "_occa_toHalfComplexFormat_0"));
-    
-
-    vps.Hanning = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        void *args[] =
-        {
-            outReal,
-            (void*)&OFullSize,
-            (void*)&windowSize
-        };
-        CheckCudaError(cuLaunchKernel(
-            kens->Hanning,
-            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
-            64, 1, 1,
-            0,
-            *(((CustomData*)usrPointer)->strm),
-            args,
-            NULL
-        ));
-    };
-
-    vps.Hamming = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        void *args[] =
-        {
-            outReal,
-            (void*)&OFullSize,
-            (void*)&windowSize
-        };
-        CheckCudaError(cuLaunchKernel(
-            kens->Hamming,
-            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
-            64, 1, 1,
-            0,
-            *(((CustomData*)usrPointer)->strm),
-            args,
-            NULL
-        ));
-    };
-    vps.Blackman = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        void *args[] =
-        {
-            outReal,
-            (void*)&OFullSize,
-            (void*)&windowSize
-        };
-        CheckCudaError(cuLaunchKernel(
-            kens->Blackman,
-            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
-            64, 1, 1,
-            0,
-            *(((CustomData*)usrPointer)->strm),
-            args,
-            NULL
-        ));
-    };
-
-    vps.Nuttall = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        void *args[] =
-        {
-            outReal,
-            (void*)&OFullSize,
-            (void*)&windowSize
-        };
-        CheckCudaError(cuLaunchKernel(
-            kens->Nuttall,
-            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
-            64, 1, 1,
-            0,
-            *(((CustomData*)usrPointer)->strm),
-            args,
-            NULL
-        ));
-    };
-
-    vps.Blackman_Nuttall = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        void *args[] =
-        {
-            outReal,
-            (void*)&OFullSize,
-            (void*)&windowSize
-        };
-        CheckCudaError(cuLaunchKernel(
-            kens->Blackman_Nuttall,
-            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
-            64, 1, 1,
-            0,
-            *(((CustomData*)usrPointer)->strm),
-            args,
-            NULL
-        ));
-    };
-
-    vps.Blackman_Harris = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        void *args[] =
-        {
-            outReal,
-            (void*)&OFullSize,
-            (void*)&windowSize
-        };
-        CheckCudaError(cuLaunchKernel(
-            kens->Blackman_Harris,
-            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
-            64, 1, 1,
-            0,
-            *(((CustomData*)usrPointer)->strm),
-            args,
-            NULL
-        ));
-    };
-
-    vps.FlatTop = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        void *args[] =
-        {
-            outReal,
-            (void*)&OFullSize,
-            (void*)&windowSize
-        };
-        CheckCudaError(cuLaunchKernel(
-            kens->FlatTop,
-            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
-            64, 1, 1,
-            0,
-            *(((CustomData*)usrPointer)->strm),
-            args,
-            NULL
-        ));
-    };
-
-    vps.Gaussian = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize, const float sigma){
-        void *args[] =
-        {
-            outReal,
-            (void*)&OFullSize,
-            (void*)&windowSize,
-            (void*)&sigma
-        };
-        CheckCudaError(cuLaunchKernel(
-            kens->Gaussian,
-            *(((CustomData*)usrPointer)->OFullSize) / 64, 1, 1,
-            64, 1, 1,
-            0,
-            *(((CustomData*)usrPointer)->strm),
-            args,
-            NULL
-        ));
-    };
-
-    vps.Remove_DC = [this](void *usrPointer, void* outReal, const unsigned int OFullSize, const unsigned int windowSize){
-        void *args[] =
-        {
-            outReal,
-            (void*)&OFullSize,
-            (void*)&windowSize
-        };
-        CheckCudaError(cuLaunchKernel(
-            kens->DCRemove,
-            *(((CustomData*)usrPointer)->qtC), 1, 1,
-            64, 1, 1,
-            0,
-            *(((CustomData*)usrPointer)->strm),
-            args,
-            NULL
-        ));
-    };
 }
 
 MAYBE_DATA
@@ -369,7 +137,6 @@ Runner::ActivateSTFT(   VECF& inData,
     CUdeviceptr DFI;
     CUdeviceptr DSR;
     CUdeviceptr DSI;
-    bool DS_FLAG = false;
 
     CUdeviceptr* Rout = &DFR;
     CUdeviceptr* Iout = &DFI;
@@ -384,224 +151,265 @@ Runner::ActivateSTFT(   VECF& inData,
     CheckCudaError(cuMemsetD32Async(DFI, 0, OFullSize, stream));
     CheckCudaError(cuMemcpyHtoDAsync(DInput, inData.data(), sizeof(float) * FullSize, stream));
     
+    cudaData cud;
+    cud.env = env;
+    cud.kens= kens;
+    cud.qtConst = qtConst;
+    cud.strm = &stream;
     
-    void *overlapArgs[] =
-    {
+    std::string strRes = 
+    runnerFunction::Default_Pipeline
+    (
+        &cud,
         &DInput,
-        (void*)&OFullSize,
-        (void*)&FullSize,
-        (void*)&windowRadix,
-        (void*)&OMove,
-        &DFR,
-    };
-    CheckCudaError(cuLaunchKernel(
-        kens->Overlap,
-        qtConst, 1, 1,
-        64, 1, 1,
-        0,
-        stream,
-        overlapArgs,
-        NULL
-    ));
-    CustomData cd;
-    cd.strm = &stream;
-    cd.OFullSize = &OFullSize;
-    cd.qtC = &qtConst;
-    vps.UseOption(options, &cd, &DFR, OFullSize, windowSize);
-
-    void *optRadixArgs[] =
-    {
         &DFR,
         &DFI,
-        (void*)&OHalfSize
-    };
-
-    switch (windowRadix)
-    {
-    case 6:
-        CheckCudaError(cuLaunchKernel(
-            kens->R6STFT,
-            qtConst, 1, 1,
-            32, 1, 1,
-            0,
-            stream,
-            optRadixArgs,
-            NULL
-        ));
-        break;
-    case 7:
-        CheckCudaError(cuLaunchKernel(
-            kens->R7STFT,
-            qtConst, 1, 1,
-            64, 1, 1,
-            0,
-            stream,
-            optRadixArgs,
-            NULL
-        ));
-        break;
-    case 8:
-        CheckCudaError(cuLaunchKernel(
-            kens->R8STFT,
-            qtConst, 1, 1,
-            128, 1, 1,
-            0,
-            stream,
-            optRadixArgs,
-            NULL
-        ));
-        break;
-    case 9:
-        CheckCudaError(cuLaunchKernel(
-            kens->R9STFT,
-            qtConst, 1, 1,
-            256, 1, 1,
-            0,
-            stream,
-            optRadixArgs,
-            NULL
-        ));
-        break;
-    case 10:
-        CheckCudaError(cuLaunchKernel(
-            kens->R10STFT,
-            qtConst, 1, 1,
-            512, 1, 1,
-            0,
-            stream,
-            optRadixArgs,
-            NULL
-        ));
-        break;
-    case 11:
-        CheckCudaError(cuLaunchKernel(
-            kens->R11STFT,
-            qtConst, 1, 1,
-            1024, 1, 1,
-            0,
-            stream,
-            optRadixArgs,
-            NULL
-        ));
-        break;
-    default:
-        DS_FLAG = true;
-        CheckCudaError(cuMemAllocAsync(&DSR, sizeof(float) * OFullSize, stream));
-        CheckCudaError(cuMemAllocAsync(&DSI, sizeof(float) * OFullSize, stream));
-        auto HwindowSize = windowSize >> 1;
-        unsigned int stage =0;
-        void *FTSstockham[] =
-        {
-            &DFR,
-            &DFI,
-            &DSR,
-            &DSI,
-            (void*)&HwindowSize,
-            (void*)&stage,
-            (void*)&OHalfSize,
-            (void*)&windowRadix,
-        };
-        void *STFstockham[] =
-        {
-            &DSR,
-            &DSI,
-            &DFR,
-            &DFI,
-            (void*)&HwindowSize,
-            (void*)&stage,
-            (void*)&OHalfSize,
-            (void*)&windowRadix,
-        };
-        
-        for (stage = 0; stage < windowRadix; ++stage)
-        {
-            if (stage % 2 == 0)
-            {
-                CheckCudaError(cuLaunchKernel(
-                    kens->RadixCommon,
-                    OHalfSize / 256, 1, 1,
-                    256, 1, 1,
-                    0,
-                    stream,
-                    FTSstockham,
-                    NULL
-                ));
-            }
-            else
-            {
-                CheckCudaError(cuLaunchKernel(
-                    kens->RadixCommon,
-                    OHalfSize / 256, 1, 1,
-                    256, 1, 1,
-                    0,
-                    stream,
-                    STFstockham,
-                    NULL
-                ));
-            }
-            if(windowRadix % 2 != 0)
-            {
-                Rout = &DSR;
-                Iout = &DSI;
-            }
-        }
-        break;
-    }
-    std::vector<float> outMem(OFullSize);
-    if(options.find("--half_complex_return") != std::string::npos)
-    {
-        void *halfComplexArgs[] =
-        {
-            &DOutput,
-            Rout,
-            Iout,
-            (void*)&OHalfSize,
-            (void*)&windowRadix
-        };
-        CheckCudaError(cuLaunchKernel(
-            kens->HalfComplex,
-            OHalfSize / 32, 1, 1,
-            32, 1, 1,
-            0,
-            stream,
-            halfComplexArgs,
-            NULL
-        ));
-    }
-    else
-    {
-        void *powerArgs[] =
-        {
-            &DOutput,
-            Rout,
-            Iout,
-            (void*)&OFullSize
-        };
-        CheckCudaError(cuLaunchKernel(
-            kens->toPower,
-            OFullSize / 64, 1, 1,
-            64, 1, 1,
-            0,
-            stream,
-            powerArgs,
-            NULL
-        ));
-    }
+        &DSR,
+        &DSI,
+        &DOutput,
+        std::move(FullSize),
+        std::move(windowSize),
+        std::move(qtConst),
+        std::move(OFullSize),
+        std::move(OHalfSize),
+        std::move(OMove),
+        options,
+        windowRadix,
+        overlapRatio
+    );
 
     
-    CheckCudaError(cuMemcpyDtoHAsync(outMem.data(), DOutput, OFullSize * sizeof(float), stream));
-    CheckCudaError(cuStreamSynchronize(stream));
+    // void *overlapArgs[] =
+    // {
+    //     &DInput,
+    //     (void*)&OFullSize,
+    //     (void*)&FullSize,
+    //     (void*)&windowRadix,
+    //     (void*)&OMove,
+    //     &DFR,
+    // };
+    // CheckCudaError(cuLaunchKernel(
+    //     kens->Overlap,
+    //     qtConst, 1, 1,
+    //     64, 1, 1,
+    //     0,
+    //     stream,
+    //     overlapArgs,
+    //     NULL
+    // ));
+    // CustomData cd;
+    // cd.strm = &stream;
+    // cd.OFullSize = &OFullSize;
+    // cd.qtC = &qtConst;
+    // vps.UseOption(options, &cd, &DFR, OFullSize, windowSize);
 
-    CheckCudaError(cuMemFreeAsync(DInput, stream));
-    CheckCudaError(cuMemFreeAsync(DFR, stream));
-    CheckCudaError(cuMemFreeAsync(DFI, stream));
-    if (DS_FLAG)
+    // void *optRadixArgs[] =
+    // {
+    //     &DFR,
+    //     &DFI,
+    //     (void*)&OHalfSize
+    // };
+
+    // switch (windowRadix)
+    // {
+    // case 6:
+    //     CheckCudaError(cuLaunchKernel(
+    //         kens->R6STFT,
+    //         qtConst, 1, 1,
+    //         32, 1, 1,
+    //         0,
+    //         stream,
+    //         optRadixArgs,
+    //         NULL
+    //     ));
+    //     break;
+    // case 7:
+    //     CheckCudaError(cuLaunchKernel(
+    //         kens->R7STFT,
+    //         qtConst, 1, 1,
+    //         64, 1, 1,
+    //         0,
+    //         stream,
+    //         optRadixArgs,
+    //         NULL
+    //     ));
+    //     break;
+    // case 8:
+    //     CheckCudaError(cuLaunchKernel(
+    //         kens->R8STFT,
+    //         qtConst, 1, 1,
+    //         128, 1, 1,
+    //         0,
+    //         stream,
+    //         optRadixArgs,
+    //         NULL
+    //     ));
+    //     break;
+    // case 9:
+    //     CheckCudaError(cuLaunchKernel(
+    //         kens->R9STFT,
+    //         qtConst, 1, 1,
+    //         256, 1, 1,
+    //         0,
+    //         stream,
+    //         optRadixArgs,
+    //         NULL
+    //     ));
+    //     break;
+    // case 10:
+    //     CheckCudaError(cuLaunchKernel(
+    //         kens->R10STFT,
+    //         qtConst, 1, 1,
+    //         512, 1, 1,
+    //         0,
+    //         stream,
+    //         optRadixArgs,
+    //         NULL
+    //     ));
+    //     break;
+    // case 11:
+    //     CheckCudaError(cuLaunchKernel(
+    //         kens->R11STFT,
+    //         qtConst, 1, 1,
+    //         1024, 1, 1,
+    //         0,
+    //         stream,
+    //         optRadixArgs,
+    //         NULL
+    //     ));
+    //     break;
+    // default:
+    //     DS_FLAG = true;
+    //     CheckCudaError(cuMemAllocAsync(&DSR, sizeof(float) * OFullSize, stream));
+    //     CheckCudaError(cuMemAllocAsync(&DSI, sizeof(float) * OFullSize, stream));
+    //     auto HwindowSize = windowSize >> 1;
+    //     unsigned int stage =0;
+    //     void *FTSstockham[] =
+    //     {
+    //         &DFR,
+    //         &DFI,
+    //         &DSR,
+    //         &DSI,
+    //         (void*)&HwindowSize,
+    //         (void*)&stage,
+    //         (void*)&OHalfSize,
+    //         (void*)&windowRadix,
+    //     };
+    //     void *STFstockham[] =
+    //     {
+    //         &DSR,
+    //         &DSI,
+    //         &DFR,
+    //         &DFI,
+    //         (void*)&HwindowSize,
+    //         (void*)&stage,
+    //         (void*)&OHalfSize,
+    //         (void*)&windowRadix,
+    //     };
+        
+    //     for (stage = 0; stage < windowRadix; ++stage)
+    //     {
+    //         if (stage % 2 == 0)
+    //         {
+    //             CheckCudaError(cuLaunchKernel(
+    //                 kens->RadixCommon,
+    //                 OHalfSize / 256, 1, 1,
+    //                 256, 1, 1,
+    //                 0,
+    //                 stream,
+    //                 FTSstockham,
+    //                 NULL
+    //             ));
+    //         }
+    //         else
+    //         {
+    //             CheckCudaError(cuLaunchKernel(
+    //                 kens->RadixCommon,
+    //                 OHalfSize / 256, 1, 1,
+    //                 256, 1, 1,
+    //                 0,
+    //                 stream,
+    //                 STFstockham,
+    //                 NULL
+    //             ));
+    //         }
+    //         if(windowRadix % 2 != 0)
+    //         {
+    //             Rout = &DSR;
+    //             Iout = &DSI;
+    //         }
+    //     }
+    //     break;
+    // }
+    
+    // if(options.find("--half_complex_return") != std::string::npos)
+    // {
+    //     void *halfComplexArgs[] =
+    //     {
+    //         &DOutput,
+    //         Rout,
+    //         Iout,
+    //         (void*)&OHalfSize,
+    //         (void*)&windowRadix
+    //     };
+    //     CheckCudaError(cuLaunchKernel(
+    //         kens->HalfComplex,
+    //         OHalfSize / 32, 1, 1,
+    //         32, 1, 1,
+    //         0,
+    //         stream,
+    //         halfComplexArgs,
+    //         NULL
+    //     ));
+    // }
+    // else
+    // {
+    //     void *powerArgs[] =
+    //     {
+    //         &DOutput,
+    //         Rout,
+    //         Iout,
+    //         (void*)&OFullSize
+    //     };
+    //     CheckCudaError(cuLaunchKernel(
+    //         kens->toPower,
+    //         OFullSize / 64, 1, 1,
+    //         64, 1, 1,
+    //         0,
+    //         stream,
+    //         powerArgs,
+    //         NULL
+    //     ));
+    // }
+    std::vector<float> outMem(OFullSize);
+    int ec[8];
+    ec[0] = (cuMemcpyDtoHAsync(outMem.data(), DOutput, OFullSize * sizeof(float), stream));
+    ec[1] = (cuStreamSynchronize(stream));
+
+    ec[2] = (cuMemFreeAsync(DInput, stream));
+    ec[3] = (cuMemFreeAsync(DFR, stream));
+    ec[4] = (cuMemFreeAsync(DFI, stream));
     {
-        CheckCudaError(cuMemFreeAsync(DSR, stream));
-        CheckCudaError(cuMemFreeAsync(DSI, stream));
+        if(cuPointerGetAttribute(NULL, CU_POINTER_ATTRIBUTE_MEMORY_TYPE, DSR) == CUDA_SUCCESS)
+        {
+            CheckCudaError(cuMemFreeAsync(DSR, stream));
+            CheckCudaError(cuMemFreeAsync(DSI, stream));
+        }
     }
-    CheckCudaError(cuMemFreeAsync(DOutput, stream));
-    CheckCudaError(cuStreamSynchronize(stream));
-    CheckCudaError(cuStreamDestroy(stream));
+    ec[5] = (cuMemFreeAsync(DOutput, stream));
+    ec[6] = (cuStreamSynchronize(stream));
+    ec[7] = (cuStreamDestroy(stream));
+
+    if(strRes != "OK")
+    {
+        return std::nullopt;
+    }
+    for(int i=0; i<8; ++i)
+    {
+        if(ec[i] != CUDA_SUCCESS)
+        {
+            return std::nullopt;
+        }
+    }
     return std::move(outMem); // If any error occurs during STFT execution, the function returns std::nullopt.
 }

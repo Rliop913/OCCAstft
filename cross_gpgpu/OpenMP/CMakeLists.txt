@@ -26,6 +26,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(openmpsrc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OpenmpImpl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/functionImpl.cpp
+    
+    
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL/RunnerCommon.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct_SetGet.cpp
@@ -43,6 +46,8 @@ target_include_directories(openmpRun PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL#reverseOOP
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel
     ${CMAKE_CURRENT_SOURCE_DIR}/../../include
+    
+    
 )
 
 if(WIN32)

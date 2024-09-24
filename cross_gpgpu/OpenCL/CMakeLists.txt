@@ -38,6 +38,7 @@ find_package(CapnProto REQUIRED)
 endif()
 set(openclsrc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CLImpl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/functionImpl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CL_Wrapper/src/cl_FACADE.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CL_Wrapper/src/cl_global_custom.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL/RunnerCommon.cpp
@@ -57,6 +58,8 @@ target_include_directories(openclRun PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel
     ${opencl_hpp_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../../include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    
 )
 message(${ixws_BINARY_DIR})
 if(WIN32)

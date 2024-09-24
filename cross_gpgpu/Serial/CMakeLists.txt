@@ -29,6 +29,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(serialsrc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SerialImpl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/functionImpl.cpp
+    
+    
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL/RunnerCommon.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct_SetGet.cpp
@@ -46,6 +49,8 @@ target_include_directories(serialRun PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL#reverseOOP
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel
     ${CMAKE_CURRENT_SOURCE_DIR}/../../include
+    
+    
 )
 
 if(WIN32)

@@ -104,7 +104,7 @@ FFTRequest::FreeData()
     }
     if(sharemem == "ERR")
     {
-        return std::nullopt;
+        return;
     }
     if(sharemem != "")
     {

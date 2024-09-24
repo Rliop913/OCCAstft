@@ -1,7 +1,7 @@
 #ifndef ROOTISBASH  
-#include "../include/kernel.okl"
+#include "../OKL/kernel.okl"
 #else
-#include "./include/kernel.okl"
+#include "./OKL/kernel.okl"
 #endif
 
 

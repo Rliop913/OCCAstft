@@ -35,20 +35,21 @@ Tested on NVIDIA H100, Ubuntu, CUDA 12.3
 - **OCCA Integration**: Leverages OCCA (Open Concurrent Compute Abstraction) to easily convert and execute kernel code across various parallel computing environments.
 
 ## Directory Structure
-
-- **cross_gpgpu/**: Contains modular implementations for CUDA, OpenCL, OpenMP, and Serial platforms.
-  - **GLOBAL/**: default codes for runners.
-  - **CUDA/**: GPGPU implementation based on CUDA.
-  - **HIP/**: Not implemented yet.
-  - **METAL/**: Not implemented yet.
-  - **OpenCL/**: GPGPU implementation based on OpenCL.
-  - **OpenMP/**: CPU parallel processing implementation based on OpenMP.
-  - **Serial/**: Sequential processing implementation without parallelism.
-  - **RunnerTemplate/**: Contains template implementations for adding new vendors.
-  - **occaprofileRunner/**: A special Runner implementation for performance testing of this implementation. runs with custom fallback.
-  - **testRunner/**: Special Runner implementation to extract data from clfft and cufft. runs with custom fallback.
-- **include/**: Header files and utility code used across platforms.
-- **src/**: Core implementation files for STFT and related functionalities.
+- **OKL/**: Contains OKL codes.
+- **StandAlone/**: Implementation that can operate with just binary distribution.
+  - **cross_gpgpu/**: Contains modular implementations for CUDA, OpenCL, OpenMP, and Serial platforms.
+    - **GLOBAL/**: default codes for runners.
+    - **CUDA/**: GPGPU implementation based on CUDA.
+    - **HIP/**: Not implemented yet.
+    - **METAL/**: Not implemented yet.
+    - **OpenCL/**: GPGPU implementation based on OpenCL.
+    - **OpenMP/**: CPU parallel processing implementation based on OpenMP.
+    - **Serial/**: Sequential processing implementation without parallelism.
+    - **RunnerTemplate/**: Contains template implementations for adding new vendors.
+    - **occaprofileRunner/**: A special Runner implementation for performance testing of this implementation. runs with custom fallback.
+    - **testRunner/**: Special Runner implementation to extract data from clfft and cufft. runs with custom fallback.
+  - **include/**: Header files and utility code used across platforms.
+  - **src/**: Core implementation files for STFT and related functionalities.
 - **kernel_build.sh**: Script to generate kernel code for various platforms using OCCA.
 - **capnpsetter.sh**: Script to set capnproto.
 - **nvccPtxBuild.sh**: Script to build ptx file from .cu file.
@@ -70,6 +71,7 @@ Tested on NVIDIA H100, Ubuntu, CUDA 12.3
    ```bash
    git clone https://github.com/Rliop913/GPGPU_Batch_STFT.git
    cd GPGPU_Batch_STFT
+   cd StandAlone
    ```
 
 2. Generate the build using CMake.
@@ -86,9 +88,20 @@ Tested on NVIDIA H100, Ubuntu, CUDA 12.3
 
    For example, `cross_build/CUDA/cudaRun.exe`, `cross_build/OpenCL/openclRun.exe`, etc.
 
-## Usage
-
-The program processes input signal data through STFT and returns the results. You can execute the built files for each platform as a WebSocket server, providing the port number as an argument.
+## OKL Usage
+  - **STFT_MAIN.okl**: includes everything
+  - **kernel.okl**
+    - **toPower**: PostProcess, power(square) datas.
+    - **toHalfCoplexFormat** PostProcess, returns halfed complex. (real, imag, real, imag)
+  - **RadixCommon**
+    - **Window_~~~~**: PreProcess, returns windowed data.
+    - **Overlap_Common**: PreProcess, returns overlaped data.
+    - **DCRemove_Common**: PreProcess, removes DC components in every windows
+    - **StockHamDITCommon**: main kernel, need to call every stage. The stage starts with 0, ends with windowRadix - 1.
+  - **Radix~.okl**:Special implementations optimized to use shared memory,
+    - **Stockhpotimized~**: main kernel, call once.
+## StandAlone Usage
+Implementation to ensure normal operation even in a binary distribution environment (non-developer environment)
 
 ### Example
 
@@ -197,7 +210,7 @@ The program processes input signal data through STFT and returns the results. Yo
 
     **no postprocess option mentioned(default)**: returns the squared (power) value.
 
-## Customizing
+## Customizing StandAlone Runner
 
 ### Customize a Runner
 
@@ -220,73 +233,268 @@ Contributions, especially PRs implementing **Metal** and **HIP** support, are hi
    ```bash
    cp -r cross_gpgpu/RunnerTemplate/* cross_gpgpu/MyVendor/
    ```
+### 3. Modify `functionImpl.cpp`
+- `functionImpl.cpp` is the core implementation file for the new vendor. implement it with kernel code.
+  ```cpp
+  #include "RunnerInterface.hpp"
 
-### 3. Modify `TemplateImpl.cpp`
+  bool 
+  runnerFunction::Overlap(
+      void* userStruct, 
+      void* origin, 
+      CUI OFullSize, 
+      CUI FullSize, 
+      CUI windowRadix, 
+      CUI OMove, 
+      void* Realout
+      )
+  {
+      
+  }
+  
+  
+  
+  bool 
+  runnerFunction::Hanning(void* userStruct, void* data, CUI OFullSize, CUI windowSize)
+  {
+      
+  }
+  
+  bool 
+  runnerFunction::Hamming(void* userStruct, void* data, CUI OFullSize, CUI windowSize)
+  {
+      
+  }
+  
+  bool 
+  runnerFunction::Blackman(void* userStruct, void* data, CUI OFullSize, CUI windowSize)
+  {
+      
+  }
+  
+  bool 
+  runnerFunction::Nuttall(void* userStruct, void* data, CUI OFullSize, CUI windowSize)
+  {
+      
+  }
+  
+  bool 
+  runnerFunction::Blackman_Nuttall(void* userStruct, void* data, CUI OFullSize, CUI windowSize)
+  {
+      
+  }
+  
+  bool 
+  runnerFunction::Blackman_Harris(void* userStruct, void* data, CUI OFullSize, CUI windowSize)
+  {
+      
+  }
+  
+  bool 
+  runnerFunction::FlatTop(void* userStruct, void* data, CUI OFullSize, CUI windowSize)
+  {
+      
+  }
+  
+  bool 
+  runnerFunction::RemoveDC(void* userStruct, void* data, CUI qtConst, CUI OFullSize, CUI windowSize)
+  {
+      
+  }
+  
+  bool 
+  runnerFunction::Gaussian(
+      void* userStruct, 
+      void* data, 
+      CUI OFullSize, 
+      CUI windowSize, 
+      const float sigma
+      )
+  {
+      
+  }
+  
+  
+  bool 
+  runnerFunction::Radix6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+  {
+      
+  }
+  
+  bool 
+  runnerFunction::Radix7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+  {
+      
+  }
+  
+  bool 
+  runnerFunction::Radix8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+  {
+  
+  }
+  
+  bool 
+  runnerFunction::Radix9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+  {
+  
+  }
+  
+  bool 
+  runnerFunction::Radix10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+  {
+  
+  }
+  
+  bool 
+  runnerFunction::Radix11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+  {
+  
+  }
+  
+  
+  bool 
+  runnerFunction::RadixC(
+      void*   userStruct,
+      void*   real, 
+      void*   imag,
+      void*   subreal,
+      void*   subimag,
+      void*   out,
+      CUI&&   HWindowSize,
+      CUI     windowRadix,
+      CUI     OFullSize,
+      void*   realResult,
+      void*   imagResult
+      )
+  {
+      
+  }
+  
+  
+  bool 
+  runnerFunction::HalfComplex(   
+      void*   userStruct, 
+      void*   out, 
+      void*   realResult, 
+      void*   imagResult, 
+      CUI     OHalfSize, 
+      CUI     windowRadix
+      )
+  {
+      
+  }
+  
+  
+  bool 
+  runnerFunction::ToPower(   
+      void* userStruct, 
+      void* out, 
+      void* realResult, 
+      void* imagResult, 
+      CUI OFullSize
+      )
+  {
+      
+  }
+  ```
+
+### 4. Modify `TemplateImpl.cpp`
 
 - `TemplateImpl.cpp` is the core implementation file for the new vendor. Below is a key portion of this file:
 
    ```cpp
    #include "RunnerInterface.hpp"
-   //include your gpgpu kernel codes.
-
-   // Genv: Structure to hold the GPGPU environment settings and resources.
-   struct Genv{
-       //
-   };
-
-   // Gcodes: Structure to manage and store GPGPU kernel codes.
-   struct Gcodes{
-       //
-   };
-
-   // InitEnv: Initializes the GPGPU environment and kernel code structures.
-   // Allocates memory for 'env' (Genv) and 'kens' (Gcodes).
-   void
-   Runner::InitEnv()
-   {
-       env = new Genv;
-       kens = new Gcodes;
-   }
-   
-   void
-   Runner::UnInit()
-   {
-
-   }
-   // BuildKernel: Compiles or prepares the GPGPU kernel for execution.
-   void
-   Runner::BuildKernel()
-   {
-       //
-   }
-
-   // ActivateSTFT: Executes the Short-Time Fourier Transform (STFT) on the input data using GPGPU.
-   MAYBE_DATA
-   Runner::ActivateSTFT(   VECF& inData, 
-                           const int& windowRadix, 
-                           const float& overlapRatio)
-   {
-       // Default code blocks
-       const unsigned int  FullSize    = inData.size();
-       const int           windowSize  = 1 << windowRadix;
-       const int           qtConst     = toQuot(FullSize, overlapRatio, windowSize);
-       const unsigned int  OFullSize   = qtConst * windowSize;
-       const unsigned int  OHalfSize   = OFullSize / 2;
-       const unsigned int  OMove       = windowSize * (1.0f - overlapRatio);
-       // End default
-
-       // Memory allocation samples
-       auto tempMem = new complex  [OFullSize]();
-       auto qtBuffer= new float    [qtConst]();
-       std::vector<float> outMem(OHalfSize);
-
-       // Implement your GPGPU kernel execution code here.
-
-       delete[] tempMem;
-       delete[] qtBuffer;
-
-       return std::move(outMem);
-   }
+  //include your gpgpu kernel codes.
+  
+  
+  /*
+  IMPLEMENTATION LISTS
+  
+  1. make Genv
+  2. make Gcodes
+  3. implement BuildKernel, ActivateSTFT
+  4. End. try test
+  
+  */
+  
+  
+  
+  // Genv: Structure to hold the GPGPU environment settings and resources.
+  struct Genv{
+      //
+  };
+  
+  // Gcodes: Structure to manage and store GPGPU kernel codes.
+  struct Gcodes{
+      //
+  };
+  
+  // InitEnv: Initializes the GPGPU environment and kernel code structures.
+  // Allocates memory for 'env' (Genv) and 'kens' (Gcodes).
+  void
+  Runner::InitEnv()
+  {
+      env = new Genv;
+      kens = new Gcodes;
+  }
+  
+  // BuildKernel: Compiles or prepares the GPGPU kernel for execution.
+  void
+  Runner::BuildKernel()
+  {
+      //
+  }
+  
+  void
+  Runner::UnInit()
+  {
+      //
+  }
+  
+  /**
+   * ActivateSTFT: Executes the Short-Time Fourier Transform (STFT) on the input data using GPGPU.
+   * @param inData: Input signal data.
+   * @param windowRadix: Radix size of the STFT window.
+   * @param overlapRatio: Overlap ratio for the STFT window. 0 ~ 1, 0 means no overlap.
+   * @return MAYBE_DATA: Processed data after applying STFT. if error occurs, return std::nullopt
+   */
+  
+  MAYBE_DATA
+  Runner::ActivateSTFT(   VECF& inData, 
+                          const int& windowRadix, 
+                          const float& overlapRatio)
+  {
+      //default code blocks
+      const unsigned int  FullSize    = inData.size();
+      const int           windowSize  = 1 << windowRadix;
+      const int           qtConst     = toQuot(FullSize, overlapRatio, windowSize);//number of windows
+      const unsigned int  OFullSize   = qtConst * windowSize; // overlaped fullsize
+      const unsigned int  OHalfSize   = OFullSize / 2;
+      const unsigned int  OMove       = windowSize * (1.0f - overlapRatio);// window move distance
+      //end default
+  
+      runnerFunction::Default_Pipeline //use this after implement functionImpl.cpp
+      (
+          nullptr,// your custom struct
+          &inData,
+          &Real,// alloc your memory
+          &Imag,// alloc your memory
+          &subReal,// alloc your memory
+          &subImag,// alloc your memory
+          &outMem,// alloc your memory
+          std::move(FullSize),
+          std::move(windowSize),
+          std::move(qtConst),
+          std::move(OFullSize),
+          std::move(OHalfSize),
+          std::move(OMove),
+          options,
+          windowRadix,
+          overlapRatio
+      );
+  
+      return std::move(outMem); // If any error occurs during STFT execution, the function returns std::nullopt.
+  }
    ```
 
    Modify the `Genv` and `Gcodes` structures to suit the new vendor, and implement the `BuildKernel` and `ActivateSTFT` functions.
@@ -294,12 +502,6 @@ Contributions, especially PRs implementing **Metal** and **HIP** support, are hi
 ### 4. CMake Configuration
 
 - Modify a `CMakeLists.txt` file in the new vendor directory to define the build settings. For example:
-
-### 5. Build and Test
-
-- Build the new vendor and ensure the executable is generated. Test the executable to verify it works as expected.
-
-
 
 ---
 

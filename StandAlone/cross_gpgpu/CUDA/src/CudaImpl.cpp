@@ -126,10 +126,12 @@ Runner::ActivateSTFT(   VECF& inData,
     const unsigned int  OHalfSize   = OFullSize / 2;
     const unsigned int  OMove       = windowSize * (1.0f - overlapRatio);// window move distance
     //end default
+
+    int ec[15];
     cuCtxSetCurrent(env->context);
     CUstream stream;
-    CheckCudaError(cuStreamCreate(&stream, CU_STREAM_NON_BLOCKING));
-
+    ec[0] = (cuStreamCreate(&stream, CU_STREAM_NON_BLOCKING));
+    std::vector<float> outMem(OFullSize);
     CUdeviceptr DInput;
     CUdeviceptr DOutput;
 
@@ -142,14 +144,14 @@ Runner::ActivateSTFT(   VECF& inData,
     CUdeviceptr* Iout = &DFI;
     
     
-    CheckCudaError(cuMemAllocAsync(&DInput, sizeof(float) * FullSize, stream));
-    CheckCudaError(cuMemAllocAsync(&DOutput, sizeof(float) * OFullSize, stream));
+    ec[1] = (cuMemAllocAsync(&DInput, sizeof(float) * FullSize, stream));
+    ec[2] = (cuMemAllocAsync(&DOutput, sizeof(float) * OFullSize, stream));
     
-    CheckCudaError(cuMemAllocAsync(&DFR, sizeof(float) * OFullSize, stream));
-    CheckCudaError(cuMemAllocAsync(&DFI, sizeof(float) * OFullSize, stream));
+    ec[3] = (cuMemAllocAsync(&DFR, sizeof(float) * OFullSize, stream));
+    ec[4] = (cuMemAllocAsync(&DFI, sizeof(float) * OFullSize, stream));
     
-    CheckCudaError(cuMemsetD32Async(DFI, 0, OFullSize, stream));
-    CheckCudaError(cuMemcpyHtoDAsync(DInput, inData.data(), sizeof(float) * FullSize, stream));
+    ec[5] = (cuMemsetD32Async(DFI, 0, OFullSize, stream));
+    ec[6] = (cuMemcpyHtoDAsync(DInput, inData.data(), sizeof(float) * FullSize, stream));
     
     cudaData cud;
     cud.env = env;
@@ -167,228 +169,26 @@ Runner::ActivateSTFT(   VECF& inData,
         &DSR,
         &DSI,
         &DOutput,
-        std::move(FullSize),
-        std::move(windowSize),
-        std::move(qtConst),
-        std::move(OFullSize),
-        std::move(OHalfSize),
-        std::move(OMove),
+        FullSize,
+        windowSize,
+        qtConst,
+        OFullSize,
+        OHalfSize,
+        OMove,
         options,
         windowRadix,
         overlapRatio
     );
 
     
-    // void *overlapArgs[] =
-    // {
-    //     &DInput,
-    //     (void*)&OFullSize,
-    //     (void*)&FullSize,
-    //     (void*)&windowRadix,
-    //     (void*)&OMove,
-    //     &DFR,
-    // };
-    // CheckCudaError(cuLaunchKernel(
-    //     kens->Overlap,
-    //     qtConst, 1, 1,
-    //     64, 1, 1,
-    //     0,
-    //     stream,
-    //     overlapArgs,
-    //     NULL
-    // ));
-    // CustomData cd;
-    // cd.strm = &stream;
-    // cd.OFullSize = &OFullSize;
-    // cd.qtC = &qtConst;
-    // vps.UseOption(options, &cd, &DFR, OFullSize, windowSize);
-
-    // void *optRadixArgs[] =
-    // {
-    //     &DFR,
-    //     &DFI,
-    //     (void*)&OHalfSize
-    // };
-
-    // switch (windowRadix)
-    // {
-    // case 6:
-    //     CheckCudaError(cuLaunchKernel(
-    //         kens->R6STFT,
-    //         qtConst, 1, 1,
-    //         32, 1, 1,
-    //         0,
-    //         stream,
-    //         optRadixArgs,
-    //         NULL
-    //     ));
-    //     break;
-    // case 7:
-    //     CheckCudaError(cuLaunchKernel(
-    //         kens->R7STFT,
-    //         qtConst, 1, 1,
-    //         64, 1, 1,
-    //         0,
-    //         stream,
-    //         optRadixArgs,
-    //         NULL
-    //     ));
-    //     break;
-    // case 8:
-    //     CheckCudaError(cuLaunchKernel(
-    //         kens->R8STFT,
-    //         qtConst, 1, 1,
-    //         128, 1, 1,
-    //         0,
-    //         stream,
-    //         optRadixArgs,
-    //         NULL
-    //     ));
-    //     break;
-    // case 9:
-    //     CheckCudaError(cuLaunchKernel(
-    //         kens->R9STFT,
-    //         qtConst, 1, 1,
-    //         256, 1, 1,
-    //         0,
-    //         stream,
-    //         optRadixArgs,
-    //         NULL
-    //     ));
-    //     break;
-    // case 10:
-    //     CheckCudaError(cuLaunchKernel(
-    //         kens->R10STFT,
-    //         qtConst, 1, 1,
-    //         512, 1, 1,
-    //         0,
-    //         stream,
-    //         optRadixArgs,
-    //         NULL
-    //     ));
-    //     break;
-    // case 11:
-    //     CheckCudaError(cuLaunchKernel(
-    //         kens->R11STFT,
-    //         qtConst, 1, 1,
-    //         1024, 1, 1,
-    //         0,
-    //         stream,
-    //         optRadixArgs,
-    //         NULL
-    //     ));
-    //     break;
-    // default:
-    //     DS_FLAG = true;
-    //     CheckCudaError(cuMemAllocAsync(&DSR, sizeof(float) * OFullSize, stream));
-    //     CheckCudaError(cuMemAllocAsync(&DSI, sizeof(float) * OFullSize, stream));
-    //     auto HwindowSize = windowSize >> 1;
-    //     unsigned int stage =0;
-    //     void *FTSstockham[] =
-    //     {
-    //         &DFR,
-    //         &DFI,
-    //         &DSR,
-    //         &DSI,
-    //         (void*)&HwindowSize,
-    //         (void*)&stage,
-    //         (void*)&OHalfSize,
-    //         (void*)&windowRadix,
-    //     };
-    //     void *STFstockham[] =
-    //     {
-    //         &DSR,
-    //         &DSI,
-    //         &DFR,
-    //         &DFI,
-    //         (void*)&HwindowSize,
-    //         (void*)&stage,
-    //         (void*)&OHalfSize,
-    //         (void*)&windowRadix,
-    //     };
-        
-    //     for (stage = 0; stage < windowRadix; ++stage)
-    //     {
-    //         if (stage % 2 == 0)
-    //         {
-    //             CheckCudaError(cuLaunchKernel(
-    //                 kens->RadixCommon,
-    //                 OHalfSize / 256, 1, 1,
-    //                 256, 1, 1,
-    //                 0,
-    //                 stream,
-    //                 FTSstockham,
-    //                 NULL
-    //             ));
-    //         }
-    //         else
-    //         {
-    //             CheckCudaError(cuLaunchKernel(
-    //                 kens->RadixCommon,
-    //                 OHalfSize / 256, 1, 1,
-    //                 256, 1, 1,
-    //                 0,
-    //                 stream,
-    //                 STFstockham,
-    //                 NULL
-    //             ));
-    //         }
-    //         if(windowRadix % 2 != 0)
-    //         {
-    //             Rout = &DSR;
-    //             Iout = &DSI;
-    //         }
-    //     }
-    //     break;
-    // }
     
-    // if(options.find("--half_complex_return") != std::string::npos)
-    // {
-    //     void *halfComplexArgs[] =
-    //     {
-    //         &DOutput,
-    //         Rout,
-    //         Iout,
-    //         (void*)&OHalfSize,
-    //         (void*)&windowRadix
-    //     };
-    //     CheckCudaError(cuLaunchKernel(
-    //         kens->HalfComplex,
-    //         OHalfSize / 32, 1, 1,
-    //         32, 1, 1,
-    //         0,
-    //         stream,
-    //         halfComplexArgs,
-    //         NULL
-    //     ));
-    // }
-    // else
-    // {
-    //     void *powerArgs[] =
-    //     {
-    //         &DOutput,
-    //         Rout,
-    //         Iout,
-    //         (void*)&OFullSize
-    //     };
-    //     CheckCudaError(cuLaunchKernel(
-    //         kens->toPower,
-    //         OFullSize / 64, 1, 1,
-    //         64, 1, 1,
-    //         0,
-    //         stream,
-    //         powerArgs,
-    //         NULL
-    //     ));
-    // }
-    std::vector<float> outMem(OFullSize);
-    int ec[8];
-    ec[0] = (cuMemcpyDtoHAsync(outMem.data(), DOutput, OFullSize * sizeof(float), stream));
-    ec[1] = (cuStreamSynchronize(stream));
+    
+    ec[7] = (cuMemcpyDtoHAsync(outMem.data(), DOutput, OFullSize * sizeof(float), stream));
+    ec[8] = (cuStreamSynchronize(stream));
 
-    ec[2] = (cuMemFreeAsync(DInput, stream));
-    ec[3] = (cuMemFreeAsync(DFR, stream));
-    ec[4] = (cuMemFreeAsync(DFI, stream));
+    ec[9] = (cuMemFreeAsync(DInput, stream));
+    ec[10] = (cuMemFreeAsync(DFR, stream));
+    ec[11] = (cuMemFreeAsync(DFI, stream));
     {
         if(cuPointerGetAttribute(NULL, CU_POINTER_ATTRIBUTE_MEMORY_TYPE, DSR) == CUDA_SUCCESS)
         {
@@ -396,15 +196,16 @@ Runner::ActivateSTFT(   VECF& inData,
             CheckCudaError(cuMemFreeAsync(DSI, stream));
         }
     }
-    ec[5] = (cuMemFreeAsync(DOutput, stream));
-    ec[6] = (cuStreamSynchronize(stream));
-    ec[7] = (cuStreamDestroy(stream));
+    ec[12] = (cuMemFreeAsync(DOutput, stream));
+    ec[13] = (cuStreamSynchronize(stream));
+    ec[14] = (cuStreamDestroy(stream));
 
     if(strRes != "OK")
     {
+        std::cerr<< "Err on" << strRes<< std::endl;
         return std::nullopt;
     }
-    for(int i=0; i<8; ++i)
+    for(int i=0; i<15; ++i)
     {
         if(ec[i] != CUDA_SUCCESS)
         {

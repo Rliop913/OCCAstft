@@ -250,7 +250,7 @@ runnerFunction::RadixC(
     void*   subreal,
     void*   subimag,
     void*   out,
-    CUI&&   HWindowSize,
+    CUI     HWindowSize,
     CUI     windowRadix,
     CUI     OFullSize,
     void*   realResult,

@@ -120,6 +120,10 @@ FFTRequest::GetData()
     auto dataLength = mp->getDataLength();
     auto __memPtr = reinterpret_cast<void*>(mp->getMemPTR());
     auto sourceSize = mp->getData().size();
+    if(sharemem == "ERR")
+    {
+        return std::nullopt;
+    }
     if(sharemem != "")
     {
         std::vector<float> result(dataLength);

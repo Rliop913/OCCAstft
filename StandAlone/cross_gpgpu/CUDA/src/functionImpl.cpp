@@ -538,7 +538,7 @@ runnerFunction::RadixC(
     void*   subreal,
     void*   subimag,
     void*   out,
-    CUI&&   HWindowSize,
+    CUI     HWindowSize,
     CUI     windowRadix,
     CUI     OFullSize,
     void*   realResult,
@@ -550,14 +550,13 @@ runnerFunction::RadixC(
     EC.push_back(cuMemAllocAsync((CUdeviceptr*)subreal, sizeof(float) * OFullSize, *(Dp->strm)));
     EC.push_back(cuMemAllocAsync((CUdeviceptr*)subimag, sizeof(float) * OFullSize, *(Dp->strm)));
     CUI OHalfSize = OFullSize >> 1;
-    
     unsigned int stage =0;
     void *FTSstockham[] =
     {
-        &real,
-        &imag,
-        &subreal,
-        &subimag,
+        real,
+        imag,
+        subreal,
+        subimag,
         (void*)&HWindowSize,
         (void*)&stage,
         (void*)&OHalfSize,
@@ -565,10 +564,10 @@ runnerFunction::RadixC(
     };
     void *STFstockham[] =
     {
-        &subreal,
-        &subimag,
-        &real,
-        &imag,
+        subreal,
+        subimag,
+        real,
+        imag,
         (void*)&HWindowSize,
         (void*)&stage,
         (void*)&OHalfSize,
@@ -601,7 +600,6 @@ runnerFunction::RadixC(
             ));
         }
     }
-    
     if(windowRadix % 2 != 0)
     {
         realResult = subreal;

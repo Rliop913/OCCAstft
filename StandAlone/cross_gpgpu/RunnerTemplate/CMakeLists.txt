@@ -26,6 +26,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(templatesrc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/TemplateImpl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/functionImpl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL/RunnerCommon.cpp #common implementation
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct_SetGet.cpp

@@ -75,7 +75,27 @@ int main()
     
     //test first
     
-    dataWait(proxy);
+    // dataWait(proxy);
+    std::vector<float> dataTemp(10000000);
+    
+    for(int i=0; i< dataTemp.size(); ++i)
+    {
+        dataTemp[i] = float(i) / float(dataTemp.size());
+    }
+    auto returned = proxy.RequestSTFT(dataTemp, 14, 0.0);
+    if(returned.has_value())
+    {
+        auto ret = returned.value().get();
+        if(!ret.has_value())
+        {
+            std::cout << "ERR returned" <<std::endl;
+        }
+    }
+    else{
+        std::cout << "something happened"<<std::endl;
+    }
+
+    getchar();
 
     proxy.KillRunner(true);
     

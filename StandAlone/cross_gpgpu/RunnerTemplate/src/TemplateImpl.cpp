@@ -68,17 +68,25 @@ Runner::ActivateSTFT(   VECF& inData,
     const unsigned int  OMove       = windowSize * (1.0f - overlapRatio);// window move distance
     //end default
 
-    // memory allocation samples
-    auto tempMem = new complex  [OFullSize]();
-    auto qtBuffer= new float    [qtConst]();
-    std::vector<float> outMem(OHalfSize);
-
-    // Implement your GPGPU kernel execution code here.
-
-    
-
-    delete[] tempMem;
-    delete[] qtBuffer;
+    runnerFunction::Default_Pipeline //use this after implement functionImpl.cpp
+    (
+        nullptr,// your custom struct
+        &inData,
+        &Real,// alloc your memory
+        &Imag,// alloc your memory
+        &subReal,// alloc your memory
+        &subImag,// alloc your memory
+        &outMem,// alloc your memory
+        std::move(FullSize),
+        std::move(windowSize),
+        std::move(qtConst),
+        std::move(OFullSize),
+        std::move(OHalfSize),
+        std::move(OMove),
+        options,
+        windowRadix,
+        overlapRatio
+    );
 
     return std::move(outMem); // If any error occurs during STFT execution, the function returns std::nullopt.
 }

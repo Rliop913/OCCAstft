@@ -191,23 +191,18 @@ runnerFunction::Default_Pipeline(
     void* subreal,
     void* subimag,
     void* out,
-    CUI&& __FullSize,
-    CUI&& __windowSize,
-    CUI&& __qtConst,
-    CUI&& __OFullSize,
-    CUI&& __OHalfSize,
-    CUI&& __OMove,
+    CUI   FullSize,
+    CUI   windowSize,
+    CUI   qtConst,
+    CUI   OFullSize,
+    CUI   OHalfSize,
+    CUI   OMove,
     const std::string&  options,
     const int           windowRadix,
     const float         overlapRatio
 )
 {
-    CUI FullSize = std::move(__FullSize);
-    CUI windowSize = std::move(__windowSize);
-    CUI qtConst = std::move(__qtConst);
-    CUI OFullSize = std::move(__OFullSize);
-    CUI OHalfSize = std::move(__OHalfSize);
-    CUI OMove = std::move(__OMove);
+    
 
     runnerFunction::Overlap
     (
@@ -262,25 +257,38 @@ runnerFunction::Default_Pipeline(
     switch (windowRadix)
     {
     case 6:
-        runnerFunction::Radix6  (userStruct, real, imag, OHalfSize);
+        if(!runnerFunction::Radix6  (userStruct, real, imag, OHalfSize)){
+            return std::move("Err On Stockham");
+        }
         break;
     case 7:
-        runnerFunction::Radix7  (userStruct, real, imag, OHalfSize);
+        if(!runnerFunction::Radix7  (userStruct, real, imag, OHalfSize)){
+            return std::move("Err On Stockham");
+        }
         break;
     case 8:
-        runnerFunction::Radix8  (userStruct, real, imag, OHalfSize);
+        if(!runnerFunction::Radix8  (userStruct, real, imag, OHalfSize)){
+            return std::move("Err On Stockham");
+        }
         break;
     case 9:
-        runnerFunction::Radix9  (userStruct, real, imag, OHalfSize);
+        if(!runnerFunction::Radix9  (userStruct, real, imag, OHalfSize)){
+            return std::move("Err On Stockham");
+        }
         break;
     case 10:
-        runnerFunction::Radix10 (userStruct, real, imag, OHalfSize);
+        if(!runnerFunction::Radix10 (userStruct, real, imag, OHalfSize)){
+            return std::move("Err On Stockham");
+        }
         break;
     case 11:
-        runnerFunction::Radix11 (userStruct, real, imag, OHalfSize);
+        if(!runnerFunction::Radix11 (userStruct, real, imag, OHalfSize)){
+            return std::move("Err On Stockham");
+        }
         break;
     default:
-        runnerFunction::RadixC
+        if(
+        !runnerFunction::RadixC
         (
             userStruct, 
             real, 
@@ -293,7 +301,9 @@ runnerFunction::Default_Pipeline(
             OFullSize, 
             realResult, 
             imagResult
-        );
+        )){
+            return std::move("Err On Stockham");
+        }
         break;
     }
     

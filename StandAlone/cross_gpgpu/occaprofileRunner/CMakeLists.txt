@@ -35,6 +35,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(occasrc
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CudaImpl.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL/RunnerCommon.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/functionImpl.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct_SetGet.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTcapnp.capnp.c++

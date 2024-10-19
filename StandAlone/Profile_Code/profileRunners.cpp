@@ -76,13 +76,13 @@ int main()
     //test first
     
     // dataWait(proxy);
-    std::vector<float> dataTemp(1000000);
+    std::vector<float> dataTemp(100000);
     
     for(int i=0; i< dataTemp.size(); ++i)
     {
         dataTemp[i] = float(i) / float(dataTemp.size());
     }
-    auto returned = proxy.RequestSTFT(dataTemp, 14, 0.0);
+    auto returned = proxy.RequestSTFT(dataTemp, 9, 0.0);
     if(returned.has_value())
     {
         auto ret = returned.value().get();

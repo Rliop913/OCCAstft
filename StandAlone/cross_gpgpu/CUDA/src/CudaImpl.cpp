@@ -1,6 +1,7 @@
 
 #include "cudaStruct.hpp"
-
+#include <functional>
+#include <map>
 int counter = 0;
 void CheckCudaError(CUresult err) {
     ++counter;
@@ -16,6 +17,268 @@ void CheckCudaError(CUresult err) {
     }
 }
 
+void
+FillEmbed(std::map<std::string, std::function<const char*()>>& emb)
+{
+    emb["12690"] = []() -> const char* {
+        okl_embed90_12_6 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12680"] = []() -> const char* {
+        okl_embed80_12_6 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12675"] = []() -> const char* {
+        okl_embed75_12_6 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12670"] = []() -> const char* {
+        okl_embed70_12_6 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12661"] = []() -> const char* {
+        okl_embed61_12_6 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12652"] = []() -> const char* {
+        okl_embed52_12_6 pcode;
+        return pcode.ptx_code;
+    };
+    
+    emb["12590"] = []() -> const char* {
+        okl_embed90_12_5 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12580"] = []() -> const char* {
+        okl_embed80_12_5 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12575"] = []() -> const char* {
+        okl_embed75_12_5 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12570"] = []() -> const char* {
+        okl_embed70_12_5 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12561"] = []() -> const char* {
+        okl_embed61_12_5 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12552"] = []() -> const char* {
+        okl_embed52_12_5 pcode;
+        return pcode.ptx_code;
+    };
+    
+    emb["12490"] = []() -> const char* {
+        okl_embed90_12_4 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12480"] = []() -> const char* {
+        okl_embed80_12_4 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12475"] = []() -> const char* {
+        okl_embed75_12_4 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12470"] = []() -> const char* {
+        okl_embed70_12_4 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12461"] = []() -> const char* {
+        okl_embed61_12_4 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12452"] = []() -> const char* {
+        okl_embed52_12_4 pcode;
+        return pcode.ptx_code;
+    };
+
+    emb["12390"] = []() -> const char* {
+        okl_embed90_12_3 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12380"] = []() -> const char* {
+        okl_embed80_12_3 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12375"] = []() -> const char* {
+        okl_embed75_12_3 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12370"] = []() -> const char* {
+        okl_embed70_12_3 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12361"] = []() -> const char* {
+        okl_embed61_12_3 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12352"] = []() -> const char* {
+        okl_embed52_12_3 pcode;
+        return pcode.ptx_code;
+    };
+
+    emb["12290"] = []() -> const char* {
+        okl_embed90_12_2 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12280"] = []() -> const char* {
+        okl_embed80_12_2 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12275"] = []() -> const char* {
+        okl_embed75_12_2 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12270"] = []() -> const char* {
+        okl_embed70_12_2 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12261"] = []() -> const char* {
+        okl_embed61_12_2 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12252"] = []() -> const char* {
+        okl_embed52_12_2 pcode;
+        return pcode.ptx_code;
+    };
+
+    emb["12190"] = []() -> const char* {
+        okl_embed90_12_1 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12180"] = []() -> const char* {
+        okl_embed80_12_1 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12175"] = []() -> const char* {
+        okl_embed75_12_1 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12170"] = []() -> const char* {
+        okl_embed70_12_1 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12161"] = []() -> const char* {
+        okl_embed61_12_1 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12152"] = []() -> const char* {
+        okl_embed52_12_1 pcode;
+        return pcode.ptx_code;
+    };
+
+    emb["12090"] = []() -> const char* {
+        okl_embed90_12_0 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12080"] = []() -> const char* {
+        okl_embed80_12_0 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12075"] = []() -> const char* {
+        okl_embed75_12_0 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12070"] = []() -> const char* {
+        okl_embed70_12_0 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12061"] = []() -> const char* {
+        okl_embed61_12_0 pcode;
+        return pcode.ptx_code;
+    };
+    emb["12052"] = []() -> const char* {
+        okl_embed52_12_0 pcode;
+        return pcode.ptx_code;
+    };
+
+    emb["11780"] = []() -> const char* {
+        okl_embed80_11_7 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11775"] = []() -> const char* {
+        okl_embed75_11_7 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11770"] = []() -> const char* {
+        okl_embed70_11_7 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11761"] = []() -> const char* {
+        okl_embed61_11_7 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11752"] = []() -> const char* {
+        okl_embed52_11_7 pcode;
+        return pcode.ptx_code;
+    };
+
+    emb["11580"] = []() -> const char* {
+        okl_embed80_11_5 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11575"] = []() -> const char* {
+        okl_embed75_11_5 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11570"] = []() -> const char* {
+        okl_embed70_11_5 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11561"] = []() -> const char* {
+        okl_embed61_11_5 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11552"] = []() -> const char* {
+        okl_embed52_11_5 pcode;
+        return pcode.ptx_code;
+    };
+
+    emb["11380"] = []() -> const char* {
+        okl_embed80_11_3 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11375"] = []() -> const char* {
+        okl_embed75_11_3 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11370"] = []() -> const char* {
+        okl_embed70_11_3 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11361"] = []() -> const char* {
+        okl_embed61_11_3 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11352"] = []() -> const char* {
+        okl_embed52_11_3 pcode;
+        return pcode.ptx_code;
+    };
+
+    emb["11080"] = []() -> const char* {
+        okl_embed80_11_0 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11075"] = []() -> const char* {
+        okl_embed75_11_0 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11070"] = []() -> const char* {
+        okl_embed70_11_0 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11061"] = []() -> const char* {
+        okl_embed61_11_0 pcode;
+        return pcode.ptx_code;
+    };
+    emb["11052"] = []() -> const char* {
+        okl_embed52_11_0 pcode;
+        return pcode.ptx_code;
+    };
+}
 
 // InitEnv: Initializes the GPGPU environment and kernel code structures.
 // Allocates memory for 'env' (Genv) and 'kens' (Gcodes).
@@ -26,47 +289,78 @@ Runner::InitEnv()
     CheckCudaError(cuInit(0));
     CheckCudaError(cuDeviceGet(&(env->device), 0));
     CheckCudaError(cuCtxCreate(&(env->context), 0, env->device));
-    int major, minor;
-    cuDeviceGetAttribute(&major, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, env->device);
-    cuDeviceGetAttribute(&minor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, env->device);
-    
-    switch (major)
-    {
-    case 5:
-        {
-            LOAD_PTX(okl_embed52_12_3, k123, LOAD_PTX(okl_embed52_12_1, k121, LOAD_PTX(okl_embed52_11_6, k116, ;)));
-        }
-        break;
-    case 6:
-        {
-            LOAD_PTX(okl_embed61_12_3, k123, LOAD_PTX(okl_embed61_12_1, k121, LOAD_PTX(okl_embed61_11_6, k116, ;)));
-        }
-        break;
-    case 7:
-        if(minor >= 5)
-        {
-            LOAD_PTX(okl_embed75_12_3, k123, LOAD_PTX(okl_embed75_12_1, k121, LOAD_PTX(okl_embed75_11_6, k116, ;)));
-        }
-        else
-        {
-            LOAD_PTX(okl_embed70_12_3, k123, LOAD_PTX(okl_embed70_12_1, k121, LOAD_PTX(okl_embed70_11_6, k116, ;)));
-        }
-        break;
-    case 8:
-        {
-            LOAD_PTX(okl_embed80_12_3, k123, LOAD_PTX(okl_embed80_12_1, k121, LOAD_PTX(okl_embed80_11_6, k116, ;)));
-        }
-        break;
-
-    case 9:
-        {
-            LOAD_PTX(okl_embed90_12_3, k123, LOAD_PTX(okl_embed90_12_1, k121, ;));
-        }
-        break;
-    default:
-        break;
+    int cutemp;
+    int CUmajor, CUminor;
+    int DEVmajor, DEVminor;
+    cuDriverGetVersion(&cutemp);
+    CUmajor = (cutemp / 1000);
+    CUminor = (cutemp % 1000) / 10;
+    cuDeviceGetAttribute(&DEVmajor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, env->device);
+    cuDeviceGetAttribute(&DEVminor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, env->device);
+    if(CUmajor == 12){
+        CUminor =
+        CUminor >= 6 ?
+            6
+            :
+            CUminor
+        ;
     }
+    if(CUmajor == 11){
+        CUminor =
+        CUminor >= 7 ?
+            7
+            :
+            CUminor >= 5 ?
+                5
+                :
+                CUminor >= 3 ?
+                    3
+                    :
+                    0
+        ;
+    }
+    if(DEVmajor == 7)
+    {
+        DEVminor =
+        DEVminor >= 5 ?
+            5
+            :
+            0
+        ;
+    }
+    else{
+        DEVminor =
+        DEVmajor == 9 ?
+            0
+            :
+            DEVmajor == 8 ?
+                0
+                :
+                DEVmajor == 6 ?
+                1
+                :
+                DEVmajor == 5 ?
+                2
+                :
+                -99
+        ;
+        if(DEVminor == -99){
+            exit(1);
+        }
+    }
+    std::string embed_key;
+    embed_key += std::to_string(CUmajor);
+    embed_key += std::to_string(CUminor);
+    embed_key += std::to_string(DEVmajor);
+    embed_key += std::to_string(DEVminor);
     
+    std::map<std::string, std::function<const char*()>> embeds;
+    FillEmbed(embeds);
+
+    if(cuModuleLoadData(&(env->EXPAll), embeds[embed_key]()) != CUDA_SUCCESS){
+        exit(1);
+    }
+
     kens = new Gcodes;
 }
 

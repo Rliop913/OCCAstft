@@ -53,6 +53,8 @@ Tested on NVIDIA H100, Ubuntu, CUDA 12.3
 - **kernel_build.sh**: Script to generate kernel code for various platforms using OCCA.
 - **capnpsetter.sh**: Script to set capnproto.
 - **nvccPtxBuild.sh**: Script to build ptx file from .cu file.
+- **docker_ptx_builder.sh**: Script that can build all ptx in just one run. Requires Docker
+- **position_setter_for_docker.sh**: Docker uses this. not for us.
 ## Installation and Build
 
 ### Requirements

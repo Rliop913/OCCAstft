@@ -80,7 +80,7 @@ Tested on NVIDIA H100, Ubuntu, CUDA 12.3
    mkdir build
    cd build
    cmake ..
-   cmake --build .
+   cmake --build . --parallel 12
    ```
    NOTE: Perhaps your first build will fail related to ixwebsocket. Build it again and it will be resolved.
 
@@ -93,12 +93,12 @@ Tested on NVIDIA H100, Ubuntu, CUDA 12.3
   - **kernel.okl**
     - **toPower**: PostProcess, power(square) datas.
     - **toHalfCoplexFormat** PostProcess, returns halfed complex. (real, imag, real, imag)
-  - **RadixCommon**
+  - **EXPCommon**
     - **Window_~~~~**: PreProcess, returns windowed data.
     - **Overlap_Common**: PreProcess, returns overlaped data.
     - **DCRemove_Common**: PreProcess, removes DC components in every windows
-    - **StockHamDITCommon**: main kernel, need to call every stage. The stage starts with 0, ends with windowRadix - 1.
-  - **Radix~.okl**:Special implementations optimized to use shared memory,
+    - **StockHamDITCommon**: main kernel, need to call every stage. The stage starts with 0, ends with windowSizeEXP - 1.
+  - **EXP~.okl**:Special implementations optimized to use shared memory,
     - **Stockhpotimized~**: main kernel, call once.
 ## StandAlone Usage
 Implementation to ensure normal operation even in a binary distribution environment (non-developer environment)
@@ -148,9 +148,9 @@ Implementation to ensure normal operation even in a binary distribution environm
        // Request STFT operation
        auto promisedData = temp.RequestSTFT(testZeroData, 10, 0.5 , "--hanning_window --half_complex_return");
    
-       // RequestSTFT( FloatVector, WindowRadix, OverlapRate, Options)
+       // RequestSTFT( FloatVector, windowSizeEXP, OverlapRate, Options)
        // FloatVector: float vector
-       // WindowRadix: Radix data of WindowSize. 2 ^ WindowRadix
+       // windowSizeEXP: EXP data of WindowSize. 2 ^ windowSizeEXP
        // OverlapRate: overlap rate. 0.6 means 60% overlap
        // Options: options for preprocess, returned shape.
    
@@ -244,7 +244,7 @@ Contributions, especially PRs implementing **Metal** and **HIP** support, are hi
       void* origin, 
       CUI OFullSize, 
       CUI FullSize, 
-      CUI windowRadix, 
+      CUI windowSizeEXP, 
       CUI OMove, 
       void* Realout
       )
@@ -316,44 +316,44 @@ Contributions, especially PRs implementing **Metal** and **HIP** support, are hi
   
   
   bool 
-  runnerFunction::Radix6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+  runnerFunction::EXP6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
   {
       
   }
   
   bool 
-  runnerFunction::Radix7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+  runnerFunction::EXP7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
   {
       
   }
   
   bool 
-  runnerFunction::Radix8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+  runnerFunction::EXP8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
   {
   
   }
   
   bool 
-  runnerFunction::Radix9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+  runnerFunction::EXP9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
   {
   
   }
   
   bool 
-  runnerFunction::Radix10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+  runnerFunction::EXP10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
   {
   
   }
   
   bool 
-  runnerFunction::Radix11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+  runnerFunction::EXP11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
   {
   
   }
   
   
   bool 
-  runnerFunction::RadixC(
+  runnerFunction::EXPC(
       void*   userStruct,
       void*   real, 
       void*   imag,
@@ -361,7 +361,7 @@ Contributions, especially PRs implementing **Metal** and **HIP** support, are hi
       void*   subimag,
       void*   out,
       CUI&&   HWindowSize,
-      CUI     windowRadix,
+      CUI     windowSizeEXP,
       CUI     OFullSize,
       void*   realResult,
       void*   imagResult
@@ -378,7 +378,7 @@ Contributions, especially PRs implementing **Metal** and **HIP** support, are hi
       void*   realResult, 
       void*   imagResult, 
       CUI     OHalfSize, 
-      CUI     windowRadix
+      CUI     windowSizeEXP
       )
   {
       
@@ -454,19 +454,19 @@ Contributions, especially PRs implementing **Metal** and **HIP** support, are hi
   /**
    * ActivateSTFT: Executes the Short-Time Fourier Transform (STFT) on the input data using GPGPU.
    * @param inData: Input signal data.
-   * @param windowRadix: Radix size of the STFT window.
+   * @param windowSizeEXP: EXP of the STFT window.
    * @param overlapRatio: Overlap ratio for the STFT window. 0 ~ 1, 0 means no overlap.
    * @return MAYBE_DATA: Processed data after applying STFT. if error occurs, return std::nullopt
    */
   
   MAYBE_DATA
   Runner::ActivateSTFT(   VECF& inData, 
-                          const int& windowRadix, 
+                          const int& windowSizeEXP, 
                           const float& overlapRatio)
   {
       //default code blocks
       const unsigned int  FullSize    = inData.size();
-      const int           windowSize  = 1 << windowRadix;
+      const int           windowSize  = 1 << windowSizeEXP;
       const int           qtConst     = toQuot(FullSize, overlapRatio, windowSize);//number of windows
       const unsigned int  OFullSize   = qtConst * windowSize; // overlaped fullsize
       const unsigned int  OHalfSize   = OFullSize / 2;
@@ -489,7 +489,7 @@ Contributions, especially PRs implementing **Metal** and **HIP** support, are hi
           std::move(OHalfSize),
           std::move(OMove),
           options,
-          windowRadix,
+          windowSizeEXP,
           overlapRatio
       );
   

@@ -30,7 +30,7 @@
 
 #define LOAD_PTX(buildName, ValueName, IF_Fail_DO)\
     buildName ValueName;\
-    if(cuModuleLoadData(&(env->RadixAll), ValueName.ptx_code) != CUDA_SUCCESS)\
+    if(cuModuleLoadData(&(env->EXPAll), ValueName.ptx_code) != CUDA_SUCCESS)\
     {\
         IF_Fail_DO;\
     }
@@ -55,19 +55,19 @@ void CheckCudaError(CUresult err) {
 struct Genv{
     CUdevice device;
     CUcontext context;
-    CUmodule RadixAll;
+    CUmodule EXPAll;
 };
 
 // Gcodes: Structure to manage and store GPGPU kernel codes.
 struct Gcodes{
-    CUfunction R6STFT;
-    CUfunction R7STFT;
-    CUfunction R8STFT;
-    CUfunction R9STFT;
-    CUfunction R10STFT;
-    CUfunction R11STFT;
-    CUfunction RadixCommonOverlap;
-    CUfunction RadixCommonSTFT;
+    CUfunction EXP6STFT;
+    CUfunction EXP7STFT;
+    CUfunction EXP8STFT;
+    CUfunction EXP9STFT;
+    CUfunction EXP10STFT;
+    CUfunction EXP11STFT;
+    CUfunction EXPCommonOverlap;
+    CUfunction EXPCommonSTFT;
 };
 
 // InitEnv: Initializes the GPGPU environment and kernel code structures.
@@ -88,27 +88,27 @@ Runner::InitEnv()
     {
     case 5:
         {
-            LOAD_PTX(okl_embed52_12_3, k123, LOAD_PTX(okl_embed52_12_1, k121, LOAD_PTX(okl_embed52_11_6, k116, ;)));
+            LOAD_PTX(okl_embed52_12_3, k123, LOAD_PTX(okl_embed52_12_1, k121, ;));
         }
         break;
     case 6:
         {
-            LOAD_PTX(okl_embed61_12_3, k123, LOAD_PTX(okl_embed61_12_1, k121, LOAD_PTX(okl_embed61_11_6, k116, ;)));
+            LOAD_PTX(okl_embed61_12_3, k123, LOAD_PTX(okl_embed61_12_1, k121, ;));
         }
         break;
     case 7:
         if(minor >= 5)
         {
-            LOAD_PTX(okl_embed75_12_3, k123, LOAD_PTX(okl_embed75_12_1, k121, LOAD_PTX(okl_embed75_11_6, k116, ;)));
+            LOAD_PTX(okl_embed75_12_3, k123, LOAD_PTX(okl_embed75_12_1, k121, ;));
         }
         else
         {
-            LOAD_PTX(okl_embed70_12_3, k123, LOAD_PTX(okl_embed70_12_1, k121, LOAD_PTX(okl_embed70_11_6, k116, ;)));
+            LOAD_PTX(okl_embed70_12_3, k123, LOAD_PTX(okl_embed70_12_1, k121, ;));
         }
         break;
     case 8:
         {
-            LOAD_PTX(okl_embed80_12_3, k123, LOAD_PTX(okl_embed80_12_1, k121, LOAD_PTX(okl_embed80_11_6, k116, ;)));
+            LOAD_PTX(okl_embed80_12_3, k123, LOAD_PTX(okl_embed80_12_1, k121, ;));
         }
         break;
 
@@ -128,7 +128,7 @@ void
 Runner::UnInit()
 {
     cuCtxSynchronize();
-    CheckCudaError(cuModuleUnload(env->RadixAll));
+    CheckCudaError(cuModuleUnload(env->EXPAll));
     CheckCudaError(cuCtxDestroy(env->context));
 
 }
@@ -137,14 +137,14 @@ Runner::UnInit()
 void
 Runner::BuildKernel()
 {
-    CheckCudaError(cuModuleGetFunction(&(kens->R6STFT), env->RadixAll, "_occa_Stockhpotimized6_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->R7STFT), env->RadixAll, "_occa_Stockhpotimized7_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->R8STFT), env->RadixAll, "_occa_Stockhpotimized8_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->R9STFT), env->RadixAll, "_occa_Stockhpotimized9_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->R10STFT), env->RadixAll, "_occa_Stockhpotimized10_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->R11STFT), env->RadixAll, "_occa_Stockhpotimized11_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonOverlap), env->RadixAll, "_occa_Overlap_Common_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonSTFT), env->RadixAll, "_occa_StockHamDITCommon_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXP6STFT), env->EXPAll, "_occa_Stockhoptimized6_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXP7STFT), env->EXPAll, "_occa_Stockhoptimized7_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXP8STFT), env->EXPAll, "_occa_Stockhoptimized8_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXP9STFT), env->EXPAll, "_occa_Stockhoptimized9_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXP10STFT), env->EXPAll, "_occa_Stockhoptimized10_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXP11STFT), env->EXPAll, "_occa_Stockhoptimized11_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXPCommonOverlap), env->EXPAll, "_occa_Overlap_Common_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXPCommonSTFT), env->EXPAll, "_occa_StockHamCommon_0"));
     
 }
 void
@@ -171,13 +171,13 @@ JsonStore
 }
 MAYBE_DATA
 Runner::ActivateSTFT(   VECF& inData, 
-                        const int& windowRadix, 
+                        const int& windowSizeEXP, 
                         const float& overlapRatio,
                         const std::string& options)
 {
     //default code blocks
     const unsigned int  FullSize    = inData.size();
-    const unsigned int  windowSize  = 1 << windowRadix;
+    const unsigned int  windowSize  = 1 << windowSizeEXP;
     const unsigned int  qtConst     = toQuot(FullSize, overlapRatio, windowSize);//number of windows
     const unsigned int  OFullSize   = qtConst * windowSize; // overlaped fullsize
     const unsigned int  OHalfSize   = OFullSize / 2;
@@ -209,12 +209,12 @@ Runner::ActivateSTFT(   VECF& inData,
             &DInput,
             (void*)&OFullSize,
             (void*)&FullSize,
-            (void*)&windowRadix,
+            (void*)&windowSizeEXP,
             (void*)&OMove,
             &DFR
         };
     CheckCudaError(cuLaunchKernel(
-                kens->RadixCommonOverlap,
+                kens->EXPCommonOverlap,
                 OFullSize / 64, 1, 1,
                 64, 1, 1,
                 0,
@@ -228,17 +228,17 @@ Runner::ActivateSTFT(   VECF& inData,
         &DFI,
         (void*)&OHalfSize
     };
-    std::vector<CUevent> starts(windowRadix);
-    std::vector<CUevent> ends(windowRadix);
+    std::vector<CUevent> starts(windowSizeEXP);
+    std::vector<CUevent> ends(windowSizeEXP);
     
-    switch (windowRadix)
+    switch (windowSizeEXP)
     {
     case 6:
         cuEventCreate(&(starts[0]), CU_EVENT_DEFAULT);
         cuEventCreate(&(ends[0]), CU_EVENT_DEFAULT);
         cuEventRecord(starts[0], 0);
         CheckCudaError(cuLaunchKernel(
-            kens->R6STFT,
+            kens->EXP6STFT,
             qtConst, 1, 1,
             32, 1, 1,
             0,
@@ -261,7 +261,7 @@ Runner::ActivateSTFT(   VECF& inData,
         cuEventCreate(&(ends[0]), CU_EVENT_DEFAULT);
         cuEventRecord(starts[0], 0);
         CheckCudaError(cuLaunchKernel(
-            kens->R7STFT,
+            kens->EXP7STFT,
             qtConst, 1, 1,
             64, 1, 1,
             0,
@@ -284,7 +284,7 @@ Runner::ActivateSTFT(   VECF& inData,
         cuEventCreate(&(ends[0]), CU_EVENT_DEFAULT);
         cuEventRecord(starts[0], 0);
         CheckCudaError(cuLaunchKernel(
-            kens->R8STFT,
+            kens->EXP8STFT,
             qtConst, 1, 1,
             128, 1, 1,
             0,
@@ -307,7 +307,7 @@ Runner::ActivateSTFT(   VECF& inData,
         cuEventCreate(&(ends[0]), CU_EVENT_DEFAULT);
         cuEventRecord(starts[0], 0);
         CheckCudaError(cuLaunchKernel(
-            kens->R9STFT,
+            kens->EXP9STFT,
             qtConst, 1, 1,
             256, 1, 1,
             0,
@@ -330,7 +330,7 @@ Runner::ActivateSTFT(   VECF& inData,
         cuEventCreate(&(ends[0]), CU_EVENT_DEFAULT);
         cuEventRecord(starts[0], 0);
         CheckCudaError(cuLaunchKernel(
-            kens->R10STFT,
+            kens->EXP10STFT,
             qtConst, 1, 1,
             512, 1, 1,
             0,
@@ -353,7 +353,7 @@ Runner::ActivateSTFT(   VECF& inData,
         cuEventCreate(&(ends[0]), CU_EVENT_DEFAULT);
         cuEventRecord(starts[0], 0);
         CheckCudaError(cuLaunchKernel(
-            kens->R11STFT,
+            kens->EXP11STFT,
             qtConst, 1, 1,
             1024, 1, 1,
             0,
@@ -385,7 +385,7 @@ Runner::ActivateSTFT(   VECF& inData,
             (void*)&HwindowSize,
             (void*)&stage,
             (void*)&OHalfSize,
-            (void*)&windowRadix,
+            (void*)&windowSizeEXP,
         };
         void *STFstockham[] =
         {
@@ -396,11 +396,11 @@ Runner::ActivateSTFT(   VECF& inData,
             (void*)&HwindowSize,
             (void*)&stage,
             (void*)&OHalfSize,
-            (void*)&windowRadix,
+            (void*)&windowSizeEXP,
         };
         
         
-        for (stage = 0; stage < windowRadix; ++stage)
+        for (stage = 0; stage < windowSizeEXP; ++stage)
         {
             cuEventCreate(&(starts[stage]), CU_EVENT_DEFAULT);
             cuEventCreate(&(ends[stage]), CU_EVENT_DEFAULT);
@@ -408,7 +408,7 @@ Runner::ActivateSTFT(   VECF& inData,
             if (stage % 2 == 0)
             {
                 CheckCudaError(cuLaunchKernel(
-                    kens->RadixCommonSTFT,
+                    kens->EXPCommonSTFT,
                     OHalfSize / 256, 1, 1,
                     256, 1, 1,
                     0,
@@ -421,7 +421,7 @@ Runner::ActivateSTFT(   VECF& inData,
             {
 
                 CheckCudaError(cuLaunchKernel(
-                    kens->RadixCommonSTFT,
+                    kens->EXPCommonSTFT,
                     OHalfSize / 256, 1, 1,
                     256, 1, 1,
                     0,
@@ -436,7 +436,7 @@ Runner::ActivateSTFT(   VECF& inData,
         {
 
         float milli = 0;
-        for(int i=0;i<windowRadix;++i)
+        for(int i=0;i<windowSizeEXP;++i)
         {
             float local_milli = 0;
             cuEventElapsedTime(&local_milli, starts[i], ends[i]);

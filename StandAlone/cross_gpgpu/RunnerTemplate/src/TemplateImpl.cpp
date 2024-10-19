@@ -49,19 +49,19 @@ Runner::UnInit()
 /**
  * ActivateSTFT: Executes the Short-Time Fourier Transform (STFT) on the input data using GPGPU.
  * @param inData: Input signal data.
- * @param windowRadix: Radix size of the STFT window.
+ * @param windowSizeEXP: EXP size of the STFT window.
  * @param overlapRatio: Overlap ratio for the STFT window. 0 ~ 1, 0 means no overlap.
  * @return MAYBE_DATA: Processed data after applying STFT. if error occurs, return std::nullopt
  */
 
 MAYBE_DATA
 Runner::ActivateSTFT(   VECF& inData, 
-                        const int& windowRadix, 
+                        const int& windowSizeEXP, 
                         const float& overlapRatio)
 {
     //default code blocks
     const unsigned int  FullSize    = inData.size();
-    const int           windowSize  = 1 << windowRadix;
+    const int           windowSize  = 1 << windowSizeEXP;
     const int           qtConst     = toQuot(FullSize, overlapRatio, windowSize);//number of windows
     const unsigned int  OFullSize   = qtConst * windowSize; // overlaped fullsize
     const unsigned int  OHalfSize   = OFullSize / 2;
@@ -84,7 +84,7 @@ Runner::ActivateSTFT(   VECF& inData,
         std::move(OHalfSize),
         std::move(OMove),
         options,
-        windowRadix,
+        windowSizeEXP,
         overlapRatio
     );
 

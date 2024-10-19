@@ -28,13 +28,13 @@ Runner::BuildKernel()
 
 MAYBE_DATA
 Runner::ActivateSTFT(   VECF& inData, 
-                        const int& windowRadix, 
+                        const int& windowSizeEXP, 
                         const float& overlapRatio,
                         const std::string& options)
 {
     //default code blocks
     const unsigned int  FullSize    = inData.size();
-    const int           windowSize  = 1 << windowRadix;
+    const int           windowSize  = 1 << windowSizeEXP;
     const int           qtConst     = toQuot(FullSize, overlapRatio, windowSize);
     const unsigned int  OFullSize   = qtConst * windowSize;
     const unsigned int  OHalfSize   = OFullSize / 2;
@@ -63,7 +63,7 @@ Runner::ActivateSTFT(   VECF& inData,
         std::move(OHalfSize),
         std::move(OMove),
         options,
-        windowRadix,
+        windowSizeEXP,
         overlapRatio
     );
 

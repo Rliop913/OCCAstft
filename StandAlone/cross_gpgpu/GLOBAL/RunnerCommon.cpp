@@ -73,7 +73,6 @@ Runner::ServerInit(const int& pNum)
             {
                 if(msg->type == ix::WebSocketMessageType::Open)
                 {
-                    std::cout<<"Open Transmission"<<std::endl;
                 }
                 if(msg->type == ix::WebSocketMessageType::Message)
                 {
@@ -87,7 +86,7 @@ Runner::ServerInit(const int& pNum)
                         {
                             auto result =
                             ActivateSTFT(   data.value(), 
-                                            received.get_WindowRadix(),
+                                            received.get_WindowSizeEXP(),
                                             received.get_OverlapRate(),
                                             received.GetOption());
                             if(dataInfo.has_value() && result.has_value())
@@ -198,7 +197,7 @@ runnerFunction::Default_Pipeline(
     CUI   OHalfSize,
     CUI   OMove,
     const std::string&  options,
-    const int           windowRadix,
+    const int           windowSizeEXP,
     const float         overlapRatio
 )
 {
@@ -210,7 +209,7 @@ runnerFunction::Default_Pipeline(
         origin,
         OFullSize,
         FullSize,
-        windowRadix,
+        windowSizeEXP,
         OMove,
         real
     );
@@ -248,47 +247,47 @@ runnerFunction::Default_Pipeline(
     }
     I_OPTION_CHECK(runnerFunction::RemoveDC(userStruct, real, qtConst, OFullSize, windowSize), "--remove_dc")
     
-    if(windowRadix < 6)
+    if(windowSizeEXP < 6)
     {
         return std::move("Operation not supported");
     }
     void* realResult = real;
     void* imagResult = imag;
-    switch (windowRadix)
+    switch (windowSizeEXP)
     {
     case 6:
-        if(!runnerFunction::Radix6  (userStruct, real, imag, OHalfSize)){
+        if(!runnerFunction::EXP6  (userStruct, real, imag, OHalfSize)){
             return std::move("Err On Stockham");
         }
         break;
     case 7:
-        if(!runnerFunction::Radix7  (userStruct, real, imag, OHalfSize)){
+        if(!runnerFunction::EXP7  (userStruct, real, imag, OHalfSize)){
             return std::move("Err On Stockham");
         }
         break;
     case 8:
-        if(!runnerFunction::Radix8  (userStruct, real, imag, OHalfSize)){
+        if(!runnerFunction::EXP8  (userStruct, real, imag, OHalfSize)){
             return std::move("Err On Stockham");
         }
         break;
     case 9:
-        if(!runnerFunction::Radix9  (userStruct, real, imag, OHalfSize)){
+        if(!runnerFunction::EXP9  (userStruct, real, imag, OHalfSize)){
             return std::move("Err On Stockham");
         }
         break;
     case 10:
-        if(!runnerFunction::Radix10 (userStruct, real, imag, OHalfSize)){
+        if(!runnerFunction::EXP10 (userStruct, real, imag, OHalfSize)){
             return std::move("Err On Stockham");
         }
         break;
     case 11:
-        if(!runnerFunction::Radix11 (userStruct, real, imag, OHalfSize)){
+        if(!runnerFunction::EXP11 (userStruct, real, imag, OHalfSize)){
             return std::move("Err On Stockham");
         }
         break;
     default:
         if(
-        !runnerFunction::RadixC
+        !runnerFunction::EXPC
         (
             userStruct, 
             real, 
@@ -297,7 +296,7 @@ runnerFunction::Default_Pipeline(
             subimag, 
             out, 
             (windowSize >> 1), 
-            windowRadix, 
+            windowSizeEXP, 
             OFullSize, 
             realResult, 
             imagResult
@@ -308,7 +307,7 @@ runnerFunction::Default_Pipeline(
     }
     
     I_OPTION_CHECK(
-        runnerFunction::HalfComplex(userStruct, out, realResult, imagResult, OHalfSize, windowRadix),
+        runnerFunction::HalfComplex(userStruct, out, realResult, imagResult, OHalfSize, windowSizeEXP),
         "--half_complex_return"
     )else{
         runnerFunction::ToPower(userStruct, out, realResult, imagResult, OFullSize);

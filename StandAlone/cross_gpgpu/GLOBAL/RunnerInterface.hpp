@@ -35,7 +35,7 @@ toQuot(float fullSize, float overlapRatio, float windowSize){
 }
 namespace runnerFunction {
 
-    bool Overlap            (void* userStruct, void* origin, CUI OFullSize, CUI FullSize, CUI windowRadix, CUI OMove, void* Realout);
+    bool Overlap            (void* userStruct, void* origin, CUI OFullSize, CUI FullSize, CUI windowSizeEXP, CUI OMove, void* Realout);
     bool Hanning            (void* userStruct, void* data, CUI OFullSize, CUI windowSize);
     bool Hamming            (void* userStruct, void* data, CUI OFullSize, CUI windowSize);
     bool Blackman           (void* userStruct, void* data, CUI OFullSize, CUI windowSize);
@@ -47,21 +47,21 @@ namespace runnerFunction {
 
     bool RemoveDC           (void* userStruct, void* data, CUI qtConst, CUI OFullSize, CUI windowSize);
 
-    bool Radix6             (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
-    bool Radix7             (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
-    bool Radix8             (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
-    bool Radix9             (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
-    bool Radix10            (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
-    bool Radix11            (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
+    bool EXP6             (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
+    bool EXP7             (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
+    bool EXP8             (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
+    bool EXP9             (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
+    bool EXP10            (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
+    bool EXP11            (void* userStruct, void* Real, void* Imag, CUI OHalfSize);
 
-    bool RadixC             (   void*   userStruct,
+    bool EXPC             (   void*   userStruct,
                                 void*   real, 
                                 void*   imag,
                                 void*   subreal,
                                 void*   subimag,
                                 void*   out,
                                 CUI     HWindowSize,
-                                CUI     windowRadix,
+                                CUI     windowSizeEXP,
                                 CUI     OFullSize,
                                 void*   realResult,
                                 void*   imagResult
@@ -72,7 +72,7 @@ namespace runnerFunction {
                                 void*   realResult, 
                                 void*   imagResult, 
                                 CUI     OHalfSize, 
-                                CUI     windowRadix
+                                CUI     windowSizeEXP
                             );
 
     bool ToPower            (   void* userStruct, 
@@ -98,7 +98,7 @@ namespace runnerFunction {
         CUI   OHalfSize,
         CUI   OMove,
         const std::string&  options,
-        const int           windowRadix,
+        const int           windowSizeEXP,
         const float         overlapRatio);
 
 };
@@ -122,7 +122,7 @@ public:
     [[nodiscard]]
     MAYBE_DATA
     ActivateSTFT(   VECF& inData,
-                    const int& windowRadix, 
+                    const int& windowSizeEXP, 
                     const float& overlapRatio,
                     const std::string& options);
     ix::WebSocketServer *server = nullptr;

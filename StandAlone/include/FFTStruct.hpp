@@ -104,7 +104,7 @@ public:
 
     MAYBE_MEMORY GetSharedMemPath();
     std::string getID();
-    int get_WindowRadix();
+    int get_WindowSizeEXP();
     float get_OverlapRate();
     ULL get_dataLength();
     

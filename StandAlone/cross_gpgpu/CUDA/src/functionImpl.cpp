@@ -18,7 +18,7 @@ runnerFunction::Overlap(
     void* origin, 
     CUI OFullSize, 
     CUI FullSize, 
-    CUI windowRadix, 
+    CUI windowSizeEXP, 
     CUI OMove, 
     void* Realout
     )
@@ -30,7 +30,7 @@ runnerFunction::Overlap(
         origin,
         (void*)&OFullSize,
         (void*)&FullSize,
-        (void*)&windowRadix,
+        (void*)&windowSizeEXP,
         (void*)&OMove,
         Realout
     };
@@ -344,7 +344,7 @@ runnerFunction::Gaussian(
 
 
 bool 
-runnerFunction::Radix6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     cudaData* Dp = (cudaData*)userStruct;
     
@@ -356,7 +356,7 @@ runnerFunction::Radix6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
     };
     if(
         cuLaunchKernel(
-            Dp->kens->R6STFT,
+            Dp->kens->EXP6STFT,
             Dp->qtConst, 1, 1,
             32, 1, 1,
             0,
@@ -375,7 +375,7 @@ runnerFunction::Radix6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     cudaData* Dp = (cudaData*)userStruct;
     
@@ -387,7 +387,7 @@ runnerFunction::Radix7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
     };
     if(
         cuLaunchKernel(
-            Dp->kens->R7STFT,
+            Dp->kens->EXP7STFT,
             Dp->qtConst, 1, 1,
             64, 1, 1,
             0,
@@ -406,7 +406,7 @@ runnerFunction::Radix7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     cudaData* Dp = (cudaData*)userStruct;
     
@@ -418,7 +418,7 @@ runnerFunction::Radix8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
     };
     if(
         cuLaunchKernel(
-            Dp->kens->R8STFT,
+            Dp->kens->EXP8STFT,
             Dp->qtConst, 1, 1,
             128, 1, 1,
             0,
@@ -437,7 +437,7 @@ runnerFunction::Radix8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     cudaData* Dp = (cudaData*)userStruct;
     
@@ -449,7 +449,7 @@ runnerFunction::Radix9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
     };
     if(
         cuLaunchKernel(
-            Dp->kens->R9STFT,
+            Dp->kens->EXP9STFT,
             Dp->qtConst, 1, 1,
             256, 1, 1,
             0,
@@ -468,7 +468,7 @@ runnerFunction::Radix9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     cudaData* Dp = (cudaData*)userStruct;
     
@@ -480,7 +480,7 @@ runnerFunction::Radix10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
     };
     if(
         cuLaunchKernel(
-            Dp->kens->R10STFT,
+            Dp->kens->EXP10STFT,
             Dp->qtConst, 1, 1,
             512, 1, 1,
             0,
@@ -499,7 +499,7 @@ runnerFunction::Radix10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     cudaData* Dp = (cudaData*)userStruct;
     
@@ -511,7 +511,7 @@ runnerFunction::Radix11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
     };
     if(
         cuLaunchKernel(
-            Dp->kens->R11STFT,
+            Dp->kens->EXP11STFT,
             Dp->qtConst, 1, 1,
             1024, 1, 1,
             0,
@@ -531,7 +531,7 @@ runnerFunction::Radix11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 
 
 bool 
-runnerFunction::RadixC(
+runnerFunction::EXPC(
     void*   userStruct,
     void*   real, 
     void*   imag,
@@ -539,7 +539,7 @@ runnerFunction::RadixC(
     void*   subimag,
     void*   out,
     CUI     HWindowSize,
-    CUI     windowRadix,
+    CUI     windowSizeEXP,
     CUI     OFullSize,
     void*   realResult,
     void*   imagResult
@@ -560,7 +560,7 @@ runnerFunction::RadixC(
         (void*)&HWindowSize,
         (void*)&stage,
         (void*)&OHalfSize,
-        (void*)&windowRadix,
+        (void*)&windowSizeEXP,
     };
     void *STFstockham[] =
     {
@@ -571,14 +571,14 @@ runnerFunction::RadixC(
         (void*)&HWindowSize,
         (void*)&stage,
         (void*)&OHalfSize,
-        (void*)&windowRadix,
+        (void*)&windowSizeEXP,
     };
-    for(stage = 0; stage < windowRadix; ++stage)
+    for(stage = 0; stage < windowSizeEXP; ++stage)
     {
         if (stage % 2 == 0)
         {
             EC.push_back(cuLaunchKernel(
-                Dp->kens->RadixCommon,
+                Dp->kens->EXPCommon,
                 OHalfSize / 256, 1, 1,
                 256, 1, 1,
                 0,
@@ -590,7 +590,7 @@ runnerFunction::RadixC(
         else
         {
             EC.push_back(cuLaunchKernel(
-                Dp->kens->RadixCommon,
+                Dp->kens->EXPCommon,
                 OHalfSize / 256, 1, 1,
                 256, 1, 1,
                 0,
@@ -600,7 +600,7 @@ runnerFunction::RadixC(
             ));
         }
     }
-    if(windowRadix % 2 != 0)
+    if(windowSizeEXP % 2 != 0)
     {
         realResult = subreal;
         imagResult = subimag;
@@ -616,7 +616,7 @@ runnerFunction::HalfComplex(
     void*   realResult, 
     void*   imagResult, 
     CUI     OHalfSize, 
-    CUI     windowRadix
+    CUI     windowSizeEXP
     )
 {
     cudaData* Dp = (cudaData*)userStruct;
@@ -626,7 +626,7 @@ runnerFunction::HalfComplex(
         realResult,
         imagResult,
         (void*)&OHalfSize,
-        (void*)&windowRadix
+        (void*)&windowSizeEXP
     };
     if(cuLaunchKernel(
         Dp->kens->HalfComplex,

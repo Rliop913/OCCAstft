@@ -16,8 +16,8 @@ dataWait(STFTProxy& proxy)
 {
     for(int i = 8; i< 21; ++i)
     {
-        int radixed = 1 << i;
-        int movenumber = 2000000 / radixed;
+        int exped = 1 << i;
+        int movenumber = 2000000 / exped;
         if(movenumber > 1000)
         {
             movenumber /=1000;
@@ -31,24 +31,24 @@ dataWait(STFTProxy& proxy)
             movenumber /= 10;
         }
         
-        for(unsigned long inner_itr = 1; inner_itr * radixed < 200000000; inner_itr += movenumber)
+        for(unsigned long inner_itr = 1; inner_itr * exped < 200000000; inner_itr += movenumber)
         {
-            std::vector<float> data(radixed * inner_itr);
+            std::vector<float> data(exped * inner_itr);
             auto dataResult = proxy.RequestSTFT(data, i, 0);
             if(!dataResult.has_value())
             {
-                std::cout << "data err on return on Radix: "<< i << " datasize: " << data.size() << std::endl;
+                std::cout << "data err on return on EXP: "<< i << " datasize: " << data.size() << std::endl;
             }
             else
             {
                 auto dresult = dataResult.value().get();
                 if(dresult.has_value())
                 {
-                    std::cout << "calculate complete on RADIX: "<< i << " DATASIZE: " << data.size() <<std::endl;
+                    std::cout << "calculate complete on EXP: "<< i << " DATASIZE: " << data.size() <<std::endl;
                 }
                 else
                 {
-                    std::cout << "data err on calculate return on Radix: "<< i << " datasize: " << data.size() << std::endl;
+                    std::cout << "data err on calculate return on EXP: "<< i << " datasize: " << data.size() << std::endl;
                 }
             }
         }
@@ -76,19 +76,23 @@ int main()
     //test first
     
     // dataWait(proxy);
-    std::vector<float> dataTemp(10000000);
+    std::vector<float> dataTemp(100000);
     
     for(int i=0; i< dataTemp.size(); ++i)
     {
         dataTemp[i] = float(i) / float(dataTemp.size());
     }
-    auto returned = proxy.RequestSTFT(dataTemp, 14, 0.0);
+    auto returned = proxy.RequestSTFT(dataTemp, 9, 0.0);
     if(returned.has_value())
     {
         auto ret = returned.value().get();
         if(!ret.has_value())
         {
             std::cout << "ERR returned" <<std::endl;
+        }
+        for(auto i : ret.value())
+        {
+            std::cout << i << ", ";
         }
     }
     else{

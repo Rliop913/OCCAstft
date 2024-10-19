@@ -12,13 +12,13 @@ extern void Window_Gaussian         (float*, CUI&, CUI&, const float& );
 extern void Window_Blackman_Nuttall (float*, CUI&, CUI& );
 extern void DCRemove_Common         (float*, CUI&, CUI& );
 
-extern void Stockhpotimized6        (float*, float*, CUI&);
-extern void Stockhpotimized7        (float*, float*, CUI&);
-extern void Stockhpotimized8        (float*, float*, CUI&);
-extern void Stockhpotimized9        (float*, float*, CUI&);
-extern void Stockhpotimized10       (float*, float*, CUI&);
-extern void Stockhpotimized11       (float*, float*, CUI&);
-extern void StockHamDITCommon       (float*,
+extern void Stockhoptimized6        (float*, float*, CUI&);
+extern void Stockhoptimized7        (float*, float*, CUI&);
+extern void Stockhoptimized8        (float*, float*, CUI&);
+extern void Stockhoptimized9        (float*, float*, CUI&);
+extern void Stockhoptimized10       (float*, float*, CUI&);
+extern void Stockhoptimized11       (float*, float*, CUI&);
+extern void StockHamCommon          (float*,
                                      float*,
                                      float*,
                                      float*,
@@ -45,7 +45,7 @@ runnerFunction::Overlap(
     void* origin, 
     CUI OFullSize,
     CUI FullSize, 
-    CUI windowRadix, 
+    CUI windowSizeEXP, 
     CUI OMove, 
     void* Realout
     )
@@ -55,7 +55,7 @@ runnerFunction::Overlap(
         ((std::vector<float>*)origin)->data(),
         OFullSize,
         FullSize,
-        windowRadix,
+        windowSizeEXP,
         OMove,
         ((std::vector<float>*)Realout)->data()
     );
@@ -134,9 +134,9 @@ runnerFunction::Gaussian(
 
 
 bool 
-runnerFunction::Radix6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
-    Stockhpotimized6
+    Stockhoptimized6
     (
         ((std::vector<float>*)Real)->data(),
         ((std::vector<float>*)Imag)->data(),
@@ -146,9 +146,9 @@ runnerFunction::Radix6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
-    Stockhpotimized7
+    Stockhoptimized7
     (
         ((std::vector<float>*)Real)->data(),
         ((std::vector<float>*)Imag)->data(),
@@ -158,9 +158,9 @@ runnerFunction::Radix7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
-    Stockhpotimized8
+    Stockhoptimized8
     (
         ((std::vector<float>*)Real)->data(),
         ((std::vector<float>*)Imag)->data(),
@@ -170,9 +170,9 @@ runnerFunction::Radix8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
-    Stockhpotimized9
+    Stockhoptimized9
     (
         ((std::vector<float>*)Real)->data(),
         ((std::vector<float>*)Imag)->data(),
@@ -182,9 +182,9 @@ runnerFunction::Radix9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
-    Stockhpotimized10
+    Stockhoptimized10
     (
         ((std::vector<float>*)Real)->data(),
         ((std::vector<float>*)Imag)->data(),
@@ -194,9 +194,9 @@ runnerFunction::Radix10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
-    Stockhpotimized11
+    Stockhoptimized11
     (
         ((std::vector<float>*)Real)->data(),
         ((std::vector<float>*)Imag)->data(),
@@ -207,7 +207,7 @@ runnerFunction::Radix11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 
 
 bool 
-runnerFunction::RadixC(
+runnerFunction::EXPC(
     void*   userStruct,
     void*   real, 
     void*   imag,
@@ -215,7 +215,7 @@ runnerFunction::RadixC(
     void*   subimag,
     void*   out,
     CUI     HWindowSize,
-    CUI     windowRadix,
+    CUI     windowSizeEXP,
     CUI     OFullSize,
     void*   realResult,
     void*   imagResult
@@ -224,11 +224,11 @@ runnerFunction::RadixC(
     ((std::vector<float>*)subreal)->resize(OFullSize);
     ((std::vector<float>*)subimag)->resize(OFullSize);
     CUI OHalfSize = OFullSize >> 1;
-    for(unsigned int stage = 0; stage < windowRadix; ++stage)
+    for(unsigned int stage = 0; stage < windowSizeEXP; ++stage)
     {
         if(stage % 2 == 0)
         {
-            StockHamDITCommon
+            StockHamCommon
             (
                 ((std::vector<float>*)real)->data(),
                 ((std::vector<float>*)imag)->data(),
@@ -237,12 +237,12 @@ runnerFunction::RadixC(
                 HWindowSize,
                 stage,
                 OHalfSize,
-                windowRadix
+                windowSizeEXP
             );
         }
         else
         {
-            StockHamDITCommon
+            StockHamCommon
             (
                 ((std::vector<float>*)subreal)->data(),
                 ((std::vector<float>*)subimag)->data(),
@@ -251,10 +251,10 @@ runnerFunction::RadixC(
                 HWindowSize,
                 stage,
                 OHalfSize,
-                windowRadix
+                windowSizeEXP
             );
         }
-        if(windowRadix % 2 != 0)
+        if(windowSizeEXP % 2 != 0)
         {
             realResult = subreal;
             imagResult = subimag;
@@ -271,7 +271,7 @@ runnerFunction::HalfComplex(
     void*   realResult, 
     void*   imagResult, 
     CUI     OHalfSize, 
-    CUI     windowRadix
+    CUI     windowSizeEXP
     )
 {
     toHalfComplexFormat
@@ -280,7 +280,7 @@ runnerFunction::HalfComplex(
         ((std::vector<float>*)realResult)->data(),
         ((std::vector<float>*)imagResult)->data(),
         OHalfSize,
-        windowRadix
+        windowSizeEXP
     );
     return std::move(true);
 }

@@ -6,7 +6,7 @@ runnerFunction::Overlap(
     void* origin, 
     CUI OFullSize, 
     CUI FullSize, 
-    CUI windowRadix, 
+    CUI windowSizeEXP, 
     CUI OMove, 
     void* Realout
     )
@@ -78,44 +78,44 @@ runnerFunction::Gaussian(
 
 
 bool 
-runnerFunction::Radix6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     
 }
 
 bool 
-runnerFunction::Radix7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     
 }
 
 bool 
-runnerFunction::Radix8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
 
 }
 
 bool 
-runnerFunction::Radix9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
 
 }
 
 bool 
-runnerFunction::Radix10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
 
 }
 
 bool 
-runnerFunction::Radix11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
 
 }
 
 
 bool 
-runnerFunction::RadixC(
+runnerFunction::EXPC(
     void*   userStruct,
     void*   real, 
     void*   imag,
@@ -123,7 +123,7 @@ runnerFunction::RadixC(
     void*   subimag,
     void*   out,
     CUI&&   HWindowSize,
-    CUI     windowRadix,
+    CUI     windowSizeEXP,
     CUI     OFullSize,
     void*   realResult,
     void*   imagResult
@@ -140,7 +140,7 @@ runnerFunction::HalfComplex(
     void*   realResult, 
     void*   imagResult, 
     CUI     OHalfSize, 
-    CUI     windowRadix
+    CUI     windowSizeEXP
     )
 {
     

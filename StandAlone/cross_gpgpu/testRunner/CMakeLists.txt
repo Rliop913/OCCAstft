@@ -46,7 +46,7 @@ set(testsrc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/testRunner.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/clfftImpl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cufftImpl.cpp
-    
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/functionImpl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../GLOBAL/RunnerCommon.cpp #common implementation
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/FFTStruct_SetGet.cpp

@@ -32,7 +32,7 @@ unsigned long long
 clfftImpl::GetTime(VECF inData, const dataSet& sets)
 {
     size_t clleng[1];
-    clleng[0] = (1 << sets.windowRadix);
+    clleng[0] = (1 << sets.windowSizeEXP);
     cl_int err_ret;
     float* dt = new float[sets.OFullSize * 2];
     clinput = clCreateBuffer

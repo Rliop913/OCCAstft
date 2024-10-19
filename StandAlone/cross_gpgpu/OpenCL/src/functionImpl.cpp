@@ -18,7 +18,7 @@ runnerFunction::Overlap(
     void* origin, 
     CUI OFullSize, 
     CUI FullSize, 
-    CUI windowRadix, 
+    CUI windowSizeEXP, 
     CUI OMove, 
     void* Realout
     )
@@ -28,7 +28,7 @@ runnerFunction::Overlap(
     EC[0] = Dp->kens->Overlap.setArg(0, (*(Buffer*)origin));
     EC[1] = Dp->kens->Overlap.setArg(1, OFullSize);
     EC[2] = Dp->kens->Overlap.setArg(2, FullSize);
-    EC[3] = Dp->kens->Overlap.setArg(3, windowRadix);
+    EC[3] = Dp->kens->Overlap.setArg(3, windowSizeEXP);
     EC[4] = Dp->kens->Overlap.setArg(4, OMove);
     EC[5] = Dp->kens->Overlap.setArg(5, (*(Buffer*)Realout));
     EC[6] = clboost::enq_q(*(Dp->cq), Dp->kens->Overlap, OFullSize, 64);
@@ -164,86 +164,86 @@ runnerFunction::Gaussian(
 
 
 bool 
-runnerFunction::Radix6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     clData* Dp = (clData*)userStruct;
     int EC[4];
-    EC[0] = Dp->kens->R6STFT.setArg(0, (*(Buffer*)Real));
-    EC[1] = Dp->kens->R6STFT.setArg(1, (*(Buffer*)Imag));
-    EC[2] = Dp->kens->R6STFT.setArg(2, OHalfSize);
-    EC[3] = clboost::enq_q(*(Dp->cq), Dp->kens->R6STFT, OHalfSize, 32);
+    EC[0] = Dp->kens->EXP6STFT.setArg(0, (*(Buffer*)Real));
+    EC[1] = Dp->kens->EXP6STFT.setArg(1, (*(Buffer*)Imag));
+    EC[2] = Dp->kens->EXP6STFT.setArg(2, OHalfSize);
+    EC[3] = clboost::enq_q(*(Dp->cq), Dp->kens->EXP6STFT, OHalfSize, 32);
 
     EC_CHECK(4)
 }
 
 bool 
-runnerFunction::Radix7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     clData* Dp = (clData*)userStruct;
     int EC[4];
-    EC[0] = Dp->kens->R7STFT.setArg(0, (*(Buffer*)Real));
-    EC[1] = Dp->kens->R7STFT.setArg(1, (*(Buffer*)Imag));
-    EC[2] = Dp->kens->R7STFT.setArg(2, OHalfSize);
-    EC[3] = clboost::enq_q(*(Dp->cq), Dp->kens->R7STFT, OHalfSize, 64);
+    EC[0] = Dp->kens->EXP7STFT.setArg(0, (*(Buffer*)Real));
+    EC[1] = Dp->kens->EXP7STFT.setArg(1, (*(Buffer*)Imag));
+    EC[2] = Dp->kens->EXP7STFT.setArg(2, OHalfSize);
+    EC[3] = clboost::enq_q(*(Dp->cq), Dp->kens->EXP7STFT, OHalfSize, 64);
 
     EC_CHECK(4)
 }
 
 bool 
-runnerFunction::Radix8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     clData* Dp = (clData*)userStruct;
     int EC[4];
-    EC[0] = Dp->kens->R8STFT.setArg(0, (*(Buffer*)Real));
-    EC[1] = Dp->kens->R8STFT.setArg(1, (*(Buffer*)Imag));
-    EC[2] = Dp->kens->R8STFT.setArg(2, OHalfSize);
-    EC[3] = clboost::enq_q(*(Dp->cq), Dp->kens->R8STFT, OHalfSize, 128);
+    EC[0] = Dp->kens->EXP8STFT.setArg(0, (*(Buffer*)Real));
+    EC[1] = Dp->kens->EXP8STFT.setArg(1, (*(Buffer*)Imag));
+    EC[2] = Dp->kens->EXP8STFT.setArg(2, OHalfSize);
+    EC[3] = clboost::enq_q(*(Dp->cq), Dp->kens->EXP8STFT, OHalfSize, 128);
 
     EC_CHECK(4)
 }
 
 bool 
-runnerFunction::Radix9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     clData* Dp = (clData*)userStruct;
     int EC[4];
-    EC[0] = Dp->kens->R9STFT.setArg(0, (*(Buffer*)Real));
-    EC[1] = Dp->kens->R9STFT.setArg(1, (*(Buffer*)Imag));
-    EC[2] = Dp->kens->R9STFT.setArg(2, OHalfSize);
-    EC[3] = clboost::enq_q(*(Dp->cq), Dp->kens->R9STFT, OHalfSize, 256);
+    EC[0] = Dp->kens->EXP9STFT.setArg(0, (*(Buffer*)Real));
+    EC[1] = Dp->kens->EXP9STFT.setArg(1, (*(Buffer*)Imag));
+    EC[2] = Dp->kens->EXP9STFT.setArg(2, OHalfSize);
+    EC[3] = clboost::enq_q(*(Dp->cq), Dp->kens->EXP9STFT, OHalfSize, 256);
 
     EC_CHECK(4)
 }
 
 bool 
-runnerFunction::Radix10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     clData* Dp = (clData*)userStruct;
     int EC[4];
-    EC[0] = Dp->kens->R10STFT.setArg(0, (*(Buffer*)Real));
-    EC[1] = Dp->kens->R10STFT.setArg(1, (*(Buffer*)Imag));
-    EC[2] = Dp->kens->R10STFT.setArg(2, OHalfSize);
-    EC[3] = clboost::enq_q(*(Dp->cq), Dp->kens->R10STFT, OHalfSize, 512);
+    EC[0] = Dp->kens->EXP10STFT.setArg(0, (*(Buffer*)Real));
+    EC[1] = Dp->kens->EXP10STFT.setArg(1, (*(Buffer*)Imag));
+    EC[2] = Dp->kens->EXP10STFT.setArg(2, OHalfSize);
+    EC[3] = clboost::enq_q(*(Dp->cq), Dp->kens->EXP10STFT, OHalfSize, 512);
 
     EC_CHECK(4)
 }
 
 bool 
-runnerFunction::Radix11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     clData* Dp = (clData*)userStruct;
     int EC[4];
-    EC[0] = Dp->kens->R11STFT.setArg(0, (*(Buffer*)Real));
-    EC[1] = Dp->kens->R11STFT.setArg(1, (*(Buffer*)Imag));
-    EC[2] = Dp->kens->R11STFT.setArg(2, OHalfSize);
-    EC[3] = clboost::enq_q(*(Dp->cq), Dp->kens->R11STFT, OHalfSize, 1024);
+    EC[0] = Dp->kens->EXP11STFT.setArg(0, (*(Buffer*)Real));
+    EC[1] = Dp->kens->EXP11STFT.setArg(1, (*(Buffer*)Imag));
+    EC[2] = Dp->kens->EXP11STFT.setArg(2, OHalfSize);
+    EC[3] = clboost::enq_q(*(Dp->cq), Dp->kens->EXP11STFT, OHalfSize, 1024);
 
     EC_CHECK(4)
 }
 
 
 bool 
-runnerFunction::RadixC(
+runnerFunction::EXPC(
     void*   userStruct,
     void*   real, 
     void*   imag,
@@ -251,7 +251,7 @@ runnerFunction::RadixC(
     void*   subimag,
     void*   out,
     CUI     HWindowSize,
-    CUI     windowRadix,
+    CUI     windowSizeEXP,
     CUI     OFullSize,
     void*   realResult,
     void*   imagResult
@@ -264,26 +264,26 @@ runnerFunction::RadixC(
     CUI OHalfSize = OFullSize >> 1;
 
     
-    for(unsigned int stage = 0; stage < windowRadix; ++stage)
+    for(unsigned int stage = 0; stage < windowSizeEXP; ++stage)
     {
-        EC.push_back(Dp->kens->RadixCommon.setArg(5, stage));
+        EC.push_back(Dp->kens->EXPCommon.setArg(5, stage));
         if(stage % 2 == 0)
         {
-            EC.push_back(Dp->kens->RadixCommon.setArg(0, (*(Buffer*)real)));
-            EC.push_back(Dp->kens->RadixCommon.setArg(1, (*(Buffer*)imag)));
-            EC.push_back(Dp->kens->RadixCommon.setArg(2, (*(Buffer*)subreal)));
-            EC.push_back(Dp->kens->RadixCommon.setArg(3, (*(Buffer*)subimag)));
+            EC.push_back(Dp->kens->EXPCommon.setArg(0, (*(Buffer*)real)));
+            EC.push_back(Dp->kens->EXPCommon.setArg(1, (*(Buffer*)imag)));
+            EC.push_back(Dp->kens->EXPCommon.setArg(2, (*(Buffer*)subreal)));
+            EC.push_back(Dp->kens->EXPCommon.setArg(3, (*(Buffer*)subimag)));
         }
         else
         {
-            EC.push_back(Dp->kens->RadixCommon.setArg(0, (*(Buffer*)subreal)));
-            EC.push_back(Dp->kens->RadixCommon.setArg(1, (*(Buffer*)subimag)));
-            EC.push_back(Dp->kens->RadixCommon.setArg(2, (*(Buffer*)real)));
-            EC.push_back(Dp->kens->RadixCommon.setArg(3, (*(Buffer*)imag)));
+            EC.push_back(Dp->kens->EXPCommon.setArg(0, (*(Buffer*)subreal)));
+            EC.push_back(Dp->kens->EXPCommon.setArg(1, (*(Buffer*)subimag)));
+            EC.push_back(Dp->kens->EXPCommon.setArg(2, (*(Buffer*)real)));
+            EC.push_back(Dp->kens->EXPCommon.setArg(3, (*(Buffer*)imag)));
         }
-        EC.push_back(clboost::enq_q(*(Dp->cq), Dp->kens->RadixCommon, OHalfSize, 256));
+        EC.push_back(clboost::enq_q(*(Dp->cq), Dp->kens->EXPCommon, OHalfSize, 256));
     }
-    if(windowRadix % 2 != 0)
+    if(windowSizeEXP % 2 != 0)
     {
         realResult = subreal;
         imagResult = subimag;
@@ -299,7 +299,7 @@ runnerFunction::HalfComplex(
     void*   realResult, 
     void*   imagResult, 
     CUI     OHalfSize, 
-    CUI     windowRadix
+    CUI     windowSizeEXP
     )
 {
     clData* Dp = (clData*)userStruct;
@@ -308,7 +308,7 @@ runnerFunction::HalfComplex(
     EC[1] = Dp->kens->HalfComplex.setArg(1, (*(Buffer*)realResult));
     EC[2] = Dp->kens->HalfComplex.setArg(2, (*(Buffer*)imagResult));
     EC[3] = Dp->kens->HalfComplex.setArg(3, OHalfSize);
-    EC[4] = Dp->kens->HalfComplex.setArg(4, windowRadix);
+    EC[4] = Dp->kens->HalfComplex.setArg(4, windowSizeEXP);
     EC[5] = clboost::enq_q(*(Dp->cq), Dp->kens->HalfComplex, OHalfSize, 32);
 
     EC_CHECK(6)

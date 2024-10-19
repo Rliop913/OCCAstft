@@ -4,8 +4,6 @@ class okl_embed {
  const char* opencl_code = 
  R"(#pragma OPENCL EXTENSION cl_khr_fp64 : enable
 
-// #include <math.h>
-
 typedef struct complex_t {
   float real, imag;
 } complex;
@@ -230,12 +228,12 @@ __kernel __attribute__((reqd_work_group_size(32,1,1)))
 }
 
 __kernel __attribute__((reqd_work_group_size(32,1,1)))
- void _occa_Stockhpotimized6_0(__global float * Rout,
+ void _occa_Stockhoptimized6_0(__global float * Rout,
                                __global float * Iout,
                                const unsigned int OHalfSize);
 
 __kernel __attribute__((reqd_work_group_size(32,1,1)))
- void _occa_Stockhpotimized6_0(__global float * Rout,
+ void _occa_Stockhoptimized6_0(__global float * Rout,
                                __global float * Iout,
                                const unsigned int OHalfSize) {
   __local float SIBank[64];
@@ -369,12 +367,12 @@ __kernel __attribute__((reqd_work_group_size(32,1,1)))
 }
 
 __kernel __attribute__((reqd_work_group_size(64,1,1)))
- void _occa_Stockhpotimized7_0(__global float * Rout,
+ void _occa_Stockhoptimized7_0(__global float * Rout,
                                __global float * Iout,
                                const unsigned int OHalfSize);
 
 __kernel __attribute__((reqd_work_group_size(64,1,1)))
- void _occa_Stockhpotimized7_0(__global float * Rout,
+ void _occa_Stockhoptimized7_0(__global float * Rout,
                                __global float * Iout,
                                const unsigned int OHalfSize) {
   __local float SIBank[128];
@@ -528,12 +526,12 @@ __kernel __attribute__((reqd_work_group_size(64,1,1)))
 }
 
 __kernel __attribute__((reqd_work_group_size(128,1,1)))
- void _occa_Stockhpotimized8_0(__global float * Rout,
+ void _occa_Stockhoptimized8_0(__global float * Rout,
                                __global float * Iout,
                                const unsigned int OHalfSize);
 
 __kernel __attribute__((reqd_work_group_size(128,1,1)))
- void _occa_Stockhpotimized8_0(__global float * Rout,
+ void _occa_Stockhoptimized8_0(__global float * Rout,
                                __global float * Iout,
                                const unsigned int OHalfSize) {
   __local float SIBank[256];
@@ -707,12 +705,12 @@ __kernel __attribute__((reqd_work_group_size(128,1,1)))
 }
 
 __kernel __attribute__((reqd_work_group_size(256,1,1)))
- void _occa_Stockhpotimized9_0(__global float * Rout,
+ void _occa_Stockhoptimized9_0(__global float * Rout,
                                __global float * Iout,
                                const unsigned int OHalfSize);
 
 __kernel __attribute__((reqd_work_group_size(256,1,1)))
- void _occa_Stockhpotimized9_0(__global float * Rout,
+ void _occa_Stockhoptimized9_0(__global float * Rout,
                                __global float * Iout,
                                const unsigned int OHalfSize) {
   __local float SIBank[512];
@@ -1377,12 +1375,12 @@ __kernel __attribute__((reqd_work_group_size(512,1,1)))
 }
 
 __kernel __attribute__((reqd_work_group_size(512,1,1)))
- void _occa_Stockhpotimized10_0(__global float * Rout,
+ void _occa_Stockhoptimized10_0(__global float * Rout,
                                 __global float * Iout,
                                 const unsigned int OHalfSize);
 
 __kernel __attribute__((reqd_work_group_size(512,1,1)))
- void _occa_Stockhpotimized10_0(__global float * Rout,
+ void _occa_Stockhoptimized10_0(__global float * Rout,
                                 __global float * Iout,
                                 const unsigned int OHalfSize) {
   __local float SIBank[1024];
@@ -1595,89 +1593,6 @@ __kernel __attribute__((reqd_work_group_size(512,1,1)))
   }
 }
 
-
-// @kernel void Stockhpotimized10(
-//     float* Rout,
-//     float* Iout,
-//     const unsigned int OHalfSize)
-// {
-//     for(unsigned int o_itr = 0; o_itr < OHalfSize; o_itr += 512; @outer)
-//     {
-//         @shared float FRBank[1024];
-//         @shared float FIBank[1024];
-//         @shared float SRBank[1024];
-//         @shared float SIBank[1024];
-//         for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-//         {
-//             complex thisTwiddle = twiddle(segmentK(i_itr, 512, 512), 1024);
-//             complex LEFT;
-//             complex RIGHT;
-//             LEFT.real = Rout[o_itr * 2 + i_itr];
-//             LEFT.imag = Iout[o_itr * 2 + i_itr];
-//             RIGHT.real= Rout[o_itr * 2 + i_itr + 512];
-//             RIGHT.imag= Iout[o_itr * 2 + i_itr + 512];
-//             complex storeL = cadd(LEFT, RIGHT);
-//             complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
-//             SRBank[i_itr] = storeL.real;
-//             SIBank[i_itr] = storeL.imag;
-//             SRBank[i_itr + 512] = storeR.real;
-//             SIBank[i_itr + 512] = storeR.imag;
-//         }
-
-//         for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-//         {
-//             OpSthmSecondTF(256, 255, 8, 9, 512, 1024);
-//         }
-
-//         for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-//         {
-//             OpSthmFirstTS(128, 127, 7, 8, 512, 1024)
-//         }
-
-//         for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-//         {
-//             OpSthmSecondTF(64, 63, 6, 7, 512, 1024)
-//         }
-//         for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-//         {
-//             OpSthmFirstTS(32, 31, 5, 6, 512, 1024)
-//         }
-//         for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-//         {
-//             OpSthmSecondTF(16, 15, 4, 5, 512, 1024)
-//         }
-//         for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-//         {
-//             OpSthmFirstTS(8, 7, 3, 4, 512, 1024)
-//         }
-//         for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-//         {
-//             OpSthmSecondTF(4, 3, 2, 3, 512, 1024)
-//         }
-//         for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-//         {
-//             OpSthmFirstTS(2, 1, 1, 2, 512, 1024)
-//         }
-//         for(int i_itr = 0; i_itr < 512; ++i_itr; @inner)
-//         {
-//             complex thisTwiddle = twiddle(segmentK(i_itr, 1, 512), 1024);
-//             unsigned int LeftIndex =  (i_itr << 1);
-//             complex LEFT;
-//             complex RIGHT;
-//             LEFT.real = SRBank[LeftIndex];
-//             LEFT.imag = SIBank[LeftIndex];
-//             RIGHT.real= SRBank[LeftIndex + 1];
-//             RIGHT.imag= SIBank[LeftIndex + 1];
-//             complex storeL = cadd(LEFT, RIGHT);
-//             complex storeR = cmult(csub(LEFT, RIGHT), thisTwiddle);
-
-//             Rout[o_itr * 2 + i_itr] = storeL.real;
-//             Iout[o_itr * 2 + i_itr] = storeL.imag;
-//             Rout[o_itr * 2 + i_itr + 512] = storeR.real;
-//             Iout[o_itr * 2 + i_itr + 512] = storeR.imag;
-//         }
-//     }
-// }
 __kernel __attribute__((reqd_work_group_size(1024,1,1)))
  void _occa_preprocesses_ODW_11_0(__global float * inData,
                                   const unsigned int qtConst,
@@ -1823,12 +1738,12 @@ __kernel __attribute__((reqd_work_group_size(1024,1,1)))
 }
 
 __kernel __attribute__((reqd_work_group_size(1024,1,1)))
- void _occa_Stockhpotimized11_0(__global float * Rout,
+ void _occa_Stockhoptimized11_0(__global float * Rout,
                                 __global float * Iout,
                                 const unsigned int OHalfSize);
 
 __kernel __attribute__((reqd_work_group_size(1024,1,1)))
- void _occa_Stockhpotimized11_0(__global float * Rout,
+ void _occa_Stockhoptimized11_0(__global float * Rout,
                                 __global float * Iout,
                                 const unsigned int OHalfSize) {
   __local float SIBank[2048];
@@ -2664,24 +2579,24 @@ __kernel __attribute__((reqd_work_group_size(64,1,1)))
 }
 
 __kernel __attribute__((reqd_work_group_size(256,1,1)))
- void _occa_StockHamDITCommon_0(__global float * inReal,
-                                __global float * inImag,
-                                __global float * outReal,
-                                __global float * outImag,
-                                const unsigned int HwindowSize,
-                                const unsigned int stageRadix,
-                                const unsigned int OHalfSize,
-                                const unsigned int radixData);
+ void _occa_StockHamCommon_0(__global float * inReal,
+                             __global float * inImag,
+                             __global float * outReal,
+                             __global float * outImag,
+                             const unsigned int HwindowSize,
+                             const unsigned int stageRadix,
+                             const unsigned int OHalfSize,
+                             const unsigned int radixData);
 
 __kernel __attribute__((reqd_work_group_size(256,1,1)))
- void _occa_StockHamDITCommon_0(__global float * inReal,
-                                __global float * inImag,
-                                __global float * outReal,
-                                __global float * outImag,
-                                const unsigned int HwindowSize,
-                                const unsigned int stageRadix,
-                                const unsigned int OHalfSize,
-                                const unsigned int radixData) {
+ void _occa_StockHamCommon_0(__global float * inReal,
+                             __global float * inImag,
+                             __global float * outReal,
+                             __global float * outImag,
+                             const unsigned int HwindowSize,
+                             const unsigned int stageRadix,
+                             const unsigned int OHalfSize,
+                             const unsigned int radixData) {
   {
     unsigned int o_itr = 0 + (256 * get_group_id(0));
     {

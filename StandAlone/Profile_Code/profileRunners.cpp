@@ -76,7 +76,7 @@ int main()
     //test first
     
     // dataWait(proxy);
-    std::vector<float> dataTemp(100000000);
+    std::vector<float> dataTemp(1000000);
     
     for(int i=0; i< dataTemp.size(); ++i)
     {
@@ -89,6 +89,10 @@ int main()
         if(!ret.has_value())
         {
             std::cout << "ERR returned" <<std::endl;
+        }
+        for(auto i : ret.value())
+        {
+            std::cout << i << ", ";
         }
     }
     else{

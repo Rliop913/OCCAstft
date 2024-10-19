@@ -219,7 +219,7 @@
 }
 
 
-@kernel void Stockhoptimized2POW10(
+@kernel void Stockhoptimized10(
     float* Rout, 
     float* Iout,
     const unsigned int OHalfSize)

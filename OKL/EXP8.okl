@@ -5,7 +5,7 @@
 #endif
 
 
-@kernel void Stockhoptimized2POW8(
+@kernel void Stockhoptimized8(
     float* Rout, 
     float* Iout,
     const unsigned int OHalfSize)

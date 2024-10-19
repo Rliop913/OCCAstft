@@ -70,7 +70,7 @@ Runner::BuildKernel()
     CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonOverlap), env->EXPAll, "_occa_Overlap_Common_0"));
     CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonRemoveDC), env->EXPAll, "_occa_DCRemove_Common_0"));
     CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonWindowing), env->EXPAll, "_occa_Window_Common_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonSTFT), env->EXPAll, "_occa_StockHamDITCommon_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonSTFT), env->EXPAll, "_occa_StockHamCommon_0"));
     CheckCudaError(cuModuleGetFunction(&(kens->toPower), env->EXPAll, "_occa_toPower_0"));
     
 }

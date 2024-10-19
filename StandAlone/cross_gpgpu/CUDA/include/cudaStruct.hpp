@@ -2,29 +2,7 @@
 
 #include "RunnerInterface.hpp"
 
-#include "okl_embed_52_11_6.hpp"
-#include "okl_embed_52_12_1.hpp"
-#include "okl_embed_52_12_3.hpp"
-
-#include "okl_embed_61_11_6.hpp"
-#include "okl_embed_61_12_1.hpp"
-#include "okl_embed_61_12_3.hpp"
-
-#include "okl_embed_70_11_6.hpp"
-#include "okl_embed_70_12_1.hpp"
-#include "okl_embed_70_12_3.hpp"
-
-#include "okl_embed_75_11_6.hpp"
-#include "okl_embed_75_12_1.hpp"
-#include "okl_embed_75_12_3.hpp"
-
-#include "okl_embed_80_11_6.hpp"
-#include "okl_embed_80_12_1.hpp"
-#include "okl_embed_80_12_3.hpp"
-
-
-#include "okl_embed_90_12_1.hpp"
-#include "okl_embed_90_12_3.hpp"
+#include "include_kernels.hpp"
 
 #include <cuda.h>
 

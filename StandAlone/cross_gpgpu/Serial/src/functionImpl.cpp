@@ -12,13 +12,13 @@ extern void Window_Gaussian         (float*, CUI&, CUI&, const float& );
 extern void Window_Blackman_Nuttall (float*, CUI&, CUI& );
 extern void DCRemove_Common         (float*, CUI&, CUI& );
 
-extern void Stockhpotimized6        (float*, float*, CUI&);
-extern void Stockhpotimized7        (float*, float*, CUI&);
-extern void Stockhpotimized8        (float*, float*, CUI&);
-extern void Stockhpotimized9        (float*, float*, CUI&);
-extern void Stockhpotimized10       (float*, float*, CUI&);
-extern void Stockhpotimized11       (float*, float*, CUI&);
-extern void StockHamDITCommon       (float*,
+extern void Stockhoptimized6        (float*, float*, CUI&);
+extern void Stockhoptimized7        (float*, float*, CUI&);
+extern void Stockhoptimized8        (float*, float*, CUI&);
+extern void Stockhoptimized9        (float*, float*, CUI&);
+extern void Stockhoptimized10       (float*, float*, CUI&);
+extern void Stockhoptimized11       (float*, float*, CUI&);
+extern void StockHamCommon          (float*,
                                      float*,
                                      float*,
                                      float*,
@@ -134,7 +134,7 @@ runnerFunction::Gaussian(
 bool 
 runnerFunction::EXP6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
-    Stockhpotimized6
+    Stockhoptimized6
     (
         ((std::vector<float>*)Real)->data(),
         ((std::vector<float>*)Imag)->data(),
@@ -146,7 +146,7 @@ runnerFunction::EXP6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 bool 
 runnerFunction::EXP7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
-    Stockhpotimized7
+    Stockhoptimized7
     (
         ((std::vector<float>*)Real)->data(),
         ((std::vector<float>*)Imag)->data(),
@@ -158,7 +158,7 @@ runnerFunction::EXP7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 bool 
 runnerFunction::EXP8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
-    Stockhpotimized8
+    Stockhoptimized8
     (
         ((std::vector<float>*)Real)->data(),
         ((std::vector<float>*)Imag)->data(),
@@ -170,7 +170,7 @@ runnerFunction::EXP8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 bool 
 runnerFunction::EXP9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
-    Stockhpotimized9
+    Stockhoptimized9
     (
         ((std::vector<float>*)Real)->data(),
         ((std::vector<float>*)Imag)->data(),
@@ -182,7 +182,7 @@ runnerFunction::EXP9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 bool 
 runnerFunction::EXP10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
-    Stockhpotimized10
+    Stockhoptimized10
     (
         ((std::vector<float>*)Real)->data(),
         ((std::vector<float>*)Imag)->data(),
@@ -194,7 +194,7 @@ runnerFunction::EXP10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 bool 
 runnerFunction::EXP11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
-    Stockhpotimized11
+    Stockhoptimized11
     (
         ((std::vector<float>*)Real)->data(),
         ((std::vector<float>*)Imag)->data(),
@@ -226,7 +226,7 @@ runnerFunction::EXPC(
     {
         if(stage % 2 == 0)
         {
-            StockHamDITCommon
+            StockHamCommon
             (
                 ((std::vector<float>*)real)->data(),
                 ((std::vector<float>*)imag)->data(),
@@ -240,7 +240,7 @@ runnerFunction::EXPC(
         }
         else
         {
-            StockHamDITCommon
+            StockHamCommon
             (
                 ((std::vector<float>*)subreal)->data(),
                 ((std::vector<float>*)subimag)->data(),

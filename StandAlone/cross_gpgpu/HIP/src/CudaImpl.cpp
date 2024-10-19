@@ -21,7 +21,7 @@ void CheckCudaError(CUresult err) {
 struct Genv{
     CUdevice device;
     CUcontext context;
-    CUmodule RadixAll;
+    CUmodule EXPAll;
     
     
     //
@@ -48,7 +48,7 @@ Runner::InitEnv()
     CheckCudaError(cuDeviceGet(&(env->device), 0));
     CheckCudaError(cuCtxCreate(&(env->context), 0, env->device));
     okl_embed okl;
-    CheckCudaError(cuModuleLoadData(&(env->RadixAll), okl.ptx_code));
+    CheckCudaError(cuModuleLoadData(&(env->EXPAll), okl.ptx_code));
     kens = new Gcodes;
 }
 
@@ -56,7 +56,7 @@ void
 Runner::UnInit()
 {
     cuCtxSynchronize();
-    CheckCudaError(cuModuleUnload(env->RadixAll));
+    CheckCudaError(cuModuleUnload(env->EXPAll));
     CheckCudaError(cuCtxDestroy(env->context));
 
 }
@@ -65,13 +65,13 @@ Runner::UnInit()
 void
 Runner::BuildKernel()
 {
-    CheckCudaError(cuModuleGetFunction(&(kens->R10STFT), env->RadixAll, "_occa_preprocessed_ODW10_STH_STFT_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->R11STFT), env->RadixAll, "_occa_preprocessed_ODW11_STH_STFT_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonOverlap), env->RadixAll, "_occa_Overlap_Common_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonRemoveDC), env->RadixAll, "_occa_DCRemove_Common_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonWindowing), env->RadixAll, "_occa_Window_Common_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonSTFT), env->RadixAll, "_occa_StockHamDITCommon_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->toPower), env->RadixAll, "_occa_toPower_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->R10STFT), env->EXPAll, "_occa_preprocessed_ODW10_STH_STFT_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->R11STFT), env->EXPAll, "_occa_preprocessed_ODW11_STH_STFT_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonOverlap), env->EXPAll, "_occa_Overlap_Common_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonRemoveDC), env->EXPAll, "_occa_DCRemove_Common_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonWindowing), env->EXPAll, "_occa_Window_Common_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->RadixCommonSTFT), env->EXPAll, "_occa_StockHamDITCommon_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->toPower), env->EXPAll, "_occa_toPower_0"));
     
 }
 

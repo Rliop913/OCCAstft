@@ -184,7 +184,7 @@ STFTProxy::KillRunner(bool noFallbackAnyMore)
 
 MAYBE_FUTURE_DATA
 STFTProxy::RequestSTFT( std::vector<float>& data, 
-                        const int& windowRadix, 
+                        const int& windowSizeEXP, 
                         const float& overlapRate,
                         const std::string& options)
 {
@@ -193,7 +193,7 @@ STFTProxy::RequestSTFT( std::vector<float>& data,
         return std::nullopt;
     }
 
-    FFTRequest loaded(windowRadix, overlapRate, promiseCounter);
+    FFTRequest loaded(windowSizeEXP, overlapRate, promiseCounter);
     loaded.MakeSharedMemory(gpuType, data.size());
     loaded.SetData(data);
     loaded.SetOption(options);

@@ -2,7 +2,7 @@
 #include <iostream>
 #include "RunnerInterface.hpp"
 struct dataSet{
-    int windowRadix;
+    int windowSizeEXP;
     float overlapRatio;
     unsigned int FullSize;
     int windowSize;

@@ -31,7 +31,7 @@
 
 #define LOAD_PTX(buildName, ValueName, IF_Fail_DO)\
     buildName ValueName;\
-    if(cuModuleLoadData(&(env->RadixAll), ValueName.ptx_code) != CUDA_SUCCESS)\
+    if(cuModuleLoadData(&(env->EXPAll), ValueName.ptx_code) != CUDA_SUCCESS)\
     {\
         IF_Fail_DO;\
     }
@@ -40,7 +40,7 @@
 struct Genv{
     CUdevice device;
     CUcontext context;
-    CUmodule RadixAll;
+    CUmodule EXPAll;
     
     
     //
@@ -48,14 +48,14 @@ struct Genv{
 
 // Gcodes: Structure to manage and store GPGPU kernel codes.
 struct Gcodes{
-    CUfunction R6STFT;
-    CUfunction R7STFT;
-    CUfunction R8STFT;
-    CUfunction R9STFT;
-    CUfunction R10STFT;
-    CUfunction R11STFT;
+    CUfunction EXP6STFT;
+    CUfunction EXP7STFT;
+    CUfunction EXP8STFT;
+    CUfunction EXP9STFT;
+    CUfunction EXP10STFT;
+    CUfunction EXP11STFT;
     
-    CUfunction RadixCommon;
+    CUfunction EXPCommon;
     CUfunction Overlap;
     CUfunction DCRemove;
 

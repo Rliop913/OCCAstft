@@ -44,7 +44,7 @@ runnerFunction::Overlap(
     void* origin, 
     CUI OFullSize, 
     CUI FullSize, 
-    CUI windowRadix, 
+    CUI windowSizeEXP, 
     CUI OMove, 
     void* Realout
     )
@@ -54,7 +54,7 @@ runnerFunction::Overlap(
         ((std::vector<float>*)origin)->data(),
         OFullSize,
         FullSize,
-        windowRadix,
+        windowSizeEXP,
         OMove,
         ((std::vector<float>*)Realout)->data()
     );
@@ -132,7 +132,7 @@ runnerFunction::Gaussian(
 
 
 bool 
-runnerFunction::Radix6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     Stockhpotimized6
     (
@@ -144,7 +144,7 @@ runnerFunction::Radix6(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     Stockhpotimized7
     (
@@ -156,7 +156,7 @@ runnerFunction::Radix7(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     Stockhpotimized8
     (
@@ -168,7 +168,7 @@ runnerFunction::Radix8(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     Stockhpotimized9
     (
@@ -180,7 +180,7 @@ runnerFunction::Radix9(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     Stockhpotimized10
     (
@@ -192,7 +192,7 @@ runnerFunction::Radix10(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 }
 
 bool 
-runnerFunction::Radix11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
+runnerFunction::EXP11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 {
     Stockhpotimized11
     (
@@ -205,7 +205,7 @@ runnerFunction::Radix11(void* userStruct, void* Real, void* Imag, CUI OHalfSize)
 
 
 bool 
-runnerFunction::RadixC(
+runnerFunction::EXPC(
     void*   userStruct,
     void*   real, 
     void*   imag,
@@ -213,7 +213,7 @@ runnerFunction::RadixC(
     void*   subimag,
     void*   out,
     CUI     HWindowSize,
-    CUI     windowRadix,
+    CUI     windowSizeEXP,
     CUI     OFullSize,
     void*   realResult,
     void*   imagResult
@@ -222,7 +222,7 @@ runnerFunction::RadixC(
     ((std::vector<float>*)subreal)->resize(OFullSize);
     ((std::vector<float>*)subimag)->resize(OFullSize);
     CUI OHalfSize = OFullSize >> 1;
-    for(unsigned int stage = 0; stage < windowRadix; ++stage)
+    for(unsigned int stage = 0; stage < windowSizeEXP; ++stage)
     {
         if(stage % 2 == 0)
         {
@@ -235,7 +235,7 @@ runnerFunction::RadixC(
                 HWindowSize,
                 stage,
                 OHalfSize,
-                windowRadix
+                windowSizeEXP
             );
         }
         else
@@ -249,10 +249,10 @@ runnerFunction::RadixC(
                 HWindowSize,
                 stage,
                 OHalfSize,
-                windowRadix
+                windowSizeEXP
             );
         }
-        if(windowRadix % 2 != 0)
+        if(windowSizeEXP % 2 != 0)
         {
             realResult = subreal;
             imagResult = subimag;
@@ -269,7 +269,7 @@ runnerFunction::HalfComplex(
     void*   realResult, 
     void*   imagResult, 
     CUI     OHalfSize, 
-    CUI     windowRadix
+    CUI     windowSizeEXP
     )
 {
     toHalfComplexFormat
@@ -278,7 +278,7 @@ runnerFunction::HalfComplex(
         ((std::vector<float>*)realResult)->data(),
         ((std::vector<float>*)imagResult)->data(),
         OHalfSize,
-        windowRadix
+        windowSizeEXP
     );
     return std::move(true);
 }

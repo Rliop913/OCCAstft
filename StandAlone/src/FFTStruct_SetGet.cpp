@@ -16,18 +16,18 @@ FFTRequest::getID()
 }
 
 int 
-FFTRequest::get_WindowRadix()
+FFTRequest::get_WindowSizeEXP()
 {
-    int radix = 0;
+    int exp = 0;
     if(mw.has_value())
     {
-        radix = mw.value().getWindowRadix();
+        exp = mw.value().getWindowRadix();
     }
     else if(mr.has_value())
     {
-        radix = mr.value().getWindowRadix();
+        exp = mr.value().getWindowRadix();
     }
-    return radix;
+    return exp;
 }
 
 float

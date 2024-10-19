@@ -97,7 +97,7 @@
 
 
 
-@kernel void Stockhpotimized11(
+@kernel void Stockhoptimized2POW11(
     float* Rout,
     float* Iout,
     const unsigned int OHalfSize)

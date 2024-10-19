@@ -14,14 +14,14 @@ struct Genv{
 
 
 struct Gcodes{
-    Kernel R6STFT;
-    Kernel R7STFT;
-    Kernel R8STFT;
-    Kernel R9STFT;
-    Kernel R10STFT;
-    Kernel R11STFT;
+    Kernel EXP6STFT;
+    Kernel EXP7STFT;
+    Kernel EXP8STFT;
+    Kernel EXP9STFT;
+    Kernel EXP10STFT;
+    Kernel EXP11STFT;
     
-    Kernel RadixCommon;
+    Kernel EXPCommon;
     Kernel Overlap;
 
     Kernel DCRemove;

@@ -191,7 +191,7 @@
     }
 }
 
-@kernel void StockHamDITCommon(
+@kernel void StockHamCommon(
     float* inReal,
     float* inImag,
     float* outReal,

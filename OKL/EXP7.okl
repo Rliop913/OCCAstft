@@ -4,7 +4,7 @@
 #include "./OKL/kernel.okl"
 #endif
 
-@kernel void Stockhpotimized7(
+@kernel void Stockhoptimized2POW7(
     float* Rout, 
     float* Iout,
     const unsigned int OHalfSize)

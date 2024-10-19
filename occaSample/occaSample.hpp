@@ -10,10 +10,10 @@ struct STFTArgs{
     UI_  OFullSize;
     UI_  OHalfSize;
     UI_  OMove;
-    void setArgs(CUI_ dataSize, CUI_ windowRadix, const float overlapRatio)
+    void setArgs(CUI_ dataSize, CUI_ windowSizeEXP, const float overlapRatio)
     {
         FullSize = dataSize;
-        windowSize =  1 << windowRadix;
+        windowSize =  1 << windowSizeEXP;
         if(overlapRatio == 0.0f){
             qtConst = FullSize / windowSize + 1;
         }
@@ -45,17 +45,17 @@ private:
     occa::kernel Gaussian;
     
     occa::kernel Butterfly_Common;
-    occa::kernel R6;
-    occa::kernel R7;
-    occa::kernel R8;
-    occa::kernel R9;
-    occa::kernel R10;
-    occa::kernel R11;
+    occa::kernel TWO_POW6;
+    occa::kernel TWO_POW7;
+    occa::kernel TWO_POW8;
+    occa::kernel TWO_POW9;
+    occa::kernel TWO_POW10;
+    occa::kernel TWO_POW11;
     
     occa::kernel halfComplexFormat;
     occa::kernel poweredReturn;
 public:
-    std::vector<float> DO(std::vector<float>& data, const CUI_ windowRadix, const float overlapRatio);
+    std::vector<float> DO(std::vector<float>& data, const CUI_ windowSizeEXP, const float overlapRatio);
     occaSTFT(const std::string& mode, const int platform_id, const int device_id);
     ~occaSTFT(){;}
 };

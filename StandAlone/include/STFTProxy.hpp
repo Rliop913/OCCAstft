@@ -57,7 +57,7 @@ public:
     bool KillRunner(bool noFallbackAnyMore);
     MAYBE_FUTURE_DATA
     RequestSTFT(std::vector<float>& data, 
-                const int& windowRadix, 
+                const int& windowSizeEXP, 
                 const float& overlapRate = 0.5,
                 const std::string& options = "--hanning_window --remove_dc --half_complex_return");
     STFTProxy(ERR_FUNC errorCallback, const FallbackList& fbList);

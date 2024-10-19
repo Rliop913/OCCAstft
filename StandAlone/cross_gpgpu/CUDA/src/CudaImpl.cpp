@@ -74,7 +74,7 @@ void
 Runner::UnInit()
 {
     cuCtxSynchronize();
-    CheckCudaError(cuModuleUnload(env->RadixAll));
+    CheckCudaError(cuModuleUnload(env->EXPAll));
     CheckCudaError(cuCtxDestroy(env->context));
 
 }
@@ -88,39 +88,39 @@ struct CustomData{
 void
 Runner::BuildKernel()
 {
-    CheckCudaError(cuModuleGetFunction(&(kens->R6STFT), env->RadixAll, "_occa_Stockhpotimized6_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->R7STFT), env->RadixAll, "_occa_Stockhpotimized7_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->R8STFT), env->RadixAll, "_occa_Stockhpotimized8_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->R9STFT), env->RadixAll, "_occa_Stockhpotimized9_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->R10STFT), env->RadixAll, "_occa_Stockhpotimized10_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->R11STFT), env->RadixAll, "_occa_Stockhpotimized11_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->RadixCommon), env->RadixAll, "_occa_StockHamDITCommon_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXP6STFT), env->EXPAll, "_occa_Stockhoptimized6_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXP7STFT), env->EXPAll, "_occa_Stockhoptimized7_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXP8STFT), env->EXPAll, "_occa_Stockhoptimized8_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXP9STFT), env->EXPAll, "_occa_Stockhoptimized9_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXP10STFT), env->EXPAll, "_occa_Stockhoptimized10_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXP11STFT), env->EXPAll, "_occa_Stockhoptimized11_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->EXPCommon), env->EXPAll, "_occa_StockHamCommon_0"));
 
-    CheckCudaError(cuModuleGetFunction(&(kens->Overlap), env->RadixAll, "_occa_Overlap_Common_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->DCRemove), env->RadixAll, "_occa_DCRemove_Common_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->Overlap), env->EXPAll, "_occa_Overlap_Common_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->DCRemove), env->EXPAll, "_occa_DCRemove_Common_0"));
 
-    CheckCudaError(cuModuleGetFunction(&(kens->Hanning), env->RadixAll, "_occa_Window_Hanning_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->Hamming), env->RadixAll, "_occa_Window_Hamming_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->Blackman), env->RadixAll, "_occa_Window_Blackman_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->Nuttall), env->RadixAll, "_occa_Window_Nuttall_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->Blackman_Nuttall), env->RadixAll, "_occa_Window_Blackman_Nuttall_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->Blackman_Harris), env->RadixAll, "_occa_Window_Blackman_harris_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->FlatTop), env->RadixAll, "_occa_Window_FlatTop_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->Gaussian), env->RadixAll, "_occa_Window_Gaussian_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->Hanning), env->EXPAll, "_occa_Window_Hanning_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->Hamming), env->EXPAll, "_occa_Window_Hamming_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->Blackman), env->EXPAll, "_occa_Window_Blackman_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->Nuttall), env->EXPAll, "_occa_Window_Nuttall_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->Blackman_Nuttall), env->EXPAll, "_occa_Window_Blackman_Nuttall_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->Blackman_Harris), env->EXPAll, "_occa_Window_Blackman_harris_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->FlatTop), env->EXPAll, "_occa_Window_FlatTop_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->Gaussian), env->EXPAll, "_occa_Window_Gaussian_0"));
 
-    CheckCudaError(cuModuleGetFunction(&(kens->toPower), env->RadixAll, "_occa_toPower_0"));
-    CheckCudaError(cuModuleGetFunction(&(kens->HalfComplex), env->RadixAll, "_occa_toHalfComplexFormat_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->toPower), env->EXPAll, "_occa_toPower_0"));
+    CheckCudaError(cuModuleGetFunction(&(kens->HalfComplex), env->EXPAll, "_occa_toHalfComplexFormat_0"));
 }
 
 MAYBE_DATA
 Runner::ActivateSTFT(   VECF& inData, 
-                        const int& windowRadix, 
+                        const int& windowSizeEXP, 
                         const float& overlapRatio,
                         const std::string& options)
 {
     //default code blocks
     const unsigned int  FullSize    = inData.size();
-    const unsigned int  windowSize  = 1 << windowRadix;
+    const unsigned int  windowSize  = 1 << windowSizeEXP;
     const unsigned int  qtConst     = toQuot(FullSize, overlapRatio, windowSize);//number of windows
     const unsigned int  OFullSize   = qtConst * windowSize; // overlaped fullsize
     const unsigned int  OHalfSize   = OFullSize / 2;
@@ -176,7 +176,7 @@ Runner::ActivateSTFT(   VECF& inData,
         OHalfSize,
         OMove,
         options,
-        windowRadix,
+        windowSizeEXP,
         overlapRatio
     );
 

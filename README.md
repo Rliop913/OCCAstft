@@ -33,10 +33,10 @@ Tested on NVIDIA H100, Ubuntu, CUDA 12.3
 
 how to use
 - **1**: build the runners
-- **2**: build the StandAlone
+- **2**: in StandAlone/Profile_Code/profileRunners.cpp, uncomment datawait and build the StandAlone
 - **3**: make file named "executeResult.json" related path from runner
 - **4**: execute runner port 54500
-- **5**: wait. may be took for a day per one runner.
+- **5**: execute TESTER.exe and wait. may be took for a day per one runner.
 - **6**: make csv with python code ProfileResults/merged_csv.py ( the json path were hardcoded.)
 - **7**: make plot with python code. ProfileResults/window-batch.py (the csv path were hardcoded.)
 - "clFFTResultOnNvidiaH100.json" : clfft hardcoded

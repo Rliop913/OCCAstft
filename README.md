@@ -1,5 +1,5 @@
 
-# GPGPU Batch STFT Project
+# OCCAstft
 
 ## Overview
 
@@ -26,6 +26,23 @@ Tested on NVIDIA H100, Ubuntu, CUDA 12.3
 ![windowSize 262144](ProfileResults/Figure/262144.png)
 ![windowSize 524288](ProfileResults/Figure/524288.png)
 ![windowSize 1048576](ProfileResults/Figure/1048576.png)
+
+## TEST
+- **OCCA**: StandAlone/cross_gpgpu/occaprofileRunner
+- **CUFFT**: StandAlone/cross_gpgpu/testRunner (CLFFT code has been Annotated)
+
+how to use
+- **1**: build the runners
+- **2**: build the StandAlone
+- **3**: make file named "executeResult.json" related path from runner
+- **4**: execute runner port 54500
+- **5**: wait. may be took for a day per one runner.
+- **6**: make csv with python code ProfileResults/merged_csv.py ( the json path were hardcoded.)
+- **7**: make plot with python code. ProfileResults/window-batch.py (the csv path were hardcoded.)
+- "clFFTResultOnNvidiaH100.json" : clfft hardcoded
+- "cuFFTResultOnNvidiaH100.json" : cufft hardcoded
+- "occaResultOnNvidiaH100.json"  : occa  hardcoded
+- "merged_fft_results.csv"       : csv   hardcoded
 
 ## Key Features
 

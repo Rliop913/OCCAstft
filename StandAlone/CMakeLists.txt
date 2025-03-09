@@ -41,7 +41,7 @@ if(NOT CapnProto_FOUND)
         COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/capnpsetter.sh)
     find_package(CapnProto REQUIRED)
 endif()
-if(NOT WIN32)
+if(NOT WIN32 AND NOT APPLE)
     find_package(clFFT)
     if(NOT clFFT_FOUND)
         execute_process(
@@ -64,7 +64,7 @@ if(CUDA_FOUND)
 add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/CUDA)
 endif()
 
-if(OpenCL_FOUND)
+if(OpenCL_FOUND AND NOT APPLE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/cross_gpgpu/OpenCL)
 endif()
 

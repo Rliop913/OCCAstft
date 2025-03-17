@@ -1,6 +1,9 @@
 
 # OCCAstft
 
+paper - http://apjcriweb.org/content/vol11no2/40.html
+
+
 ## Overview
 
 This project is a multi-platform (GPGPU) supported implementation of the Short-Time Fourier Transform (STFT). It is designed to perform STFT operations efficiently across various parallel computing environments such as CUDA, OpenCL, OpenMP, and Serial. The project ensures stable execution across diverse systems and deployment environments, making it a reliable and scalable solution for signal processing, particularly for time-frequency analysis of audio and speech signals.
